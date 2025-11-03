@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Environment / Secrets
+src/main/resources/application.yml
+src/main/resources/application.properties
+src/main/resources/application-prod.yml
+src/main/resources/application-secret.yml
+
+# Hệ điều hành sinh ra 
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
