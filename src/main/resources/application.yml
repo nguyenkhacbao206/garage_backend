@@ -1,0 +1,11 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://baonkptit:Kbao17122006@cluster0.tr3y9tf.mongodb.net/Garage?appName=Cluster0
+
+  jackson:
+    serialization:
+      indent_output: true
+
+server:
+  port: 8082
