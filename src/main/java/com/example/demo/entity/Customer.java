@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,6 @@ public class Customer {
 
     private List<Car> cars = new ArrayList<>();
 
-    // Lớp Car 
     public static class Car {
         private String id;
         private String plate;
@@ -25,7 +25,7 @@ public class Customer {
         private String manufacturer;
         private String description;
 
-        // Getters & Setters
+        // getters / setters
         public String getId() { return id; }
         public void setId(String id) { this.id = id; }
         public String getPlate() { return plate; }
@@ -38,7 +38,7 @@ public class Customer {
         public void setDescription(String description) { this.description = description; }
     }
 
-    // Getters & Setters
+    // getters / setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getName() { return name; }
