@@ -1,19 +1,19 @@
 package com.example.demo.dto;
 
+
 public class CarResponse {
     private String id;
+    // private String carCode;
     private String plate;
     private String model;
     private String manufacturer;
     private String description;
     private String customerId;
 
-    // Constructor không tham số
     public CarResponse() {}
-
-    // Constructor đầy đủ tham số
-    public CarResponse(String id, String plate, String model, String manufacturer, String description, String customerId) {
+    public CarResponse(String id, String carCode, String plate, String model, String manufacturer, String description, String customerId) {
         this.id = id;
+        // this.carCode = carCode;
         this.plate = plate;
         this.model = model;
         this.manufacturer = manufacturer;
@@ -21,9 +21,12 @@ public class CarResponse {
         this.customerId = customerId;
     }
 
-    // Getter và Setter
+    // Getter & Setter
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    // public String getCarCode() { return carCode; }
+    // public void setCarCode(String carCode) { this.carCode = carCode; }
 
     public String getPlate() { return plate; }
     public void setPlate(String plate) { this.plate = plate; }

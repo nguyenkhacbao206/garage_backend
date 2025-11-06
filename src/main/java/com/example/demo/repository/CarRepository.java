@@ -6,4 +6,7 @@ import com.example.demo.entity.Car;
 
 public interface CarRepository extends MongoRepository<Car, String> {
     List<Car> findByCustomerId(String customerId);
+
+    // kiểm tra trùng biển
+    boolean existsByPlate(String plate);
 }
