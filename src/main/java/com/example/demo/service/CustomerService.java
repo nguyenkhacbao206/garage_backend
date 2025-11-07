@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.CustomerRequest;
+import com.example.demo.entity.Car;
 import com.example.demo.entity.Customer;
 import com.example.demo.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,6 @@ public class CustomerService {
 
     // create new customer
     public Customer create(CustomerRequest request) {
-        // Kiểm tra trùng email hoặc số điện thoại
         if (customerRepository.existsByPhone(request.getPhone())) {
             throw new RuntimeException("Số điện thoại đã tồn tại!");
         }
@@ -45,7 +45,6 @@ public class CustomerService {
         c.setAddress(request.getAddress());
         c.setNote(request.getNote());
 
-        // Tạo mã khách hàng KH-0->9
         String randomCode;
         do {
             randomCode = String.format("KH-%03d", ThreadLocalRandom.current().nextInt(0, 1000));
@@ -94,7 +93,7 @@ public class CustomerService {
     }
 
     // add car to customer
-    public Optional<Customer.Car> addCar(String customerId, Customer.Car car) {
+    public Optional<Car> addCar(String customerId, Car car) {
         Optional<Customer> customerOpt = customerRepository.findById(customerId);
         if (customerOpt.isPresent()) {
             Customer customer = customerOpt.get();

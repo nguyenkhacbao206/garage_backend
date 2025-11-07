@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.CustomerRequest;
 import com.example.demo.dto.CustomerResponse;
+import com.example.demo.entity.Car;
 import com.example.demo.entity.Customer;
 import com.example.demo.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,7 +52,6 @@ public class CustomerController {
             Customer newCustomer = customerService.create(request);
             return ResponseEntity.ok(new CustomerResponse("Thêm khách hàng thành công", newCustomer));
         } catch (RuntimeException e) {
-            // bắt lỗi trùng email/sđt hoặc các lỗi do service ném ra
             return ResponseEntity.badRequest().body(new CustomerResponse(e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(new CustomerResponse("Lỗi khi thêm khách hàng: " + e.getMessage(), null));
@@ -102,9 +102,9 @@ public class CustomerController {
 
     @Operation(summary = "Thêm xe mới cho khách hàng")
     @PostMapping("/{id}/cars")
-    public ResponseEntity<?> addCar(@PathVariable String id, @RequestBody Customer.Car car) {
+    public ResponseEntity<?> addCar(@PathVariable String id, @RequestBody Car car) {
         try {
-            Optional<Customer.Car> added = customerService.addCar(id, car);
+            Optional<Car> added = customerService.addCar(id, car);
             if (added.isPresent()) {
                 return ResponseEntity.ok(new CustomerResponse("Thêm xe mới cho khách hàng thành công", added.get()));
             }
