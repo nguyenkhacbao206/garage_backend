@@ -1,30 +1,16 @@
 package com.example.demo.dto;
 
 public class CarRequest {
-    private String id;
     private String plate;
     private String model;
     private String manufacturer;
     private String description;
     private String customerId;
 
-    // Constructor không tham số
+    // Constructor không tham số (bắt buộc cho Swagger/Jackson)
     public CarRequest() {}
 
-    // Constructor đầy đủ tham số
-    public CarRequest(String id, String plate, String model, String manufacturer, String description, String customerId) {
-        this.id = id;
-        this.plate = plate;
-        this.model = model;
-        this.manufacturer = manufacturer;
-        this.description = description;
-        this.customerId = customerId;
-    }
-
-    // Getter và Setter
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-
+    // Getter & Setter
     public String getPlate() { return plate; }
     public void setPlate(String plate) { this.plate = plate; }
 
