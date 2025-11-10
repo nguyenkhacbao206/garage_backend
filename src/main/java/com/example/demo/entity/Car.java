@@ -12,7 +12,7 @@ public class Car {
 
     @Indexed(unique = true) // Đảm bảo biển số không trùng
     private String plate;
-    // private String carCode; 
+    // private String carCode;
     private String model;
     private String manufacturer;
     private String description;
