@@ -2,6 +2,8 @@ package com.example.demo.config;
 
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtAuthFilter;
+import com.example.demo.security.RestAuthenticationEntryPoint;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,15 +38,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(new RestAuthenticationEntryPoint()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/services/**",
-                    "/api/cars/**",
-                    "/api/customers/**",
                     "/api/auth/**",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
-                    "/swagger-ui.html").permitAll()
+                    "/swagger-ui.html"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -52,4 +53,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }
