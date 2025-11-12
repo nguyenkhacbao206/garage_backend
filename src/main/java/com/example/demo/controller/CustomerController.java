@@ -38,12 +38,13 @@ public class CustomerController {
     @Operation(summary = "Tìm kiếm khách hàng nâng cao theo tên, số điện thoại, email")
     @GetMapping("/search")
     public ResponseEntity<?> search(
+            @RequestParam(required = false) String customerCode,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) String email
     ) {
         try {
-            List<Customer> results = customerService.searchCustomers(name, phone, email);
+            List<Customer> results = customerService.searchCustomers(customerCode, name, phone, email);
             return ResponseEntity.ok(new CustomerResponse("Kết quả tìm kiếm", results));
         } catch (RuntimeException e) {
             throw e;

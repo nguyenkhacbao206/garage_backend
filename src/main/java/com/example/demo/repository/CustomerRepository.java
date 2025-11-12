@@ -9,15 +9,21 @@ import java.util.List;
 @Repository
 public interface CustomerRepository extends MongoRepository<Customer, String> {
 
+    // Tìm kiếm riêng lẻ theo từng trường
     List<Customer> findByNameContainingIgnoreCase(String name);
 
     List<Customer> findByPhoneContaining(String phone);
 
     List<Customer> findByEmailContainingIgnoreCase(String email);
 
-    // Tìm theo nhiều trường cùng lúc
-    List<Customer> findByNameContainingIgnoreCaseOrPhoneContainingOrEmailContainingIgnoreCase(
-            String name, String phone, String email);
+    List<Customer> findByCustomerCode(String customerCode);
+
+    // Tìm kiếm theo nhiều trường cùng lúc 
+    List<Customer> findByCustomerCodeContainingIgnoreCaseOrNameContainingIgnoreCaseOrPhoneContainingOrEmailContainingIgnoreCase(
+            String customerCode, String name, String phone, String email);
+
+    // Kiểm tra tồn tại
+    boolean existsByName(String name);
 
     boolean existsByCustomerCode(String customerCode);
 
