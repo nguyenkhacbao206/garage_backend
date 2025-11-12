@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +30,7 @@ public class CarController {
             List<CarResponse> list = carService.getAllCars();
             return ResponseEntity.ok(list);
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Lỗi khi lấy danh sách: " + e.getMessage());
+            throw new RuntimeException("Lỗi khi lấy danh sách xe: " + e.getMessage());
         }
     }
 
@@ -40,20 +39,25 @@ public class CarController {
     public ResponseEntity<?> getById(@PathVariable String id) {
         try {
             CarResponse car = carService.getCarById(id);
-            if (car == null) return ResponseEntity.notFound().build();
+            if (car == null)
+                throw new RuntimeException("Không tìm thấy xe với ID: " + id);
             return ResponseEntity.ok(car);
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            throw new RuntimeException("Lỗi khi lấy xe: " + e.getMessage());
         }
     }
 
-    @Operation(summary = "Lấy danh sách xe của khách hàng theo ID khách hàng")
+    @Operation(summary = "Lấy danh sách xe theo ID khách hàng")
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<?> getByCustomer(@PathVariable String customerId) {
         try {
             return ResponseEntity.ok(carService.getCarsByCustomerId(customerId));
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            throw new RuntimeException("Lỗi khi lấy danh sách xe khách hàng: " + e.getMessage());
         }
     }
 
@@ -63,9 +67,9 @@ public class CarController {
         try {
             return ResponseEntity.ok(carService.createCar(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            throw new RuntimeException("Lỗi khi thêm xe: " + e.getMessage());
         }
     }
 
@@ -75,9 +79,9 @@ public class CarController {
         try {
             return ResponseEntity.ok(carService.updateCar(id, request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            throw new RuntimeException("Lỗi khi cập nhật xe: " + e.getMessage());
         }
     }
 
@@ -87,8 +91,10 @@ public class CarController {
         try {
             carService.deleteCar(id);
             return ResponseEntity.ok("Xóa xe thành công");
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            throw new RuntimeException("Lỗi khi xóa xe: " + e.getMessage());
         }
     }
 }
