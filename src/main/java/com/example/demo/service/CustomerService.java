@@ -25,7 +25,8 @@ public class CustomerService {
     }
 
     // Advanced search by name, phone, email
-    public List<Customer> searchCustomers(String name, String phone, String email) {
+    public List<Customer> searchCustomers(String customerCode , String name, String phone, String email) {
+        boolean hasCode = customerCode != null && !customerCode.isEmpty();
         boolean hasName = name != null && !name.isEmpty();
         boolean hasPhone = phone != null && !phone.isEmpty();
         boolean hasEmail = email != null && !email.isEmpty();
@@ -36,11 +37,12 @@ public class CustomerService {
         }
 
         // Search by any of the provided fields
-        return customerRepository.findByNameContainingIgnoreCaseOrPhoneContainingOrEmailContainingIgnoreCase(
-                hasName ? name : "",
-                hasPhone ? phone : "",
-                hasEmail ? email : ""
-        );
+        return customerRepository.findByCustomerCodeContainingIgnoreCaseOrNameContainingIgnoreCaseOrPhoneContainingOrEmailContainingIgnoreCase(
+            hasCode ? customerCode : "",
+            hasName ? name : "",
+            hasPhone ? phone : "",
+            hasEmail ? email : ""
+    );
     }
 
     // Get customer by ID
