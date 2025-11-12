@@ -37,12 +37,13 @@ public class JwtService {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
-            return true;
+            Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+            return !claims.getExpiration().before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
+
 
     public String extractUsername(String token) {
         return Jwts.parser().setSigningKey(jwtSecret)
