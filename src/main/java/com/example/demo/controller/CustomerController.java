@@ -35,6 +35,23 @@ public class CustomerController {
         }
     }
 
+    @Operation(summary = "Tìm kiếm khách hàng nâng cao theo tên, số điện thoại, email")
+    @GetMapping("/search")
+    public ResponseEntity<?> search(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String email
+    ) {
+        try {
+            List<Customer> results = customerService.searchCustomers(name, phone, email);
+            return ResponseEntity.ok(new CustomerResponse("Kết quả tìm kiếm", results));
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi tìm kiếm khách hàng: " + e.getMessage());
+        }
+    }
+
     @Operation(summary = "Lấy chi tiết khách hàng theo id")
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable String id) {
@@ -56,7 +73,7 @@ public class CustomerController {
             Customer newCustomer = customerService.create(request);
             return ResponseEntity.ok(new CustomerResponse("Thêm khách hàng thành công", newCustomer));
         } catch (RuntimeException e) {
-            throw e;
+            throw e;    
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi thêm khách hàng: " + e.getMessage());
         }
