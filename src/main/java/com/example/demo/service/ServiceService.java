@@ -2,8 +2,12 @@ package com.example.demo.service;
 
 import com.example.demo.dto.ServiceRequest;
 import com.example.demo.dto.ServiceResponse;
+import com.example.demo.entity.Customer;
 import com.example.demo.entity.GarageService;
+import com.example.demo.entity.Supplier;
 import com.example.demo.repository.ServiceRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,10 +17,26 @@ import java.util.stream.Collectors;
 @Service
 public class ServiceService {
 
+    @Autowired
     private final ServiceRepository serviceRepository;
-
+    
     public ServiceService(ServiceRepository serviceRepository){
         this.serviceRepository = serviceRepository;
+    }
+
+    
+    public List<GarageService> searchServices(String serviceCode , String name) {
+        boolean hasCode = serviceCode != null && !serviceCode.isEmpty();
+        boolean hasName = name != null && !name.isEmpty();
+
+        if (!hasName) {
+            return serviceRepository.findAll();
+        }
+
+        return serviceRepository.findByServiceCodeContainingIgnoreCaseOrNameContainingIgnoreCase(
+            hasCode ? serviceCode : "",
+            hasName ? name : ""
+    );
     }
 
     private ServiceResponse convertToResponse(GarageService service){
@@ -27,6 +47,8 @@ public class ServiceService {
         response.setPrice(service.getPrice());
         return response;
     }
+
+    
 
     // Lấy danh sách dịch vụ (có thể lọc theo tên)
     public List<ServiceResponse> getAllServices() {
