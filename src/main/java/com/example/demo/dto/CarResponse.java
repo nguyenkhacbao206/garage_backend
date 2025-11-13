@@ -7,11 +7,10 @@ public class CarResponse {
     private String manufacturer;
     private String description;
     private String customerId;
+    private String customerCode; // Trả ra cho frontend hiển thị
 
-    // Constructor không tham số
     public CarResponse() {}
 
-    // Getter & Setter
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -29,4 +28,7 @@ public class CarResponse {
 
     public String getCustomerId() { return customerId; }
     public void setCustomerId(String customerId) { this.customerId = customerId; }
+
+    public String getCustomerCode() { return customerCode; }
+    public void setCustomerCode(String customerCode) { this.customerCode = customerCode; }
 }

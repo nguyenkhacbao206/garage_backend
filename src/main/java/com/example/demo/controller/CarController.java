@@ -19,10 +19,11 @@ public class CarController {
 
     private final CarService carService;
 
-    public CarController(CarService carService){
+    public CarController(CarService carService) {
         this.carService = carService;
     }
 
+    // Lấy danh sách tất cả xe
     @Operation(summary = "Lấy danh sách tất cả xe")
     @GetMapping
     public ResponseEntity<?> getAll() {
@@ -34,6 +35,7 @@ public class CarController {
         }
     }
 
+    // Lấy xe theo ID
     @Operation(summary = "Lấy xe theo ID")
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable String id) {
@@ -49,6 +51,7 @@ public class CarController {
         }
     }
 
+    // Lấy danh sách xe theo customerId
     @Operation(summary = "Lấy danh sách xe theo ID khách hàng")
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<?> getByCustomer(@PathVariable String customerId) {
@@ -61,6 +64,7 @@ public class CarController {
         }
     }
 
+    // Thêm xe mới (auto lấy customerCode từ customer)
     @Operation(summary = "Thêm xe mới")
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CarRequest request) {
@@ -73,6 +77,7 @@ public class CarController {
         }
     }
 
+    // Cập nhật xe
     @Operation(summary = "Cập nhật xe theo ID")
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable String id, @RequestBody CarRequest request) {
@@ -85,6 +90,7 @@ public class CarController {
         }
     }
 
+    // Xóa xe
     @Operation(summary = "Xóa xe theo ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {

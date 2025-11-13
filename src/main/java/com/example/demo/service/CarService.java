@@ -2,75 +2,76 @@ package com.example.demo.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
+
 import com.example.demo.dto.CarRequest;
 import com.example.demo.dto.CarResponse;
 import com.example.demo.entity.Car;
+import com.example.demo.entity.Customer;
 import com.example.demo.repository.CarRepository;
+import com.example.demo.repository.CustomerRepository;
 
 @Service
 public class CarService {
 
     private final CarRepository carRepository;
+    private final CustomerRepository customerRepository;
 
-    // Regex kiểm tra biển số xe hợp lệ , VD: 30A-12345
     private static final String PLATE_REGEX = "^[0-9]{2}[A-Z]{1,2}-[0-9]{4,5}$";
 
-    public CarService(CarRepository carRepository) {
+    public CarService(CarRepository carRepository, CustomerRepository customerRepository) {
         this.carRepository = carRepository;
+        this.customerRepository = customerRepository;
     }
 
+    // Lấy tất cả xe
     public List<CarResponse> getAllCars() {
         return carRepository.findAll().stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
+    // Lấy xe theo ID
     public CarResponse getCarById(String id) {
         return carRepository.findById(id)
                 .map(this::convertToResponse)
                 .orElse(null);
     }
 
+    // Lấy xe theo customerId
     public List<CarResponse> getCarsByCustomerId(String customerId) {
-        return carRepository.findByCustomerId(customerId).stream()
+        return carRepository.findAll().stream()
+                .filter(car -> customerId.equals(car.getCustomerId()))
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    // Create new car
+    // Thêm xe mới (auto lấy customerCode từ customer)
     public CarResponse createCar(CarRequest request) {
-        // Kiểm tra định dạng biển số
-        if (!request.getPlate().matches(PLATE_REGEX)) {
-            throw new RuntimeException("Biển số xe không hợp lệ! (VD: 30A-12345)");
-        }
+        validateCarRequest(request);
 
-        // Kiểm tra trùng biển
-        if (carRepository.existsByPlate(request.getPlate())) {
-            throw new RuntimeException("Biển số xe đã tồn tại!");
-        }
+        Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + request.getCustomerId()));
 
         Car car = new Car();
         car.setPlate(request.getPlate());
         car.setModel(request.getModel());
         car.setManufacturer(request.getManufacturer());
         car.setDescription(request.getDescription());
-        car.setCustomerId(request.getCustomerId());
+        car.setCustomerId(customer.getId());
+        car.setCustomerCode(customer.getCustomerCode());
 
         return convertToResponse(carRepository.save(car));
     }
 
-    // Update car
+    // Cập nhật xe
     public CarResponse updateCar(String id, CarRequest request) {
         Car car = carRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + id));
 
-        // Kiểm tra định dạng
-        if (!request.getPlate().matches(PLATE_REGEX)) {
-            throw new RuntimeException("Biển số xe không hợp lệ! (VD: 30A-12345)");
-        }
+        validateCarRequest(request);
 
-        // Nếu đổi biển số => kiểm tra trùng
         if (!car.getPlate().equals(request.getPlate()) && carRepository.existsByPlate(request.getPlate())) {
             throw new RuntimeException("Biển số xe đã tồn tại!");
         }
@@ -79,15 +80,40 @@ public class CarService {
         car.setModel(request.getModel());
         car.setManufacturer(request.getManufacturer());
         car.setDescription(request.getDescription());
-        car.setCustomerId(request.getCustomerId());
+
+        // Nếu đổi customer thì cập nhật lại customerCode
+        if (request.getCustomerId() != null && !request.getCustomerId().equals(car.getCustomerId())) {
+            Customer newCustomer = customerRepository.findById(request.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + request.getCustomerId()));
+            car.setCustomerId(newCustomer.getId());
+            car.setCustomerCode(newCustomer.getCustomerCode());
+        }
 
         return convertToResponse(carRepository.save(car));
     }
 
+    // Xóa xe
     public void deleteCar(String id) {
+        if (!carRepository.existsById(id)) {
+            throw new RuntimeException("Không tìm thấy xe để xóa với ID: " + id);
+        }
         carRepository.deleteById(id);
     }
 
+    // Kiểm tra biển số hợp lệ + ID khách hàng
+    private void validateCarRequest(CarRequest request) {
+        if (request.getCustomerId() == null || request.getCustomerId().isEmpty()) {
+            throw new RuntimeException("Thiếu customerId khi tạo xe!");
+        }
+        if (!request.getPlate().matches(PLATE_REGEX)) {
+            throw new RuntimeException("Biển số xe không hợp lệ! (VD: 30A-12345)");
+        }
+        if (carRepository.existsByPlate(request.getPlate())) {
+            throw new RuntimeException("Biển số xe đã tồn tại!");
+        }
+    }
+
+    // Convert entity → response DTO
     private CarResponse convertToResponse(Car car) {
         CarResponse res = new CarResponse();
         res.setId(car.getId());
@@ -96,6 +122,7 @@ public class CarService {
         res.setManufacturer(car.getManufacturer());
         res.setDescription(car.getDescription());
         res.setCustomerId(car.getCustomerId());
+        res.setCustomerCode(car.getCustomerCode());
         return res;
     }
 }

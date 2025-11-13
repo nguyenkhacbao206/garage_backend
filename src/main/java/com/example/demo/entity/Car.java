@@ -10,24 +10,27 @@ public class Car {
     @Id
     private String id;
 
-    @Indexed(unique = true) // Đảm bảo biển số không trùng
+    @Indexed(unique = true)
     private String plate;
-    // private String carCode;
+
     private String model;
     private String manufacturer;
     private String description;
-    private String customerId;
+
+    private String customerId;   // Liên kết Customer
+    private String customerCode; // Lưu code từ Customer
 
     public Car() {}
 
-    public Car(String id, String plate, String carCode, String model, String manufacturer, String description, String customerId) {
+    public Car(String id, String plate, String model, String manufacturer,
+               String description, String customerId, String customerCode) {
         this.id = id;
         this.plate = plate;
-        // this.carCode = carCode;
         this.model = model;
         this.manufacturer = manufacturer;
         this.description = description;
         this.customerId = customerId;
+        this.customerCode = customerCode;
     }
 
     // Getter & Setter
@@ -36,9 +39,6 @@ public class Car {
 
     public String getPlate() { return plate; }
     public void setPlate(String plate) { this.plate = plate; }
-
-    // public String getCarCode() { return carCode; }
-    // public void setCarCode(String carCode) { this.carCode = carCode; }
 
     public String getModel() { return model; }
     public void setModel(String model) { this.model = model; }
@@ -51,4 +51,7 @@ public class Car {
 
     public String getCustomerId() { return customerId; }
     public void setCustomerId(String customerId) { this.customerId = customerId; }
+
+    public String getCustomerCode() { return customerCode; }
+    public void setCustomerCode(String customerCode) { this.customerCode = customerCode; }
 }
