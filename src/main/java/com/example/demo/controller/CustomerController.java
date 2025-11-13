@@ -28,8 +28,28 @@ public class CustomerController {
         try {
             List<Customer> list = customerService.getAll(name);
             return ResponseEntity.ok(new CustomerResponse("Lấy danh sách khách hàng thành công", list));
+        } catch (RuntimeException e) {
+            throw e; // ném ra để GlobalExceptionHandler xử lý
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new CustomerResponse("Lỗi khi lấy danh sách: " + e.getMessage(), null));
+            throw new RuntimeException("Lỗi khi lấy danh sách khách hàng: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Tìm kiếm khách hàng nâng cao theo tên, số điện thoại, email")
+    @GetMapping("/search")
+    public ResponseEntity<?> search(
+            @RequestParam(required = false) String customerCode,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String email
+    ) {
+        try {
+            List<Customer> results = customerService.searchCustomers(customerCode, name, phone, email);
+            return ResponseEntity.ok(new CustomerResponse("Kết quả tìm kiếm", results));
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi tìm kiếm khách hàng: " + e.getMessage());
         }
     }
 
@@ -39,9 +59,11 @@ public class CustomerController {
         try {
             return customerService.getById(id)
                     .map(c -> ResponseEntity.ok(new CustomerResponse("Chi tiết khách hàng", c)))
-                    .orElse(ResponseEntity.status(404).body(new CustomerResponse("Không tìm thấy khách hàng", null)));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + id));
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new CustomerResponse("Lỗi khi lấy chi tiết: " + e.getMessage(), null));
+            throw new RuntimeException("Lỗi khi lấy chi tiết khách hàng: " + e.getMessage());
         }
     }
 
@@ -52,9 +74,9 @@ public class CustomerController {
             Customer newCustomer = customerService.create(request);
             return ResponseEntity.ok(new CustomerResponse("Thêm khách hàng thành công", newCustomer));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new CustomerResponse(e.getMessage(), null));
+            throw e;    
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(new CustomerResponse("Lỗi khi thêm khách hàng: " + e.getMessage(), null));
+            throw new RuntimeException("Lỗi khi thêm khách hàng: " + e.getMessage());
         }
     }
 
@@ -64,11 +86,11 @@ public class CustomerController {
         try {
             return customerService.update(id, request)
                     .map(c -> ResponseEntity.ok(new CustomerResponse("Cập nhật khách hàng thành công", c)))
-                    .orElse(ResponseEntity.status(404).body(new CustomerResponse("Không tìm thấy khách hàng", null)));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new CustomerResponse(e.getMessage(), null));
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(new CustomerResponse("Lỗi khi cập nhật: " + e.getMessage(), null));
+            throw new RuntimeException("Lỗi khi cập nhật khách hàng: " + e.getMessage());
         }
     }
 
@@ -77,12 +99,14 @@ public class CustomerController {
     public ResponseEntity<?> delete(@PathVariable String id) {
         try {
             boolean deleted = customerService.delete(id);
-            if (deleted)
-                return ResponseEntity.ok(new CustomerResponse("Xóa khách hàng thành công", null));
-            else
-                return ResponseEntity.status(404).body(new CustomerResponse("Không tìm thấy khách hàng", null));
+            if (!deleted) {
+                throw new RuntimeException("Không tìm thấy khách hàng với ID: " + id);
+            }
+            return ResponseEntity.ok(new CustomerResponse("Xóa khách hàng thành công", null));
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new CustomerResponse("Lỗi khi xóa: " + e.getMessage(), null));
+            throw new RuntimeException("Lỗi khi xóa khách hàng: " + e.getMessage());
         }
     }
 
@@ -91,12 +115,14 @@ public class CustomerController {
     public ResponseEntity<?> getCars(@PathVariable String id) {
         try {
             Optional<Customer> customerOpt = customerService.getById(id);
-            if (customerOpt.isPresent()) {
-                return ResponseEntity.ok(new CustomerResponse("Danh sách xe của khách hàng", customerOpt.get().getCars()));
+            if (customerOpt.isEmpty()) {
+                throw new RuntimeException("Không tìm thấy khách hàng với ID: " + id);
             }
-            return ResponseEntity.status(404).body(new CustomerResponse("Không tìm thấy khách hàng", null));
+            return ResponseEntity.ok(new CustomerResponse("Danh sách xe của khách hàng", customerOpt.get().getCars()));
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new CustomerResponse("Lỗi khi lấy danh sách xe: " + e.getMessage(), null));
+            throw new RuntimeException("Lỗi khi lấy danh sách xe: " + e.getMessage());
         }
     }
 
@@ -105,12 +131,14 @@ public class CustomerController {
     public ResponseEntity<?> addCar(@PathVariable String id, @RequestBody Car car) {
         try {
             Optional<Car> added = customerService.addCar(id, car);
-            if (added.isPresent()) {
-                return ResponseEntity.ok(new CustomerResponse("Thêm xe mới cho khách hàng thành công", added.get()));
+            if (added.isEmpty()) {
+                throw new RuntimeException("Không tìm thấy khách hàng với ID: " + id);
             }
-            return ResponseEntity.status(404).body(new CustomerResponse("Không tìm thấy khách hàng", null));
+            return ResponseEntity.ok(new CustomerResponse("Thêm xe mới cho khách hàng thành công", added.get()));
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new CustomerResponse("Lỗi khi thêm xe: " + e.getMessage(), null));
+            throw new RuntimeException("Lỗi khi thêm xe cho khách hàng: " + e.getMessage());
         }
     }
 }

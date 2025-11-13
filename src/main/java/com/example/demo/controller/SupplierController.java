@@ -39,16 +39,22 @@ public class SupplierController {
     @Operation(summary = "Lấy nhà cung cấp theo ID")
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable String id) {
-        Optional<Supplier> supplierOpt = supplierService.getById(id);
-        if (supplierOpt.isPresent()) {
+        try {
+            Optional<Supplier> supplierOpt = supplierService.getById(id);
+            if (supplierOpt.isPresent()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "Thông tin nhà cung cấp");
+                response.put("data", supplierOpt.get());
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "Không tìm thấy nhà cung cấp với ID: " + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        } catch (RuntimeException e) {
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Thông tin nhà cung cấp");
-            response.put("data", supplierOpt.get());
-            return ResponseEntity.ok(response);
-        } else {
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Không tìm thấy nhà cung cấp với ID: " + id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
@@ -64,7 +70,7 @@ public class SupplierController {
         } catch (RuntimeException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
@@ -86,21 +92,27 @@ public class SupplierController {
         } catch (RuntimeException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
     @Operation(summary = "Xóa nhà cung cấp theo ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        boolean deleted = supplierService.delete(id);
-        Map<String, Object> response = new HashMap<>();
-        if (deleted) {
-            response.put("message", "Xóa nhà cung cấp thành công");
-            return ResponseEntity.ok(response);
-        } else {
-            response.put("message", "Không tìm thấy nhà cung cấp với ID: " + id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        try {
+            boolean deleted = supplierService.delete(id);
+            Map<String, Object> response = new HashMap<>();
+            if (deleted) {
+                response.put("message", "Xóa nhà cung cấp thành công");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("message", "Không tìm thấy nhà cung cấp với ID: " + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 }

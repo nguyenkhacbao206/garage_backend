@@ -38,8 +38,8 @@ public class AuthService {
        User user = new User(
         request.getUsername(),
         request.getEmail(),
-        passwordEncoder.encode(request.getPassword()),
-        "ROLE_USER"
+        passwordEncoder.encode(request.getPassword())
+        // "ROLE_USER"
         );
 
         return userRepository.save(user);
