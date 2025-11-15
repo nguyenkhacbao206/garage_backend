@@ -103,4 +103,24 @@ public class CarController {
             throw new RuntimeException("Lỗi khi xóa xe: " + e.getMessage());
         }
     }
+
+
+        //  Search xe theo biển số theo customerCode
+    @Operation(summary = "Tìm xe theo biển số nhưng chỉ trong 1 khách hàng (customerCode)")
+    @GetMapping("/search")
+    public ResponseEntity<?> search(
+            @RequestParam String plate,
+            @RequestParam String customerCode
+    ) {
+        try {
+            return ResponseEntity.ok(
+                carService.searchCarsByPlateAndCustomerCode(plate, customerCode)
+            );
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi tìm kiếm xe: " + e.getMessage());
+        }
+    }
+
 }

@@ -100,7 +100,7 @@ public class CarService {
         carRepository.deleteById(id);
     }
 
-    // Kiểm tra biển số hợp lệ + ID khách hàng
+    // Kiểm tra biển số hợp lệ, ID khách hàng
     private void validateCarRequest(CarRequest request) {
         if (request.getCustomerId() == null || request.getCustomerId().isEmpty()) {
             throw new RuntimeException("Thiếu customerId khi tạo xe!");
@@ -113,7 +113,18 @@ public class CarService {
         }
     }
 
-    // Convert entity → response DTO
+    // Tìm xe theo biển số theo customerCode
+    public List<CarResponse> searchCarsByPlateAndCustomerCode(String plate, String customerCode) {
+        return carRepository.findAll().stream()
+                .filter(car -> car.getCustomerCode() != null && car.getCustomerCode().equalsIgnoreCase(customerCode.trim()))
+                .filter(car -> car.getPlate() != null && car.getPlate().equalsIgnoreCase(plate.trim()))
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+
+
+    // Convert entity , response DTO
     private CarResponse convertToResponse(Car car) {
         CarResponse res = new CarResponse();
         res.setId(car.getId());
