@@ -7,8 +7,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.ServiceResponse;
 import com.example.demo.dto.SupplierRequest;
+import com.example.demo.dto.SupplierResponse;
 import com.example.demo.entity.Customer;
+import com.example.demo.entity.GarageService;
 import com.example.demo.entity.Supplier;
 import com.example.demo.repository.SupplierRepository;
 
@@ -24,6 +27,35 @@ public class SupplierService {
             return supplierRepository.findByNameContainingIgnoreCase(name);
         }
         return supplierRepository.findAll();
+    }
+    
+    public List<Supplier> searchSuppliers(String supplierCode , String name) {
+        boolean hasCode = supplierCode != null && !supplierCode.isEmpty();
+        boolean hasName = name != null && !name.isEmpty();
+
+        if (!hasName&& !hasCode) {
+            return supplierRepository.findAll();
+        }
+
+    // Chỉ code
+    if (hasCode) {
+        return supplierRepository.findBysupplierCodeContainingIgnoreCase(supplierCode);
+    }
+
+    // Chỉ name
+    return supplierRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    private SupplierResponse convertToResponse(Supplier supplier) {
+    SupplierResponse response = new SupplierResponse();
+        response.setId(supplier.getId());
+        response.setSupplierCode(supplier.getSupplierCode());
+        response.setName(supplier.getName());
+        response.setAddress(supplier.getAddress());
+        response.setEmail(supplier.getEmail());
+        response.setPhone(supplier.getPhone());
+        response.setDescription(supplier.getDescription());
+        return response;
     }
 
     // Lấy supplier theo id
