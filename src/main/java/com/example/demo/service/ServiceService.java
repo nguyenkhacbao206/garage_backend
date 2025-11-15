@@ -29,19 +29,23 @@ public class ServiceService {
         boolean hasCode = serviceCode != null && !serviceCode.isEmpty();
         boolean hasName = name != null && !name.isEmpty();
 
-        if (!hasName) {
+        if (!hasName&& !hasCode) {
             return serviceRepository.findAll();
         }
 
-        return serviceRepository.findByServiceCodeContainingIgnoreCaseOrNameContainingIgnoreCase(
-            hasCode ? serviceCode : "",
-            hasName ? name : ""
-    );
+         // Chỉ code
+    if (hasCode) {
+        return serviceRepository.findByServiceCodeContainingIgnoreCase(serviceCode);
+    }
+
+    // Chỉ name
+    return serviceRepository.findByNameContainingIgnoreCase(name);
     }
 
     private ServiceResponse convertToResponse(GarageService service){
         ServiceResponse response = new ServiceResponse();
         response.setId(service.getId());
+        response.setServiceCode(service.getServiceCode());
         response.setName(service.getName());
         response.setDescription(service.getDescription());
         response.setPrice(service.getPrice());
@@ -72,6 +76,7 @@ public class ServiceService {
 
         GarageService service = new GarageService();
         service.setName(request.getName());
+        service.setServiceCode(request.getServiceCode());
         service.setDescription(request.getDescription());
         service.setPrice(request.getPrice());
 

@@ -17,7 +17,7 @@ public interface ServiceRepository extends MongoRepository<GarageService, String
     //tìm kiếm riêng lẻ từng trường
     List<GarageService> findByNameContainingIgnoreCase(String name);
 
-    List<GarageService> findByServiceCode(String serviceCode);
+    List<GarageService> findByServiceCodeContainingIgnoreCase(String serviceCode);
     
     // Tìm kiếm theo nhiều trường cùng lúc
     List<GarageService> findByServiceCodeContainingIgnoreCaseOrNameContainingIgnoreCase(
