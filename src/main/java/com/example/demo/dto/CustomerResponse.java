@@ -28,10 +28,16 @@ public class CustomerResponse {
     }
 
     // getters / setters
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    public String getMessage() { 
+        return message; 
+    }
+    public void setMessage(String message) { 
+        this.message = message; 
+    }
 
-    public Object getData() { return data; }
+    public Object getData() { 
+        return data; 
+    }
     public void setData(Object data) {
         this.data = data;
         if (data instanceof com.example.demo.entity.Customer) {
@@ -39,6 +45,10 @@ public class CustomerResponse {
         }
     }
 
-    public String getCustomerCode() { return customerCode; }
-    public void setCustomerCode(String customerCode) { this.customerCode = customerCode; }
+    public String getCustomerCode() { 
+        return customerCode; 
+    }
+    public void setCustomerCode(String customerCode) { 
+        this.customerCode = customerCode; 
+    }
 }
