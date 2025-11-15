@@ -9,4 +9,10 @@ public interface CarRepository extends MongoRepository<Car, String> {
 
     // kiểm tra trùng biển
     boolean existsByPlate(String plate);
+
+     // Tìm theo biển số (search keyword)
+    List<Car> findByPlateContainingIgnoreCase(String plate);
+
+    // Tìm theo biển số trong phạm vi 1 khách hàng (customerCode)
+    List<Car> findByPlateContainingIgnoreCaseAndCustomerCode(String plate, String customerCode);
 }
