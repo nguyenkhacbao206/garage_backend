@@ -32,7 +32,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // Bỏ qua đăng ký / login
+        // Bỏ qua /api/auth (login, register, refresh)
         if (path.startsWith("/api/auth")) {
             filterChain.doFilter(request, response);
             return;
@@ -44,7 +44,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtService.extractUsername(token);
+
+            try {
+                username = jwtService.extractUsername(token);
+            } catch (Exception e) {
+                username = null; // Token hết hạn hoặc sai , tránh crash filter
+            }
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -53,11 +58,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 UserDetails userDetails = org.springframework.security.core.userdetails.User
                         .withUsername(appUser.getEmail())
                         .password(appUser.getPassword())
-                        // .authorities(appUser.getRole())
                         .build();
 
                 UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities()
+                        );
+
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

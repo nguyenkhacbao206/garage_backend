@@ -38,6 +38,7 @@ public class AuthService {
        User user = new User(
         request.getUsername(),
         request.getEmail(),
+        request.getPhonenumber(),
         passwordEncoder.encode(request.getPassword())
         // "ROLE_USER"
         );
@@ -60,6 +61,12 @@ public class AuthService {
         String accessToken = jwtService.generateAccessToken(user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
-        return new AuthResponse(accessToken, refreshToken);
+        return new AuthResponse(
+            user.getUsername(),
+            user.getEmail(),
+            user.getPhonenumber(),
+            accessToken, 
+            refreshToken
+            );
     }
 }
