@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.SupplierRequest;
 import com.example.demo.entity.Supplier;
 import com.example.demo.service.SupplierService;
@@ -9,9 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -30,10 +29,9 @@ public class SupplierController {
     @GetMapping
     public ResponseEntity<?> getAll(@RequestParam(required = false) String name) {
         List<Supplier> suppliers = supplierService.getAll(name);
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Danh sách nhà cung cấp");
-        response.put("data", suppliers);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                new ApiResponse<>("Danh sách nhà cung cấp", suppliers)
+        );
     }
 
     @Operation(summary = "Lấy nhà cung cấp theo ID")
@@ -42,19 +40,16 @@ public class SupplierController {
         try {
             Optional<Supplier> supplierOpt = supplierService.getById(id);
             if (supplierOpt.isPresent()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("message", "Thông tin nhà cung cấp");
-                response.put("data", supplierOpt.get());
-                return ResponseEntity.ok(response);
-            } else {
-                Map<String, Object> response = new HashMap<>();
-                response.put("message", "Không tìm thấy nhà cung cấp với ID: " + id);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                return ResponseEntity.ok(
+                        new ApiResponse<>("Thông tin nhà cung cấp", supplierOpt.get())
+                );
             }
-        } catch (RuntimeException e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("Không tìm thấy nhà cung cấp với ID: " + id, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(e.getMessage(), null));
         }
     }
 
@@ -63,36 +58,33 @@ public class SupplierController {
     public ResponseEntity<?> create(@RequestBody SupplierRequest request) {
         try {
             Supplier created = supplierService.create(request);
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Tạo nhà cung cấp thành công");
-            response.put("data", created);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (RuntimeException e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ApiResponse<>("Tạo nhà cung cấp thành công", created));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(e.getMessage(), null));
         }
     }
 
     @Operation(summary = "Cập nhật nhà cung cấp theo ID")
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable String id, @RequestBody SupplierRequest request) {
+    public ResponseEntity<?> update(@PathVariable String id,
+                                    @RequestBody SupplierRequest request) {
         try {
             Optional<Supplier> updatedOpt = supplierService.update(id, request);
+
             if (updatedOpt.isPresent()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("message", "Cập nhật nhà cung cấp thành công");
-                response.put("data", updatedOpt.get());
-                return ResponseEntity.ok(response);
-            } else {
-                Map<String, Object> response = new HashMap<>();
-                response.put("message", "Không tìm thấy nhà cung cấp với ID: " + id);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                return ResponseEntity.ok(
+                        new ApiResponse<>("Cập nhật nhà cung cấp thành công", updatedOpt.get())
+                );
             }
-        } catch (RuntimeException e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("Không tìm thấy nhà cung cấp với ID: " + id, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(e.getMessage(), null));
         }
     }
 
@@ -101,18 +93,15 @@ public class SupplierController {
     public ResponseEntity<?> delete(@PathVariable String id) {
         try {
             boolean deleted = supplierService.delete(id);
-            Map<String, Object> response = new HashMap<>();
             if (deleted) {
-                response.put("message", "Xóa nhà cung cấp thành công");
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("message", "Không tìm thấy nhà cung cấp với ID: " + id);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                return ResponseEntity.ok(new ApiResponse<>("Xóa nhà cung cấp thành công", null));
             }
-        } catch (RuntimeException e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("Không tìm thấy nhà cung cấp với ID: " + id, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(e.getMessage(), null));
         }
     }
 }

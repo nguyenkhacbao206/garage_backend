@@ -2,6 +2,7 @@ package com.example.demo.dto;
 
 public class SupplierRequest {
     private String name;
+    private String supplierCode;
     private String address;
     private String email;
     private String phone;
@@ -9,8 +10,9 @@ public class SupplierRequest {
 
     public SupplierRequest() {}
 
-    public SupplierRequest(String name, String address, String email, String phone, String description) {
+    public SupplierRequest(String name,String supplierCode ,String address, String email, String phone, String description) {
         this.name = name;
+        this.supplierCode=supplierCode;
         this.address = address;
         this.email = email;
         this.phone = phone;
@@ -24,6 +26,14 @@ public class SupplierRequest {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getSupplierCode(){
+        return supplierCode;
+    }
+
+    public void setSupplierCode(String supplierCode){
+        this.supplierCode=supplierCode;
     }
 
     public String getAddress() {
