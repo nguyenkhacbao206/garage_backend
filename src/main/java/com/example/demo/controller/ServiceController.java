@@ -3,13 +3,17 @@ package com.example.demo.controller;
 import com.example.demo.dto.ServiceRequest;
 import com.example.demo.dto.ServiceResponse;
 import com.example.demo.service.ServiceService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+
+import com.example.demo.entity.GarageService;
 
 @RestController
 @RequestMapping("/api/services")
@@ -18,6 +22,22 @@ import java.util.Optional;
 public class ServiceController {
 
     private final ServiceService serviceService;
+
+    @Operation(summary = "Tìm kiếm dịch vụ theo mã dịch vụ hoặc tên")
+@GetMapping("/search")
+public ResponseEntity<?> search(
+        @RequestParam(required = false) String serviceCode,
+        @RequestParam(required = false) String name
+) {
+    try {
+        List<GarageService> results = serviceService.searchServices(serviceCode, name);
+        return ResponseEntity.ok(results);
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+        return ResponseEntity.internalServerError().body("Lỗi khi tìm kiếm dịch vụ: " + e.getMessage());
+    }
+}
 
     public ServiceController(ServiceService serviceService){
         this.serviceService = serviceService;

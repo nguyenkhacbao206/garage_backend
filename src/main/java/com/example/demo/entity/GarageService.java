@@ -10,14 +10,16 @@ public class GarageService {
 
     @Id
     private String id;
+    private String serviceCode;
     private String name;
     private String description;
     private BigDecimal price;
 
     public GarageService() {}
 
-    public GarageService(String id, String name, String description, BigDecimal price) {
+    public GarageService(String id,String serviceCode ,String name, String description, BigDecimal price) {
         this.id = id;
+        this.serviceCode=serviceCode;
         this.name = name;
         this.description = description;
         this.price = price;
@@ -29,6 +31,14 @@ public class GarageService {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getServiceCode(){
+        return serviceCode;
+    }
+
+    public void setServiceCode(String serviceCode){
+        this.serviceCode=serviceCode;
     }
 
     public String getName() {
