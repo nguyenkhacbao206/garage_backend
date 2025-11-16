@@ -7,6 +7,7 @@ import com.example.demo.repository.TechnicianRepository;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,19 +42,31 @@ public class TechnicianService {
                 .collect(Collectors.toList());
     }
 
-    // search theo mọi trường
-    public List<TechnicianResponse> search(String keyword) {
-
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return getAll(); 
+    // Search technicians
+    public List<TechnicianResponse> search(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return getAll();
         }
 
-        List<Technician> list = technicianRepository
-                .findByTechCodeContainingIgnoreCaseOrNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(
-                        keyword, keyword, keyword
-                );
+        String[] tokens = input.toLowerCase().split("[^a-z0-9À-ỹ]+");
+        List<Technician> all = technicianRepository.findAll();
+        List<Technician> matched = new ArrayList<>();
 
-        return list.stream().map(this::toResponse).collect(Collectors.toList());
+        for (Technician t : all) {
+            String code = t.getTechCode() != null ? t.getTechCode().toLowerCase() : "";
+            String name = t.getName() != null ? t.getName().toLowerCase() : "";
+            String phone = t.getPhone() != null ? t.getPhone().toLowerCase() : "";
+
+            for (String token : tokens) {
+                if (token.isEmpty()) continue;
+                if (code.contains(token) || name.contains(token) || phone.contains(token)) {
+                    matched.add(t);
+                    break;
+                }
+            }
+        }
+
+        return matched.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     public TechnicianResponse create(TechnicianRequest req) {
@@ -62,7 +75,6 @@ public class TechnicianService {
         }
 
         Technician t = new Technician();
-
         t.setTechCode(generateTechCode());
         t.setName(req.getName());
         t.setPhone(req.getPhone());

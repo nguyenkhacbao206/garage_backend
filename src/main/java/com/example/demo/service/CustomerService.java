@@ -5,16 +5,21 @@ import com.example.demo.entity.Car;
 import com.example.demo.entity.Customer;
 import com.example.demo.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class CustomerService {
 
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     // Get all customers or filter by name
     public List<Customer> getAll(String name) {
@@ -24,30 +29,52 @@ public class CustomerService {
         return customerRepository.findAll();
     }
 
-    // Advanced search by name, phone, email
-    public List<Customer> searchCustomers(String customerCode , String name, String phone, String email) {
-        boolean hasCode = customerCode != null && !customerCode.isEmpty();
-        boolean hasName = name != null && !name.isEmpty();
-        boolean hasPhone = phone != null && !phone.isEmpty();
-        boolean hasEmail = email != null && !email.isEmpty();
-
-        // If no search criteria, return all customers
-        if (!hasName && !hasPhone && !hasEmail) {
+    // Search customers
+    public List<Customer> searchCustomers(String input) {
+        if (input == null || input.trim().isEmpty()) {
             return customerRepository.findAll();
         }
 
-        // Search by any of the provided fields
-        return customerRepository.findByCustomerCodeContainingIgnoreCaseOrNameContainingIgnoreCaseOrPhoneContainingOrEmailContainingIgnoreCase(
-            hasCode ? customerCode : "",
-            hasName ? name : "",
-            hasPhone ? phone : "",
-            hasEmail ? email : ""
-    );
+        // Tách input thành các token, chỉ giữ chữ và số
+        String[] tokens = input.toLowerCase().split("[^a-z0-9À-ỹ]+");
+
+        List<Customer> all = customerRepository.findAll();
+        List<Customer> matched = new ArrayList<>();
+
+        for (Customer c : all) {
+            String code = c.getCustomerCode() != null ? c.getCustomerCode().toLowerCase() : "";
+            String name = c.getName() != null ? c.getName().toLowerCase() : "";
+            String phone = c.getPhone() != null ? c.getPhone().toLowerCase() : "";
+            String email = c.getEmail() != null ? c.getEmail().toLowerCase() : "";
+
+            for (String token : tokens) {
+                if (token.isEmpty()) continue;
+
+                if (code.contains(token) || name.contains(token) || phone.contains(token) || email.contains(token)) {
+                    matched.add(c);
+                    break;
+                }
+            }
+        }
+
+        return matched;
     }
 
     // Get customer by ID
     public Optional<Customer> getById(String id) {
         return customerRepository.findById(id);
+    }
+
+    private String generateCustomerCode() {
+        Customer last = customerRepository.findTopByOrderByCustomerCodeDesc();
+        if (last == null || last.getCustomerCode() == null) {
+            return "KH-001";
+        }
+        String lastCode = last.getCustomerCode();
+        int number = Integer.parseInt(lastCode.replace("KH-", ""));
+        number += 1;
+        int digits = Math.max(3, String.valueOf(number).length());
+        return String.format("KH-%0" + digits + "d", number);
     }
 
     // Create a new customer
@@ -65,14 +92,7 @@ public class CustomerService {
         c.setEmail(request.getEmail());
         c.setAddress(request.getAddress());
         c.setNote(request.getNote());
-
-        // Generate a random customer code, ensure uniqueness
-        String randomCode;
-        do {
-            randomCode = String.format("KH-%03d", ThreadLocalRandom.current().nextInt(0, 1000));
-        } while (customerRepository.existsByCustomerCode(randomCode));
-
-        c.setCustomerCode(randomCode);
+        c.setCustomerCode(generateCustomerCode());
 
         return customerRepository.save(c);
     }
@@ -83,19 +103,16 @@ public class CustomerService {
         if (existing.isPresent()) {
             Customer c = existing.get();
 
-            // Validate unique phone
             if (request.getPhone() != null && !request.getPhone().equals(c.getPhone())
                     && customerRepository.existsByPhone(request.getPhone())) {
                 throw new RuntimeException("Phone number already exists!");
             }
 
-            // Validate unique email
             if (request.getEmail() != null && !request.getEmail().equals(c.getEmail())
                     && customerRepository.existsByEmail(request.getEmail())) {
                 throw new RuntimeException("Email already exists!");
             }
 
-            // Update fields if provided
             if (request.getName() != null) c.setName(request.getName());
             if (request.getPhone() != null) c.setPhone(request.getPhone());
             if (request.getEmail() != null) c.setEmail(request.getEmail());

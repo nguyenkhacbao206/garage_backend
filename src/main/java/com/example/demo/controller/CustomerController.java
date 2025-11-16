@@ -29,22 +29,17 @@ public class CustomerController {
             List<Customer> list = customerService.getAll(name);
             return ResponseEntity.ok(new CustomerResponse("Lấy danh sách khách hàng thành công", list));
         } catch (RuntimeException e) {
-            throw e; // ném ra để GlobalExceptionHandler xử lý
+            throw e; 
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi lấy danh sách khách hàng: " + e.getMessage());
         }
     }
 
-    @Operation(summary = "Tìm kiếm khách hàng nâng cao theo tên, số điện thoại, email")
+    @Operation(summary = "Tìm kiếm khách hàng nâng cao theo keyword (mã, tên, điện thoại, email)")
     @GetMapping("/search")
-    public ResponseEntity<?> search(
-            @RequestParam(required = false) String customerCode,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String phone,
-            @RequestParam(required = false) String email
-    ) {
+    public ResponseEntity<?> search(@RequestParam String keyword) {
         try {
-            List<Customer> results = customerService.searchCustomers(customerCode, name, phone, email);
+            List<Customer> results = customerService.searchCustomers(keyword);
             return ResponseEntity.ok(new CustomerResponse("Kết quả tìm kiếm", results));
         } catch (RuntimeException e) {
             throw e;
