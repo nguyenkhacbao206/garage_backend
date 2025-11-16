@@ -30,4 +30,6 @@ public interface CustomerRepository extends MongoRepository<Customer, String> {
     boolean existsByPhone(String phone);
 
     boolean existsByEmail(String email);
+
+    Customer findTopByOrderByCustomerCodeDesc();
 }
