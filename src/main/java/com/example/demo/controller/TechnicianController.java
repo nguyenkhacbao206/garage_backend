@@ -32,18 +32,40 @@ public class TechnicianController {
             List<TechnicianResponse> list = technicianService.getAll();
             return ResponseEntity.ok(new ApiResponse<>("Lấy danh sách thành công", list));
         } catch (Exception ex) {
-            // Log lỗi, sau đó ném lên GlobalExceptionHandler
             System.err.println("Lỗi lấy danh sách kỹ thuật viên: " + ex.getMessage());
             throw ex;
         }
     }
 
+    @GetMapping("/search")
+    @Operation(summary = "Tìm kiếm kỹ thuật viên theo mã, tên hoặc số điện thoại")
+    public ResponseEntity<ApiResponse<List<TechnicianResponse>>> search(
+            @RequestParam(required = false) String keyword) {
+
+        try {
+            List<TechnicianResponse> results = technicianService.search(keyword);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Tìm kiếm thành công",
+                    results
+            ));
+        } catch (Exception ex) {
+            System.err.println("Lỗi tìm kiếm kỹ thuật viên: " + ex.getMessage());
+            return ResponseEntity.badRequest().body(
+                    new ApiResponse<>("Lỗi tìm kiếm: " + ex.getMessage(), null)
+            );
+        }
+    }
+
     @PostMapping
     @Operation(summary = "Tạo kỹ thuật viên")
-    public ResponseEntity<ApiResponse<TechnicianResponse>> create(@Valid @RequestBody TechnicianRequest req) {
+    public ResponseEntity<ApiResponse<TechnicianResponse>> create(
+            @Valid @RequestBody TechnicianRequest req) {
         try {
             TechnicianResponse response = technicianService.create(req);
-            return ResponseEntity.ok(new ApiResponse<>("Tạo thành công", response));
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Tạo thành công",
+                    response
+            ));
         } catch (DuplicateKeyException dx) {
             System.err.println("Duplicate key khi tạo kỹ thuật viên: " + dx.getMessage());
             throw dx;
@@ -60,7 +82,10 @@ public class TechnicianController {
             @Valid @RequestBody TechnicianRequest req) {
         try {
             TechnicianResponse response = technicianService.update(id, req);
-            return ResponseEntity.ok(new ApiResponse<>("Cập nhật thành công", response));
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Cập nhật thành công",
+                    response
+            ));
         } catch (DuplicateKeyException dx) {
             System.err.println("Duplicate key khi cập nhật kỹ thuật viên: " + dx.getMessage());
             throw dx;
@@ -75,7 +100,10 @@ public class TechnicianController {
     public ResponseEntity<ApiResponse<String>> delete(@PathVariable String id) {
         try {
             technicianService.delete(id);
-            return ResponseEntity.ok(new ApiResponse<>("Xóa thành công", null));
+            return ResponseEntity.ok(new ApiResponse<>(
+                    "Xóa thành công",
+                    null
+            ));
         } catch (Exception ex) {
             System.err.println("Lỗi xóa kỹ thuật viên: " + ex.getMessage());
             throw ex;

@@ -8,6 +8,7 @@ public class Technician {
 
     @Id
     private String id;
+    private String techCode; 
     private String name;
     private String phone;
     private Double salaryBase;
@@ -17,23 +18,19 @@ public class Technician {
 
     public Technician() {}
 
-    public Technician(String id, String name, String phone, Double salaryBase,
-                      String position, String userId, Boolean active) {
-        this.id = id;
-        this.name = name;
-        this.phone = phone;
-        this.salaryBase = salaryBase;
-        this.position = position;
-        this.userId = userId;
-        this.active = active;
-    }
-
-    // Getter và Setter
+    // Getter & Setter
     public String getId() { 
         return id; 
     }
     public void setId(String id) { 
         this.id = id; 
+    }
+
+    public String getTechCode() { 
+        return techCode; 
+    }
+    public void setTechCode(String techCode) { 
+        this.techCode = techCode; 
     }
 
     public String getName() { 

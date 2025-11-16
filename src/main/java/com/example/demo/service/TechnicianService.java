@@ -19,11 +19,41 @@ public class TechnicianService {
         this.technicianRepository = technicianRepository;
     }
 
+    // tạo mã tự động
+    private String generateTechCode() {
+        Technician last = technicianRepository.findTopByOrderByTechCodeDesc();
+
+        if (last == null || last.getTechCode() == null) {
+            return "TECH-001";
+        }
+
+        String lastCode = last.getTechCode();
+        int number = Integer.parseInt(lastCode.replace("TECH-", ""));
+        number += 1;
+
+        return String.format("TECH-%0" + Math.max(3, String.valueOf(number).length()) + "d", number);
+    }
+
     public List<TechnicianResponse> getAll() {
         return technicianRepository.findAll()
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    // search theo mọi trường
+    public List<TechnicianResponse> search(String keyword) {
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAll(); 
+        }
+
+        List<Technician> list = technicianRepository
+                .findByTechCodeContainingIgnoreCaseOrNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(
+                        keyword, keyword, keyword
+                );
+
+        return list.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     public TechnicianResponse create(TechnicianRequest req) {
@@ -32,6 +62,8 @@ public class TechnicianService {
         }
 
         Technician t = new Technician();
+
+        t.setTechCode(generateTechCode());
         t.setName(req.getName());
         t.setPhone(req.getPhone());
         t.setSalaryBase(req.getBaseSalary());
@@ -47,16 +79,15 @@ public class TechnicianService {
         Technician t = technicianRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy kỹ thuật viên với id: " + id));
 
-        if (req.getName() != null) t.setName(req.getName());
-        if (req.getPhone() != null) {
-            if (!req.getPhone().equals(t.getPhone()) && technicianRepository.existsByPhone(req.getPhone())) {
-                throw new DuplicateKeyException("Số điện thoại đã tồn tại");
-            }
-            t.setPhone(req.getPhone());
+        if (!req.getPhone().equals(t.getPhone()) && technicianRepository.existsByPhone(req.getPhone())) {
+            throw new DuplicateKeyException("Số điện thoại đã tồn tại");
         }
-        if (req.getBaseSalary() != null) t.setSalaryBase(req.getBaseSalary());
-        if (req.getPosition() != null) t.setPosition(req.getPosition());
-        if (req.getUserId() != null) t.setUserId(req.getUserId());
+
+        t.setName(req.getName());
+        t.setPhone(req.getPhone());
+        t.setSalaryBase(req.getBaseSalary());
+        t.setPosition(req.getPosition());
+        t.setUserId(req.getUserId());
 
         Technician saved = technicianRepository.save(t);
         return toResponse(saved);
@@ -72,6 +103,7 @@ public class TechnicianService {
     private TechnicianResponse toResponse(Technician t) {
         return new TechnicianResponse(
                 t.getId(),
+                t.getTechCode(),
                 t.getName(),
                 t.getPhone(),
                 t.getSalaryBase(),
