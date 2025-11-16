@@ -3,6 +3,7 @@ package com.example.demo.dto;
 public class TechnicianResponse {
 
     private String id;
+    private String techCode; 
     private String name;
     private String phone;
     private Double baseSalary;
@@ -12,9 +13,10 @@ public class TechnicianResponse {
 
     public TechnicianResponse() {}
 
-    public TechnicianResponse(String id, String name, String phone, Double baseSalary,
-                              String position, String userId, Boolean active) {
+    public TechnicianResponse(String id, String techCode, String name, String phone,
+                              Double baseSalary, String position, String userId, Boolean active) {
         this.id = id;
+        this.techCode = techCode;
         this.name = name;
         this.phone = phone;
         this.baseSalary = baseSalary;
@@ -29,6 +31,13 @@ public class TechnicianResponse {
     }
     public void setId(String id) { 
         this.id = id; 
+    }
+
+    public String getTechCode() { 
+        return techCode; 
+    }
+    public void setTechCode(String techCode) { 
+        this.techCode = techCode; 
     }
 
     public String getName() { 
