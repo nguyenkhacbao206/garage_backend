@@ -11,7 +11,7 @@ import com.example.demo.dto.ServiceResponse;
 import com.example.demo.dto.SupplierRequest;
 import com.example.demo.dto.SupplierResponse;
 import com.example.demo.entity.Customer;
-import com.example.demo.entity.GarageService;
+import com.example.demo.entity.Supplier;
 import com.example.demo.entity.Supplier;
 import com.example.demo.repository.SupplierRepository;
 
@@ -79,20 +79,27 @@ public class SupplierService {
         s.setPhone(request.getPhone());
         s.setDescription(request.getDescription());
 
-        // Tạo mã nhà cung cấp ngẫu nhiên (NCC-001)
-        long count = supplierRepository.count();
-        String randomCode;
-        do {
-            if(count <1000){
-                randomCode = String.format("DV-%03d", ThreadLocalRandom.current().nextInt(0, 1000));
-            }else{
-                randomCode = String.format("DV-%04d", ThreadLocalRandom.current().nextInt(0, 10000));
-            }
-        } while (supplierRepository.existsBySupplierCode(randomCode));
+        // Tạo mã nhà cung cấp (NCC-001)
+                Supplier lastSupplier = supplierRepository.findFirstByOrderBySupplierCodeDesc();
+        String newCode;
 
-        s.setSupplierCode(randomCode);
+        if (lastSupplier == null || lastSupplier.getSupplierCode() == null) {
+        newCode = "NCC-001";
+        } else {
+        String maxCode = lastSupplier.getSupplierCode();
+        //cắt phần chữ độc lấy số
+        String numberPart = maxCode.substring(4);
+        int number = Integer.parseInt(numberPart);
+        //tăng lên 1
+        number++;
+        //khi vượt quá 3 số vẫn tăng
+        newCode = "NCC-" + String.format("%03d", number);
+    }
 
-        return supplierRepository.save(s);
+    s.setSupplierCode(newCode);
+
+    return supplierRepository.save(s);
+
     }
 
     // Cập nhật supplier

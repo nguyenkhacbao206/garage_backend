@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SupplierRepository extends MongoRepository<Supplier, String> {
+        //  Lấy mã lớn nhất
+    Supplier findFirstByOrderBySupplierCodeDesc();
     //kiểm tra sdt và email của nhà cung cấp
     boolean existsByPhone(String phone);
     boolean existsByEmail(String email);

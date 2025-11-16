@@ -77,19 +77,25 @@ public class ServiceService {
         service.setDescription(request.getDescription());
         service.setPrice(request.getPrice());
         //tạo mã DV
-        long count = serviceRepository.count();
-        String randomCode;
-        do {
-            if( count < 1000){
-                randomCode = String.format("DV-%03d", ThreadLocalRandom.current().nextInt(0, 1000));
-            }else{
-                randomCode = String.format("DV-%04d", ThreadLocalRandom.current().nextInt(0, 10000));
-            }
-        } while (serviceRepository.existsByServiceCode(randomCode));
+        GarageService lastService = serviceRepository.findFirstByOrderByServiceCodeDesc();
+        String newCode;
 
-        service.setServiceCode(randomCode);
+        if (lastService == null || lastService.getServiceCode() == null) {
+        newCode = "DV-001";
+        } else {
+        String maxCode = lastService.getServiceCode();
+        //cắt phần chữ độc lấy số
+        String numberPart = maxCode.substring(3);
+        int number = Integer.parseInt(numberPart);
+        //tăng lên 1
+        number++;
+        //khi vượt quá 3 số vẫn tăng
+        newCode = "DV-" + String.format("%03d", number);
+    }
 
-        return serviceRepository.save(service);
+    service.setServiceCode(newCode);
+
+    return serviceRepository.save(service);
 
     }
 
