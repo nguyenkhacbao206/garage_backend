@@ -1,18 +1,16 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ServiceRequest;
-import com.example.demo.dto.ServiceResponse;
-import com.example.demo.entity.Customer;
-import com.example.demo.entity.GarageService;
-import com.example.demo.entity.Supplier;
-import com.example.demo.repository.ServiceRepository;
-
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.example.demo.dto.ServiceRequest;
+import com.example.demo.dto.ServiceResponse;
+import com.example.demo.entity.GarageService;
+import com.example.demo.repository.ServiceRepository;
 
 @Service
 public class ServiceService {
@@ -68,7 +66,7 @@ public class ServiceService {
     }
 
     // Tạo dịch vụ mới
-    public ServiceResponse createService(ServiceRequest request) {
+    public GarageService createService(ServiceRequest request) {
 
         if (serviceRepository.existsByName(request.getName())) {
             throw new RuntimeException("Tên dịch vụ đã tồn tại!");
@@ -76,11 +74,23 @@ public class ServiceService {
 
         GarageService service = new GarageService();
         service.setName(request.getName());
-        service.setServiceCode(request.getServiceCode());
         service.setDescription(request.getDescription());
         service.setPrice(request.getPrice());
+        //tạo mã DV
+        long count = serviceRepository.count();
+        String randomCode;
+        do {
+            if( count < 1000){
+                randomCode = String.format("DV-%03d", ThreadLocalRandom.current().nextInt(0, 1000));
+            }else{
+                randomCode = String.format("DV-%04d", ThreadLocalRandom.current().nextInt(0, 10000));
+            }
+        } while (serviceRepository.existsByServiceCode(randomCode));
 
-        return convertToResponse(serviceRepository.save(service));
+        service.setServiceCode(randomCode);
+
+        return serviceRepository.save(service);
+
     }
 
     // Cập nhật dịch vụ
