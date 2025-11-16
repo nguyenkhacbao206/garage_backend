@@ -80,9 +80,14 @@ public class SupplierService {
         s.setDescription(request.getDescription());
 
         // Tạo mã nhà cung cấp ngẫu nhiên (NCC-001)
+        long count = supplierRepository.count();
         String randomCode;
         do {
-            randomCode = String.format("NCC-%03d", ThreadLocalRandom.current().nextInt(0, 1000));
+            if(count <1000){
+                randomCode = String.format("DV-%03d", ThreadLocalRandom.current().nextInt(0, 1000));
+            }else{
+                randomCode = String.format("DV-%04d", ThreadLocalRandom.current().nextInt(0, 10000));
+            }
         } while (supplierRepository.existsBySupplierCode(randomCode));
 
         s.setSupplierCode(randomCode);
