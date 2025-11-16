@@ -7,7 +7,8 @@ public class CarResponse {
     private String manufacturer;
     private String description;
     private String customerId;
-    private String customerCode; // Trả ra cho frontend hiển thị
+    private String customerCode; 
+    private boolean active; 
 
     public CarResponse() {}
 
@@ -33,7 +34,7 @@ public class CarResponse {
     }
 
     public String getManufacturer() { 
-        return manufacturer; 
+        return manufacturer;
     }
     public void setManufacturer(String manufacturer) { 
         this.manufacturer = manufacturer; 
@@ -50,7 +51,7 @@ public class CarResponse {
         return customerId; 
     }
     public void setCustomerId(String customerId) { 
-        this.customerId = customerId; 
+        this.customerId = customerId;
     }
 
     public String getCustomerCode() { 
@@ -58,5 +59,12 @@ public class CarResponse {
     }
     public void setCustomerCode(String customerCode) { 
         this.customerCode = customerCode; 
+    }
+
+    public boolean isActive() { 
+        return active; 
+    }
+    public void setActive(boolean active) { 
+        this.active = active; 
     }
 }
