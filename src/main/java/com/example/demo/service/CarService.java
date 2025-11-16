@@ -47,7 +47,7 @@ public class CarService {
                 .collect(Collectors.toList());
     }
 
-    // Thêm xe mới (auto lấy customerCode từ customer)
+    // Thêm xe mới 
     public CarResponse createCar(CarRequest request) {
         validateCarRequest(request);
 
@@ -61,6 +61,7 @@ public class CarService {
         car.setDescription(request.getDescription());
         car.setCustomerId(customer.getId());
         car.setCustomerCode(customer.getCustomerCode());
+        car.setActive(request.getActive() != null ? request.getActive() : false); // mặc định false
 
         return convertToResponse(carRepository.save(car));
     }
@@ -87,6 +88,11 @@ public class CarService {
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + request.getCustomerId()));
             car.setCustomerId(newCustomer.getId());
             car.setCustomerCode(newCustomer.getCustomerCode());
+        }
+
+        // Cập nhật trạng thái active nếu có
+        if (request.getActive() != null) {
+            car.setActive(request.getActive());
         }
 
         return convertToResponse(carRepository.save(car));
@@ -122,9 +128,7 @@ public class CarService {
                 .collect(Collectors.toList());
     }
 
-
-
-    // Convert entity , response DTO
+    // Convert entity -> DTO
     private CarResponse convertToResponse(Car car) {
         CarResponse res = new CarResponse();
         res.setId(car.getId());
@@ -134,6 +138,7 @@ public class CarService {
         res.setDescription(car.getDescription());
         res.setCustomerId(car.getCustomerId());
         res.setCustomerCode(car.getCustomerCode());
+        res.setActive(car.isActive());
         return res;
     }
 }

@@ -64,7 +64,7 @@ public class CarController {
         }
     }
 
-    // Thêm xe mới (auto lấy customerCode từ customer)
+    // Thêm xe mới
     @Operation(summary = "Thêm xe mới")
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CarRequest request) {

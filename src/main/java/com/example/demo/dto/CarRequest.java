@@ -5,7 +5,8 @@ public class CarRequest {
     private String model;
     private String manufacturer;
     private String description;
-    private String customerId; // Dùng để tra customerCode tự động
+    private String customerId; 
+    private Boolean active;    
 
     public CarRequest() {}
 
@@ -42,5 +43,12 @@ public class CarRequest {
     }
     public void setCustomerId(String customerId) { 
         this.customerId = customerId; 
+    }
+
+    public Boolean getActive() { 
+        return active; 
+    }
+    public void setActive(Boolean active) { 
+        this.active = active; 
     }
 }
