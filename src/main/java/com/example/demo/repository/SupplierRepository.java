@@ -22,10 +22,10 @@ public interface SupplierRepository extends MongoRepository<Supplier, String> {
     //tìm kiếm riêng lẻ từng trường
     List<Supplier> findByNameContainingIgnoreCase(String name);
 
-    List<Supplier> findBysupplierCodeContainingIgnoreCase(String supplierCode);
+    List<Supplier> findBySupplierCodeContainingIgnoreCase(String supplierCode);
     
     // Tìm kiếm theo nhiều trường cùng lúc
     List<Supplier> findBySupplierCodeContainingIgnoreCaseOrNameContainingIgnoreCase(
-            String supplierCode, String name);
+        String supplierCode, String name);
 
 }

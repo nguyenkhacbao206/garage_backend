@@ -1,17 +1,28 @@
 package com.example.demo.controller;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.SupplierRequest;
 import com.example.demo.entity.Supplier;
 import com.example.demo.service.SupplierService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/suppliers")
@@ -21,17 +32,24 @@ public class SupplierController {
 
     private final SupplierService supplierService;
 
+    @Operation(summary = "Tìm kiếm dịch vụ theo mã dịch vụ hoặc tên")
+@GetMapping("/search")
+public ResponseEntity<?> search(
+        @RequestParam(required = false) String supplierCode,
+        @RequestParam(required = false) String name
+) {
+    try {
+        List<Supplier> results = supplierService.searchSuppliers(supplierCode, name);
+        return ResponseEntity.ok(results);
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+        return ResponseEntity.internalServerError().body("Lỗi khi tìm kiếm dịch vụ: " + e.getMessage());
+    }
+}
+
     public SupplierController(SupplierService supplierService) {
         this.supplierService = supplierService;
-    }
-
-    @Operation(summary = "Lấy danh sách tất cả nhà cung cấp hoặc tìm theo tên")
-    @GetMapping
-    public ResponseEntity<?> getAll(@RequestParam(required = false) String name) {
-        List<Supplier> suppliers = supplierService.getAll(name);
-        return ResponseEntity.ok(
-                new ApiResponse<>("Danh sách nhà cung cấp", suppliers)
-        );
     }
 
     @Operation(summary = "Lấy nhà cung cấp theo ID")

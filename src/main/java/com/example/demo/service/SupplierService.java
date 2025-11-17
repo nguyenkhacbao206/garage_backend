@@ -36,10 +36,16 @@ public class SupplierService {
         if (!hasName&& !hasCode) {
             return supplierRepository.findAll();
         }
+        if (hasCode && hasName) {
+        return supplierRepository
+                .findBySupplierCodeContainingIgnoreCaseOrNameContainingIgnoreCase(
+                    supplierCode, name
+                );
+    }
 
     // Chỉ code
     if (hasCode) {
-        return supplierRepository.findBysupplierCodeContainingIgnoreCase(supplierCode);
+        return supplierRepository.findBySupplierCodeContainingIgnoreCase(supplierCode);
     }
 
     // Chỉ name
