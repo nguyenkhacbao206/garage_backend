@@ -27,7 +27,7 @@ public class Customer {
     private String address;
     private String note;
 
-    // Liên kết đến danh sách xe, dùng class Car riêng (entity Car.java)
+    // Liên kết đến danh sách xe, dùng class Car riêng
     private List<Car> cars = new ArrayList<>();
 
     // Getters & Setters

@@ -3,11 +3,9 @@ package com.example.demo.service;
 import com.example.demo.dto.CustomerRequest;
 import com.example.demo.entity.Car;
 import com.example.demo.entity.Customer;
+import com.example.demo.repository.CarRepository;
 import com.example.demo.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -19,38 +17,48 @@ public class CustomerService {
     private CustomerRepository customerRepository;
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private CarRepository carRepository;
 
-    // Get all customers or filter by name
+    // Lấy tất cả khách hàng, filter theo tên
     public List<Customer> getAll(String name) {
+        List<Customer> customers;
         if (name != null && !name.isEmpty()) {
-            return customerRepository.findByNameContainingIgnoreCase(name);
+            customers = customerRepository.findByNameContainingIgnoreCase(name);
+        } else {
+            customers = customerRepository.findAll();
         }
-        return customerRepository.findAll();
+
+        // Load danh sách xe cho từng customer
+        for (Customer c : customers) {
+            List<Car> cars = carRepository.findByCustomerId(c.getId());
+            c.setCars(cars);
+        }
+
+        return customers;
     }
 
-    // Search customers
+    // Tìm kiếm theo keyword 
     public List<Customer> searchCustomers(String input) {
         if (input == null || input.trim().isEmpty()) {
-            return customerRepository.findAll();
+            return getAll(null);
         }
 
-        // Tách input thành các token, chỉ giữ chữ và số
         String[] tokens = input.toLowerCase().split("[^a-z0-9À-ỹ]+");
-
         List<Customer> all = customerRepository.findAll();
         List<Customer> matched = new ArrayList<>();
 
         for (Customer c : all) {
-            String code = c.getCustomerCode() != null ? c.getCustomerCode().toLowerCase() : "";
-            String name = c.getName() != null ? c.getName().toLowerCase() : "";
-            String phone = c.getPhone() != null ? c.getPhone().toLowerCase() : "";
-            String email = c.getEmail() != null ? c.getEmail().toLowerCase() : "";
+            String code = Optional.ofNullable(c.getCustomerCode()).orElse("").toLowerCase();
+            String name = Optional.ofNullable(c.getName()).orElse("").toLowerCase();
+            String phone = Optional.ofNullable(c.getPhone()).orElse("").toLowerCase();
+            String email = Optional.ofNullable(c.getEmail()).orElse("").toLowerCase();
 
             for (String token : tokens) {
                 if (token.isEmpty()) continue;
-
                 if (code.contains(token) || name.contains(token) || phone.contains(token) || email.contains(token)) {
+                    // Load danh sách xe
+                    List<Car> cars = carRepository.findByCustomerId(c.getId());
+                    c.setCars(cars);
                     matched.add(c);
                     break;
                 }
@@ -60,9 +68,16 @@ public class CustomerService {
         return matched;
     }
 
-    // Get customer by ID
-    public Optional<Customer> getById(String id) {
-        return customerRepository.findById(id);
+    // Lấy customer theo ID kèm danh sách xe
+    public Optional<Customer> getByIdWithCars(String id) {
+        Optional<Customer> customerOpt = customerRepository.findById(id);
+        if (customerOpt.isPresent()) {
+            Customer customer = customerOpt.get();
+            List<Car> cars = carRepository.findByCustomerId(customer.getId());
+            customer.setCars(cars);
+            return Optional.of(customer);
+        }
+        return Optional.empty();
     }
 
     private String generateCustomerCode() {
@@ -77,7 +92,7 @@ public class CustomerService {
         return String.format("KH-%0" + digits + "d", number);
     }
 
-    // Create a new customer
+    // Thêm mới khách hàng
     public Customer create(CustomerRequest request) {
         if (customerRepository.existsByPhone(request.getPhone())) {
             throw new RuntimeException("Phone number already exists!");
@@ -94,10 +109,12 @@ public class CustomerService {
         c.setNote(request.getNote());
         c.setCustomerCode(generateCustomerCode());
 
-        return customerRepository.save(c);
+        Customer saved = customerRepository.save(c);
+        saved.setCars(new ArrayList<>());
+        return saved;
     }
 
-    // Update an existing customer
+    // Cập nhật customer
     public Optional<Customer> update(String id, CustomerRequest request) {
         Optional<Customer> existing = customerRepository.findById(id);
         if (existing.isPresent()) {
@@ -119,13 +136,18 @@ public class CustomerService {
             if (request.getAddress() != null) c.setAddress(request.getAddress());
             if (request.getNote() != null) c.setNote(request.getNote());
 
-            customerRepository.save(c);
-            return Optional.of(c);
+            Customer updated = customerRepository.save(c);
+
+            // Load danh sách xe
+            List<Car> cars = carRepository.findByCustomerId(updated.getId());
+            updated.setCars(cars);
+
+            return Optional.of(updated);
         }
         return Optional.empty();
     }
 
-    // Delete a customer by ID
+    // Xóa customer
     public boolean delete(String id) {
         if (customerRepository.existsById(id)) {
             customerRepository.deleteById(id);
@@ -134,16 +156,22 @@ public class CustomerService {
         return false;
     }
 
-    // Add a car to a customer
+    // Thêm xe mới cho customer
     public Optional<Car> addCar(String customerId, Car car) {
-        Optional<Customer> customerOpt = customerRepository.findById(customerId);
-        if (customerOpt.isPresent()) {
-            Customer customer = customerOpt.get();
-            car.setId(UUID.randomUUID().toString());
-            customer.getCars().add(car);
-            customerRepository.save(customer);
-            return Optional.of(car);
-        }
-        return Optional.empty();
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
+
+        car.setCustomerId(customer.getId());
+        car.setCustomerCode(customer.getCustomerCode());
+        car.setActive(true);
+
+        Car savedCar = carRepository.save(car);
+
+        // Cập nhật danh sách xe cho customer
+        List<Car> cars = carRepository.findByCustomerId(customer.getId());
+        customer.setCars(cars);
+        customerRepository.save(customer);
+
+        return Optional.of(savedCar);
     }
 }

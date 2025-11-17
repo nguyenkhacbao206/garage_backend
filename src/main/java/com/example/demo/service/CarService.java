@@ -25,29 +25,28 @@ public class CarService {
         this.customerRepository = customerRepository;
     }
 
-    // Lấy tất cả xe
+    // Get all cars
     public List<CarResponse> getAllCars() {
         return carRepository.findAll().stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    // Lấy xe theo ID
+    // Get car by ID
     public CarResponse getCarById(String id) {
         return carRepository.findById(id)
                 .map(this::convertToResponse)
                 .orElse(null);
     }
 
-    // Lấy xe theo customerId
+    // Get cars by customerId
     public List<CarResponse> getCarsByCustomerId(String customerId) {
-        return carRepository.findAll().stream()
-                .filter(car -> customerId.equals(car.getCustomerId()))
+        return carRepository.findByCustomerId(customerId).stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    // Thêm xe mới 
+    // Create car
     public CarResponse createCar(CarRequest request) {
         validateCarRequest(request);
 
@@ -61,17 +60,15 @@ public class CarService {
         car.setDescription(request.getDescription());
         car.setCustomerId(customer.getId());
         car.setCustomerCode(customer.getCustomerCode());
-        car.setActive(request.getActive() != null ? request.getActive() : false); // mặc định false
+        car.setActive(request.getActive() != null ? request.getActive() : false);
 
         return convertToResponse(carRepository.save(car));
     }
 
-    // Cập nhật xe
+    // Update car
     public CarResponse updateCar(String id, CarRequest request) {
         Car car = carRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + id));
-
-        validateCarRequest(request);
 
         if (!car.getPlate().equals(request.getPlate()) && carRepository.existsByPlate(request.getPlate())) {
             throw new RuntimeException("Biển số xe đã tồn tại!");
@@ -82,7 +79,6 @@ public class CarService {
         car.setManufacturer(request.getManufacturer());
         car.setDescription(request.getDescription());
 
-        // Nếu đổi customer thì cập nhật lại customerCode
         if (request.getCustomerId() != null && !request.getCustomerId().equals(car.getCustomerId())) {
             Customer newCustomer = customerRepository.findById(request.getCustomerId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + request.getCustomerId()));
@@ -90,7 +86,6 @@ public class CarService {
             car.setCustomerCode(newCustomer.getCustomerCode());
         }
 
-        // Cập nhật trạng thái active nếu có
         if (request.getActive() != null) {
             car.setActive(request.getActive());
         }
@@ -98,7 +93,7 @@ public class CarService {
         return convertToResponse(carRepository.save(car));
     }
 
-    // Xóa xe
+    // Delete car
     public void deleteCar(String id) {
         if (!carRepository.existsById(id)) {
             throw new RuntimeException("Không tìm thấy xe để xóa với ID: " + id);
@@ -106,7 +101,7 @@ public class CarService {
         carRepository.deleteById(id);
     }
 
-    // Kiểm tra biển số hợp lệ, ID khách hàng
+    // Validation
     private void validateCarRequest(CarRequest request) {
         if (request.getCustomerId() == null || request.getCustomerId().isEmpty()) {
             throw new RuntimeException("Thiếu customerId khi tạo xe!");
@@ -114,18 +109,6 @@ public class CarService {
         if (!request.getPlate().matches(PLATE_REGEX)) {
             throw new RuntimeException("Biển số xe không hợp lệ! (VD: 30A-12345)");
         }
-        if (carRepository.existsByPlate(request.getPlate())) {
-            throw new RuntimeException("Biển số xe đã tồn tại!");
-        }
-    }
-
-    // Tìm xe theo biển số theo customerCode
-    public List<CarResponse> searchCarsByPlateAndCustomerCode(String plate, String customerCode) {
-        return carRepository.findAll().stream()
-                .filter(car -> car.getCustomerCode() != null && car.getCustomerCode().equalsIgnoreCase(customerCode.trim()))
-                .filter(car -> car.getPlate() != null && car.getPlate().equalsIgnoreCase(plate.trim()))
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
     }
 
     // Convert entity -> DTO
