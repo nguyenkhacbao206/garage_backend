@@ -52,6 +52,22 @@ public ResponseEntity<?> search(
         this.supplierService = supplierService;
     }
 
+    @Operation(summary = "Lấy danh sách tất cả nhà cung cấp")
+    @GetMapping
+    public ResponseEntity<?> getAll() {
+        try {
+            List<Supplier> suppliers = supplierService.getAll();
+            return ResponseEntity.ok(
+                new ApiResponse<>("Danh sách nhà cung cấp", suppliers)
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse<>("Lỗi khi lấy danh sách: " + e.getMessage(), null));
+        }
+    }
+
+
     @Operation(summary = "Lấy nhà cung cấp theo ID")
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable String id) {

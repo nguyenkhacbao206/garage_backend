@@ -51,6 +51,11 @@ public class SupplierService {
     // Chỉ name
     return supplierRepository.findByNameContainingIgnoreCase(name);
     }
+    
+    public List<Supplier> getAll() {
+        return supplierRepository.findAll();
+    }
+
 
     private SupplierResponse convertToResponse(Supplier supplier) {
     SupplierResponse response = new SupplierResponse();
