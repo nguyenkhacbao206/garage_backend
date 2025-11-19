@@ -50,6 +50,11 @@ public class CarService {
     public CarResponse createCar(CarRequest request) {
         validateCarRequest(request);
 
+        // Kiểm tra biển số xe đã tồn tại chưa
+        if (carRepository.existsByPlate(request.getPlate())) {
+            throw new RuntimeException("Biển số xe đã tồn tại!");
+        }
+
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + request.getCustomerId()));
 
@@ -64,6 +69,7 @@ public class CarService {
 
         return convertToResponse(carRepository.save(car));
     }
+
 
     // Update car
     public CarResponse updateCar(String id, CarRequest request) {
