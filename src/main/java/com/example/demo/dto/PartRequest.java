@@ -9,8 +9,8 @@ public class PartRequest {
     @NotBlank(message = "Tên phụ tùng không được để trống")
     private String name;
 
-    @NotBlank(message = "Đơn vị tính không được để trống")
-    private String unit;
+    // @NotBlank(message = "Đơn vị tính không được để trống")
+    // private String unit;
 
     @NotNull(message = "Giá không được để trống")
     @Min(value = 0, message = "Giá phải >= 0")
@@ -37,13 +37,13 @@ public class PartRequest {
         this.name = name;
     }
 
-    public String getUnit() {
-        return unit;
-    }
+    // public String getUnit() {
+    //     return unit;
+    // }
 
-    public void setUnit(String unit) {
-        this.unit = unit;
-    }
+    // public void setUnit(String unit) {
+    //     this.unit = unit;
+    // }
 
     public Double getPrice() {
         return price;
