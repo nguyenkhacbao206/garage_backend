@@ -52,12 +52,18 @@ public class ServiceService {
 
     
 
-    // Lấy danh sách dịch vụ (có thể lọc theo tên)
+    // Lấy danh sách dịch vụ 
     public List<ServiceResponse> getAllServices() {
         return serviceRepository.findAll().stream()
+                .sorted((a, b) -> {
+                    String codeA = a.getServiceCode() == null ? "" : a.getServiceCode();
+                    String codeB = b.getServiceCode() == null ? "" : b.getServiceCode();
+                    return codeB.compareTo(codeA);
+                })
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
-    }
+    }   
+
 
     // Lấy dịch vụ theo ID
     public Optional<ServiceResponse> getServiceById(String id) {
