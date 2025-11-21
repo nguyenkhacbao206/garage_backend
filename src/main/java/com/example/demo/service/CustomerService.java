@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.Comparator;
 
 @Service
 public class CustomerService {
@@ -38,15 +37,23 @@ public class CustomerService {
 
         return customers;
     }
-
+    
+    // sort by created decrease, increase
     public List<Customer> sortByCreatedAt(List<Customer> customers, boolean asc) {
-        if (asc) {
-            customers.sort(Comparator.comparing(Customer::getCreatedAt));
-        } else {
-            customers.sort(Comparator.comparing(Customer::getCreatedAt).reversed());
+
+        Comparator<Customer> comp = Comparator.comparing(
+                Customer::getCreatedAt,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        );
+
+        if (!asc) {
+            comp = comp.reversed();
         }
+
+        customers.sort(comp);
         return customers;
     }
+
 
     // Tìm kiếm theo keyword 
     public List<Customer> searchCustomers(String input) {
