@@ -1,7 +1,10 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +12,12 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.ServiceRequest;
 import com.example.demo.dto.ServiceResponse;
+import com.example.demo.entity.Customer;
 import com.example.demo.entity.GarageService;
 import com.example.demo.repository.ServiceRepository;
+
+import java.util.Comparator;
+
 
 @Service
 public class ServiceService {
@@ -21,8 +28,23 @@ public class ServiceService {
     public ServiceService(ServiceRepository serviceRepository){
         this.serviceRepository = serviceRepository;
     }
-
     
+    // sort by created decrease, increase
+    public List<Customer> sortByCreatedAt(List<Customer> customers, boolean asc) {
+
+        Comparator<Customer> comp = Comparator.comparing(
+                Customer::getCreatedAt,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        );
+
+        if (!asc) {
+            comp = comp.reversed();
+        }
+
+        customers.sort(comp);
+        return customers;
+    }
+    //phần tìm kiếm
     public List<GarageService> searchServices(String serviceCode , String name) {
         boolean hasCode = serviceCode != null && !serviceCode.isEmpty();
         boolean hasName = name != null && !name.isEmpty();
@@ -30,7 +52,6 @@ public class ServiceService {
         if (!hasName&& !hasCode) {
             return serviceRepository.findAll();
         }
-
          // Chỉ code
     if (hasCode) {
         return serviceRepository.findByServiceCodeContainingIgnoreCase(serviceCode);
@@ -52,7 +73,7 @@ public class ServiceService {
 
     
 
-    // Lấy danh sách dịch vụ 
+    // Lấy danh sách dịch vụ
     public List<ServiceResponse> getAllServices() {
         return serviceRepository.findAll().stream()
                 .sorted((a, b) -> {
@@ -62,7 +83,7 @@ public class ServiceService {
                 })
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
-    }   
+    }
 
 
     // Lấy dịch vụ theo ID
@@ -82,6 +103,8 @@ public class ServiceService {
         service.setName(request.getName());
         service.setDescription(request.getDescription());
         service.setPrice(request.getPrice());
+        service.setCreatedAt(LocalDateTime.now());
+        service.setUpdatedAt(LocalDateTime.now());
         //tạo mã DV
         GarageService lastService = serviceRepository.findFirstByOrderByServiceCodeDesc();
         String newCode;

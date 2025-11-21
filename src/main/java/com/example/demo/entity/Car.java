@@ -27,7 +27,7 @@ public class Car {
     public Car() {}
 
     public Car(String id, String plate, String model, String manufacturer,
-               String description, String customerId, String customerCode, boolean active) {
+        String description, String customerId, String customerCode, boolean active) {
         this.id = id;
         this.plate = plate;
         this.model = model;
@@ -95,7 +95,7 @@ public class Car {
         this.active = active; 
     }
 
-     public LocalDateTime getCreatedAt() { 
+    public LocalDateTime getCreatedAt() { 
         return createdAt; 
     }
     public void setCreatedAt(LocalDateTime createdAt) { 

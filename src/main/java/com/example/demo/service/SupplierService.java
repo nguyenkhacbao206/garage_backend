@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -20,6 +22,21 @@ public class SupplierService {
 
     @Autowired
     private SupplierRepository supplierRepository;
+    // sort by created decrease, increase
+    public List<Customer> sortByCreatedAt(List<Customer> customers, boolean asc) {
+
+        Comparator<Customer> comp = Comparator.comparing(
+                Customer::getCreatedAt,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        );
+
+        if (!asc) {
+            comp = comp.reversed();
+        }
+
+        customers.sort(comp);
+        return customers;
+    }
 
     // Lấy tất cả supplier hoặc tìm theo tên
     public List<Supplier> getAll(String name) {
@@ -89,6 +106,8 @@ public class SupplierService {
         s.setEmail(request.getEmail());
         s.setPhone(request.getPhone());
         s.setDescription(request.getDescription());
+        s.setCreatedAt(LocalDateTime.now());
+        s.setUpdatedAt(LocalDateTime.now());
 
         // Tạo mã nhà cung cấp (NCC-001)
                 Supplier lastSupplier = supplierRepository.findFirstByOrderBySupplierCodeDesc();

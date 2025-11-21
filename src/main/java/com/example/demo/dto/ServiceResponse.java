@@ -1,6 +1,7 @@
 package com.example.demo.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class ServiceResponse {
     private String id;
@@ -8,6 +9,8 @@ public class ServiceResponse {
     private String name;
     private String description;
     private BigDecimal price;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     // Getter & Setter
     public String getId() {
@@ -43,6 +46,18 @@ public class ServiceResponse {
     }
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+        public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
 

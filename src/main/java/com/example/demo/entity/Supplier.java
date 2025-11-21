@@ -1,6 +1,8 @@
 package com.example.demo.entity;
 
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,6 +17,10 @@ public class Supplier {
     private String email;
     private String phone;
     private String description;
+    
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
 
     public Supplier() {}
         public Supplier( String id ,String supplierCode , String name ,String address, String email, String phone , String description ){
@@ -84,4 +90,17 @@ public class Supplier {
         this.description = description;
     }
 
+    public LocalDateTime getCreatedAt() { 
+        return createdAt; 
+    }
+    public void setCreatedAt(LocalDateTime createdAt) { 
+        this.createdAt = createdAt; 
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt; 
+    }
+    public void setUpdatedAt(LocalDateTime updatedAt) { 
+        this.updatedAt = updatedAt; 
+    }
 }
