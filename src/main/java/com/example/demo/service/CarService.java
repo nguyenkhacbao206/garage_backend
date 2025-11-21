@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,6 +12,8 @@ import com.example.demo.entity.Car;
 import com.example.demo.entity.Customer;
 import com.example.demo.repository.CarRepository;
 import com.example.demo.repository.CustomerRepository;
+
+import java.util.Comparator;
 
 @Service
 public class CarService {
@@ -24,6 +27,18 @@ public class CarService {
         this.carRepository = carRepository;
         this.customerRepository = customerRepository;
     }
+    
+    // sort by createdAt
+    public List<CarResponse> sortByCreatedAt(List<CarResponse> cars, boolean asc) {
+        if (asc) {
+            cars.sort(Comparator.comparing(CarResponse::getCreatedAt));
+        } else {
+            cars.sort(Comparator.comparing(CarResponse::getCreatedAt).reversed());
+        }
+        
+        return cars;
+    }
+
 
     // Get all cars
     public List<CarResponse> getAllCars() {
@@ -66,6 +81,8 @@ public class CarService {
         car.setCustomerId(customer.getId());
         car.setCustomerCode(customer.getCustomerCode());
         car.setActive(request.getActive() != null ? request.getActive() : false);
+        car.setCreatedAt(LocalDateTime.now());
+        car.setUpdatedAt(LocalDateTime.now());
 
         return convertToResponse(carRepository.save(car));
     }
@@ -84,6 +101,8 @@ public class CarService {
         car.setModel(request.getModel());
         car.setManufacturer(request.getManufacturer());
         car.setDescription(request.getDescription());
+
+        car.setUpdatedAt(LocalDateTime.now());
 
         if (request.getCustomerId() != null && !request.getCustomerId().equals(car.getCustomerId())) {
             Customer newCustomer = customerRepository.findById(request.getCustomerId())
@@ -128,6 +147,8 @@ public class CarService {
         res.setCustomerId(car.getCustomerId());
         res.setCustomerCode(car.getCustomerCode());
         res.setActive(car.isActive());
+        res.setCreatedAt(car.getCreatedAt());
+        res.setUpdatedAt(car.getUpdatedAt());
         return res;
     }
 }

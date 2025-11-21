@@ -8,7 +8,9 @@ import com.example.demo.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Comparator;
 
 @Service
 public class CustomerService {
@@ -34,6 +36,15 @@ public class CustomerService {
             c.setCars(cars);
         }
 
+        return customers;
+    }
+
+    public List<Customer> sortByCreatedAt(List<Customer> customers, boolean asc) {
+        if (asc) {
+            customers.sort(Comparator.comparing(Customer::getCreatedAt));
+        } else {
+            customers.sort(Comparator.comparing(Customer::getCreatedAt).reversed());
+        }
         return customers;
     }
 
@@ -108,6 +119,8 @@ public class CustomerService {
         c.setAddress(request.getAddress());
         c.setNote(request.getNote());
         c.setCustomerCode(generateCustomerCode());
+        c.setCreatedAt(LocalDateTime.now());
+        c.setUpdatedAt(LocalDateTime.now()); 
 
         Customer saved = customerRepository.save(c);
         saved.setCars(new ArrayList<>());
@@ -135,6 +148,8 @@ public class CustomerService {
             if (request.getEmail() != null) c.setEmail(request.getEmail());
             if (request.getAddress() != null) c.setAddress(request.getAddress());
             if (request.getNote() != null) c.setNote(request.getNote());
+
+            c.setUpdatedAt(LocalDateTime.now());
 
             Customer updated = customerRepository.save(c);
 

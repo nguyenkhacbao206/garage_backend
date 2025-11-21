@@ -1,5 +1,7 @@
 package com.example.demo.entity;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,6 +19,10 @@ public class Car {
     private String customerId;  
     private String customerCode; 
     private boolean active = false; 
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
 
     public Car() {}
 
@@ -87,5 +93,19 @@ public class Car {
     }
     public void setActive(boolean active) { 
         this.active = active; 
+    }
+
+     public LocalDateTime getCreatedAt() { 
+        return createdAt; 
+    }
+    public void setCreatedAt(LocalDateTime createdAt) { 
+        this.createdAt = createdAt; 
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt; 
+    }
+    public void setUpdatedAt(LocalDateTime updatedAt) { 
+        this.updatedAt = updatedAt; 
     }
 }

@@ -35,6 +35,21 @@ public class CarController {
         }
     }
 
+    // Lấy danh sách tất cả xe, có thể sắp xếp theo createdAt
+    @Operation(summary = "Lấy danh sách tất cả xe có sắp xếp theo createdAt")
+    @GetMapping("/sorted")
+    public ResponseEntity<?> getAllSorted(@RequestParam(defaultValue = "true") boolean asc) {
+        try {
+            List<CarResponse> list = carService.getAllCars();
+            List<CarResponse> sortedList = carService.sortByCreatedAt(list, asc);
+            return ResponseEntity.ok(sortedList);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi lấy danh sách xe đã sắp xếp: " + e.getMessage());
+        }
+    }
+
     // Lấy xe theo ID
     @Operation(summary = "Lấy xe theo ID")
     @GetMapping("/{id}")
