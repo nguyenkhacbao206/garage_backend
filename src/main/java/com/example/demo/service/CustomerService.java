@@ -55,7 +55,7 @@ public class CustomerService {
     }
 
 
-    // Tìm kiếm theo keyword 
+    // Tìm kiếm theo keyword
     public List<Customer> searchCustomers(String input) {
         if (input == null || input.trim().isEmpty()) {
             return getAll(null);
@@ -127,7 +127,7 @@ public class CustomerService {
         c.setNote(request.getNote());
         c.setCustomerCode(generateCustomerCode());
         c.setCreatedAt(LocalDateTime.now());
-        c.setUpdatedAt(LocalDateTime.now()); 
+        c.setUpdatedAt(LocalDateTime.now());
 
         Customer saved = customerRepository.save(c);
         saved.setCars(new ArrayList<>());

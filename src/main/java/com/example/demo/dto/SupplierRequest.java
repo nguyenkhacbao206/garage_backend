@@ -1,5 +1,7 @@
 package com.example.demo.dto;
 
+import java.time.LocalDateTime;
+
 public class SupplierRequest {
     private String name;
     private String supplierCode;
@@ -7,6 +9,10 @@ public class SupplierRequest {
     private String email;
     private String phone;
     private String description;
+    
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
 
     public SupplierRequest() {}
 
@@ -66,5 +72,19 @@ public class SupplierRequest {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+    
+    public LocalDateTime getCreatedAt() { 
+        return createdAt; 
+    }
+    public void setCreatedAt(LocalDateTime createdAt) { 
+        this.createdAt = createdAt; 
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt; 
+    }
+    public void setUpdatedAt(LocalDateTime updatedAt) { 
+        this.updatedAt = updatedAt; 
     }
 }
