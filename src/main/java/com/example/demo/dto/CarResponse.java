@@ -1,5 +1,7 @@
 package com.example.demo.dto;
 
+import java.time.LocalDateTime;
+
 public class CarResponse {
     private String id;
     private String plate;
@@ -9,6 +11,8 @@ public class CarResponse {
     private String customerId;
     private String customerCode; 
     private boolean active; 
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public CarResponse() {}
 
@@ -66,5 +70,17 @@ public class CarResponse {
     }
     public void setActive(boolean active) { 
         this.active = active; 
+    }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

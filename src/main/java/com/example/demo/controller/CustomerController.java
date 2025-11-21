@@ -22,11 +22,16 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
-    @Operation(summary = "Lấy danh sách khách hàng, có thể filter theo tên")
+    @Operation(summary = "Lấy danh sách khách hàng, có thể filter theo tên và sắp xếp theo createdAt")
     @GetMapping
-    public ResponseEntity<?> getAll(@RequestParam(required = false) String name) {
+    public ResponseEntity<?> getAll(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false, defaultValue = "desc") String order // asc hoặc desc
+    ) {
         try {
             List<Customer> list = customerService.getAll(name);
+            boolean asc = "asc".equalsIgnoreCase(order);
+            customerService.sortByCreatedAt(list, asc);
             return ResponseEntity.ok(new CustomerResponse("Lấy danh sách khách hàng thành công", list));
         } catch (RuntimeException e) {
             throw e;

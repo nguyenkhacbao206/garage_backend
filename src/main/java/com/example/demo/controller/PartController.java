@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
 
 @RestController
@@ -28,12 +29,14 @@ public class PartController {
 
     @GetMapping
     @Operation(summary = "Lấy danh sách phụ tùng")
-    public ResponseEntity<ApiResponse<List<PartResponse>>> getAll() {
+    public ResponseEntity<ApiResponse<List<PartResponse>>> getAll(
+            @RequestParam(defaultValue = "desc") String order
+    ) {
         try {
-            List<PartResponse> data = partService.getAll();
+            List<PartResponse> data = partService.getAll(order);
             return ResponseEntity.ok(new ApiResponse<>("Lấy danh sách thành công", data));
         } catch (Exception e) {
-            throw e; // ném lỗi cho GlobalExceptionHandler bắt
+            throw e;
         }
     }
 

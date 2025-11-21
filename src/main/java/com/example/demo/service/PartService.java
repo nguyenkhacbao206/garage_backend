@@ -9,6 +9,8 @@ import com.example.demo.repository.SupplierRepository;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import org.springframework.data.domain.Sort;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,11 +40,15 @@ public class PartService {
     }
 
     // get all
-    public List<PartResponse> getAll() {
-        return partRepository.findAll()
+    public List<PartResponse> getAll(String order) {
+
+        // Sort theo createdAt
+        Sort sort = order.equalsIgnoreCase("asc")
+                ? Sort.by(Sort.Direction.ASC, "createdAt") // tăng dần
+                : Sort.by(Sort.Direction.DESC, "createdAt"); // giảm dần
+
+        return partRepository.findAll(sort)
                 .stream()
-                .filter(p -> p.getPartCode() != null)  // bỏ phần tử null
-                .sorted((a, b) -> b.getPartCode().compareTo(a.getPartCode()))
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -72,6 +78,9 @@ public class PartService {
                 supplier 
         );
 
+        part.setCreatedAt(LocalDateTime.now());
+        part.setUpdatedAt(LocalDateTime.now());
+
         partRepository.save(part);
         return mapToResponse(part);
     }
@@ -93,6 +102,8 @@ public class PartService {
             part.setSupplier(supplier); 
         }
 
+        part.setUpdatedAt(LocalDateTime.now());
+
         partRepository.save(part);
         return mapToResponse(part);
     }
@@ -107,7 +118,7 @@ public class PartService {
 
     // mapping
     private PartResponse mapToResponse(Part part) {
-        return new PartResponse(
+        PartResponse res = new PartResponse(
                 part.getId(),
                 part.getPartCode(),
                 part.getName(),
@@ -117,5 +128,11 @@ public class PartService {
                 part.getSupplierId(),
                 part.getSupplier()
         );
+
+        res.setCreatedAt(part.getCreatedAt());
+        res.setUpdatedAt(part.getUpdatedAt());
+
+        return res;
     }
+
 }

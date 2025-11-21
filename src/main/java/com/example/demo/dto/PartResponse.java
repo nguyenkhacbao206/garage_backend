@@ -1,4 +1,6 @@
 package com.example.demo.dto;
+import java.time.LocalDateTime;
+
 import com.example.demo.entity.Supplier;
 
 public class PartResponse {
@@ -12,6 +14,8 @@ public class PartResponse {
     private String description;
     private String supplierId;
     private Supplier supplier;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public PartResponse() {}
 
@@ -25,6 +29,7 @@ public class PartResponse {
         this.description = description;
         this.supplierId = supplierId;
         this.supplier = supplier;
+        
     }
 
     // Getter - Setter
@@ -98,5 +103,20 @@ public class PartResponse {
     
     public void setSupplier(Supplier supplier) {
         this.supplier = supplier;
+    }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
