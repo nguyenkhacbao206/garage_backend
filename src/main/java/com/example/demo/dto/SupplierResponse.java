@@ -1,100 +1,42 @@
 package com.example.demo.dto;
 
-import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "Đối tượng phản hồi từ API nhà cung cấp")
 public class SupplierResponse {
-    private String id;
-    private String supplierCode;
-    private String name;
-    private String address;
-    private String email;
-    private String phone;
-    private String description;
-    
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
+    @Schema(description = "Thông báo kết quả API", example = "Thành công")
+    private String message;
+
+    @Schema(description = "Dữ liệu trả về (1 nhà cung cấp hoặc danh sách)")
+    private Object data;
+
+    @Schema(description = "Mã nhà cung cấp (chỉ hiển thị khi lấy 1 đối tượng)", example = "NCC-010")
+    private String supplierCode;
 
     public SupplierResponse() {}
 
-    public SupplierResponse(String id, String  supplierCode,String name, String address, String email, String phone, String description) {
-        this.id = id;
-        this.supplierCode=supplierCode;
-        this.name = name;
-        this.address = address;
-        this.email = email;
-        this.phone = phone;
-        this.description = description;
+    public SupplierResponse(String message, Object data) {
+        this.message = message;
+        this.data = data;
+
+        if (data instanceof com.example.demo.entity.Supplier) {
+            this.supplierCode = ((com.example.demo.entity.Supplier) data).getSupplierCode();
+        }
     }
 
-    // Getters and Setters
-    public String getId() {
-        return id;
+    // getter / setter
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+
+    public Object getData() { return data; }
+    public void setData(Object data) {
+        this.data = data;
+        if (data instanceof com.example.demo.entity.Supplier) {
+            this.supplierCode = ((com.example.demo.entity.Supplier) data).getSupplierCode();
+        }
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getSupplierCode(){
-        return supplierCode;
-    }
-
-    public void setSupplierCode(String supplierCode){
-        this.supplierCode=supplierCode;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public LocalDateTime getCreatedAt() { 
-        return createdAt; 
-    }
-    public void setCreatedAt(LocalDateTime createdAt) { 
-        this.createdAt = createdAt; 
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt; 
-    }
-    public void setUpdatedAt(LocalDateTime updatedAt) { 
-        this.updatedAt = updatedAt; 
-    }
+    public String getSupplierCode() { return supplierCode; }
+    public void setSupplierCode(String supplierCode) { this.supplierCode = supplierCode; }
 }

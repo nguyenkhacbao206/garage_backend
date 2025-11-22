@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.SupplierRequest;
+import com.example.demo.dto.SupplierResponse;
 import com.example.demo.entity.Supplier;
 import com.example.demo.service.SupplierService;
 
@@ -31,20 +32,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class SupplierController {
 
     private final SupplierService supplierService;
- //tạo phần tìm kiếm
-    @Operation(summary = "Tìm kiếm dịch vụ theo mã dịch vụ hoặc tên")
+//tạo phần tìm kiếm
+    @Operation(summary = "Tìm kiếm nhà cung cấp nâng cao theo keyword")
 @GetMapping("/search")
-public ResponseEntity<?> search(
-        @RequestParam(required = false) String supplierCode,
-        @RequestParam(required = false) String name
-) {
+public ResponseEntity<?> search(@RequestParam String keyword) {
     try {
-        List<Supplier> results = supplierService.searchSuppliers(supplierCode, name);
-        return ResponseEntity.ok(results);
+        List<Supplier> results = supplierService.searchSuppliers(keyword);
+        return ResponseEntity.ok(new SupplierResponse("Kết quả tìm kiếm nhà cung cấp", results));
     } catch (RuntimeException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+        throw e;
     } catch (Exception e) {
-        return ResponseEntity.internalServerError().body("Lỗi khi tìm kiếm dịch vụ: " + e.getMessage());
+        throw new RuntimeException("Lỗi khi tìm kiếm nhà cung cấp: " + e.getMessage());
     }
 }
 
