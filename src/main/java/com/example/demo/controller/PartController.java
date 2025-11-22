@@ -51,6 +51,20 @@ public class PartController {
         }
     }
 
+    @GetMapping("/search")
+    @Operation(summary = "Tìm kiếm phụ tùng theo tên hoặc mã")
+    public ResponseEntity<ApiResponse<List<PartResponse>>> search(
+            @RequestParam String keyword
+    ) {
+        try {
+            List<PartResponse> data = partService.search(keyword);
+            return ResponseEntity.ok(new ApiResponse<>("Tìm kiếm thành công", data));
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+
     @PostMapping
     @Operation(summary = "Thêm phụ tùng mới")
     public ResponseEntity<ApiResponse<PartResponse>> create(@Valid @RequestBody PartRequest req) {
