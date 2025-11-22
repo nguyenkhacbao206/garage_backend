@@ -4,16 +4,13 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dto.ServiceResponse;
-import com.example.demo.dto.SupplierRequest;
 import com.example.demo.dto.SupplierResponse;
-import com.example.demo.entity.Customer;
-import com.example.demo.entity.Supplier;
+import com.example.demo.dto.SupplierRequest;
 import com.example.demo.entity.Supplier;
 import com.example.demo.repository.SupplierRepository;
 
@@ -23,10 +20,10 @@ public class SupplierService {
     @Autowired
     private SupplierRepository supplierRepository;
     // sort by created decrease, increase
-    public List<Customer> sortByCreatedAt(List<Customer> customers, boolean asc) {
+    public List<Supplier> sortByCreatedAt(List<Supplier> customers, boolean asc) {
 
-        Comparator<Customer> comp = Comparator.comparing(
-                Customer::getCreatedAt,
+        Comparator<Supplier> comp = Comparator.comparing(
+                Supplier::getCreatedAt,
                 Comparator.nullsLast(Comparator.naturalOrder())
         );
 
@@ -37,53 +34,29 @@ public class SupplierService {
         customers.sort(comp);
         return customers;
     }
+    // Get all cars
+    public List<SupplierResponse> getAllCars() {
+        return supplierRepository.findAll().stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
 
-    // Lấy tất cả supplier hoặc tìm theo tên
-    public List<Supplier> getAll(String name) {
-        if (name != null && !name.isEmpty()) {
-            return supplierRepository.findByNameContainingIgnoreCase(name);
-        }
+    // Search nâng cao theo keyword (code, name, phone hoặc email)
+public List<Supplier> searchSuppliers(String keyword) {
+    if (keyword == null || keyword.trim().isEmpty()) {
         return supplierRepository.findAll();
     }
-    
-    public List<Supplier> searchSuppliers(String supplierCode , String name) {
-        boolean hasCode = supplierCode != null && !supplierCode.isEmpty();
-        boolean hasName = name != null && !name.isEmpty();
+    //dùng để lấy query phần supplierreponsitori
+    return supplierRepository.searchByKeyword(keyword);
+}
 
-        if (!hasName&& !hasCode) {
-            return supplierRepository.findAll();
-        }
-        if (hasCode && hasName) {
-        return supplierRepository
-                .findBySupplierCodeContainingIgnoreCaseOrNameContainingIgnoreCase(
-                    supplierCode, name
-                );
-    }
 
-    // Chỉ code
-    if (hasCode) {
-        return supplierRepository.findBySupplierCodeContainingIgnoreCase(supplierCode);
-    }
-
-    // Chỉ name
-    return supplierRepository.findByNameContainingIgnoreCase(name);
-    }
-    
     public List<Supplier> getAll() {
         return supplierRepository.findAll();
     }
 
-
     private SupplierResponse convertToResponse(Supplier supplier) {
-    SupplierResponse response = new SupplierResponse();
-        response.setId(supplier.getId());
-        response.setSupplierCode(supplier.getSupplierCode());
-        response.setName(supplier.getName());
-        response.setAddress(supplier.getAddress());
-        response.setEmail(supplier.getEmail());
-        response.setPhone(supplier.getPhone());
-        response.setDescription(supplier.getDescription());
-        return response;
+        return new SupplierResponse("Lấy nhà cung cấp thành công", supplier);
     }
 
     // Lấy supplier theo id
@@ -93,6 +66,10 @@ public class SupplierService {
 
     // Tạo mới supplier
     public Supplier create(SupplierRequest request) {
+        String phone = request.getPhone();
+        if (phone == null || !phone.matches("\\d{10}")) {
+            throw new RuntimeException("Số điện thoại phải gồm đúng 10 chữ số!");
+        }
         if (supplierRepository.existsByPhone(request.getPhone())) {
             throw new RuntimeException("Số điện thoại đã tồn tại!");
         }
@@ -138,10 +115,16 @@ public class SupplierService {
         if (existing.isPresent()) {
             Supplier s = existing.get();
 
-            if (request.getPhone() != null && !request.getPhone().equals(s.getPhone())
-                    && supplierRepository.existsByPhone(request.getPhone())) {
+            String phone = request.getPhone();
+            if (phone != null) {
+            if (!phone.matches("\\d{10}")) {
+                throw new RuntimeException("Số điện thoại phải gồm đúng 10 chữ số!");
+            }
+            if (!phone.equals(s.getPhone()) && supplierRepository.existsByPhone(phone)) {
                 throw new RuntimeException("Số điện thoại đã tồn tại!");
             }
+        s.setPhone(phone);
+}
 
             if (request.getEmail() != null && !request.getEmail().equals(s.getEmail())
                     && supplierRepository.existsByEmail(request.getEmail())) {

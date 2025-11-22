@@ -16,8 +16,8 @@ public class Car {
     private String model;
     private String manufacturer;
     private String description;
-    private String customerId;  
-    private String customerCode; 
+    private String customerId;
+    private String customerCode;
     private boolean active = false; 
 
     private LocalDateTime createdAt;
