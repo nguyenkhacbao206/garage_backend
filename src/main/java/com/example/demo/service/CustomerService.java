@@ -112,12 +112,23 @@ public class CustomerService {
 
     // Thêm mới khách hàng
     public Customer create(CustomerRequest request) {
+        // kiểm tra trùng số điện thoại
         if (customerRepository.existsByPhone(request.getPhone())) {
             throw new RuntimeException("Phone number already exists!");
         }
+
+        // kiểm tra trùng email
         if (customerRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists!");
         }
+
+        // kiểm tra số diednj thoại
+        if (request.getPhone() == null || !request.getPhone().matches("0\\d{9}") ) {
+            throw new RuntimeException("phone number must start with 0 and exactly 10 digits ");
+        }
+
+
+
 
         Customer c = new Customer();
         c.setName(request.getName());

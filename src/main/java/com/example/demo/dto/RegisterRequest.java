@@ -3,7 +3,7 @@ package com.example.demo.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
-// import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
 
 @Schema(description = "Dữ liệu đăng ký tài khoản mới")
 public class RegisterRequest {
@@ -19,6 +19,7 @@ public class RegisterRequest {
 
     @Schema(description = "Số điện thoại", example = "0909123456")
     @NotBlank(message = "Số điện thoại không được để trống")
+    @Pattern(regexp = "0\\d{9}", message = "Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0")
     private String phonenumber;
 
     @Schema(description = "Mật khẩu", example = "123456")

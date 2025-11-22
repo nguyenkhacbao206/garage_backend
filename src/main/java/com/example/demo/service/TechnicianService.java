@@ -91,7 +91,11 @@ public class TechnicianService {
     // new create
     public TechnicianResponse create(TechnicianRequest req) {
         if (req.getPhone() != null && technicianRepository.existsByPhone(req.getPhone())) {
-            throw new DuplicateKeyException("Số điện thoại đã tồn tại");
+            throw new DuplicateKeyException("Phone number already exists!");
+        }
+
+        if (req.getPhone() == null || req.getPhone().matches("0\\d{9}")) {
+            throw new RuntimeException("phone number must start with 0 and exactly 10 digits");
         }
 
         Technician t = new Technician();
