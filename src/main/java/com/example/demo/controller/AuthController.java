@@ -10,8 +10,9 @@ import com.example.demo.security.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -29,44 +30,52 @@ public class AuthController {
         this.authService = authService;
         this.jwtService = jwtService;
     }
-    // REGISTER
-    @Operation(summary = "Đăng ký tài khoản mới",
-               description = "Tạo tài khoản người dùng với username, email, phonenumber và password.")
+
     @PostMapping("/register")
+    @Operation(summary = "Đăng ký tài khoản mới")
     public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest request) {
         User user = authService.register(request);
-        user.setPassword(null); // Ẩn password khi trả về
+        user.setPassword(null); // ẩn password
         return ResponseEntity.ok(user);
     }
 
-    // LOGIN
-
-    @Operation(summary = "Đăng nhập và nhận JWT token",
-               description = "Xác thực người dùng và trả về accessToken + refreshToken.")
     @PostMapping("/login")
+    @Operation(summary = "Đăng nhập và nhận JWT token")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    // REFRESH TOKEN
-    
-    @Operation(summary = "Làm mới Access Token",
-               description = "Nhận accessToken mới bằng refreshToken hợp lệ.")
     @PostMapping("/refresh")
+    @Operation(summary = "Làm mới Access Token")
     public ResponseEntity<?> refresh(@RequestBody RefreshTokenRequest request) {
-
         String refreshToken = request.getRefreshToken();
-
         if (refreshToken == null || !jwtService.validateToken(refreshToken)) {
             return ResponseEntity.status(401)
                     .body("Refresh token không hợp lệ hoặc đã hết hạn!");
         }
-
-        String username = jwtService.extractUsername(refreshToken);
-        String newAccessToken = jwtService.generateAccessToken(username);
+        String email = jwtService.extractUsername(refreshToken);
+        String newAccessToken = jwtService.generateAccessToken(email);
 
         Map<String, Object> response = new HashMap<>();
         response.put("accessToken", newAccessToken);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Lấy thông tin user đang đăng nhập")
+    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+
+        String email = userDetails.getUsername();
+        User user = authService.getByEmail(email);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        response.put("phonenumber", user.getPhonenumber());
 
         return ResponseEntity.ok(response);
     }
