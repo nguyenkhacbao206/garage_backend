@@ -2,14 +2,17 @@ package com.example.demo.service;
 
 import com.example.demo.dto.TechnicianRequest;
 import com.example.demo.dto.TechnicianResponse;
+import com.example.demo.entity.Customer;
 import com.example.demo.entity.Technician;
 import com.example.demo.repository.TechnicianRepository;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Comparator;
 
 @Service
 public class TechnicianService {
@@ -42,6 +45,21 @@ public class TechnicianService {
                 .collect(Collectors.toList());
     }
 
+    public List<TechnicianResponse> sortByCreatedAt(List<TechnicianResponse> tech, boolean asc) {
+
+        Comparator<TechnicianResponse> comp = Comparator.comparing(
+                TechnicianResponse::getCreatedAt,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        );
+
+        if (!asc) {
+            comp = comp.reversed();
+        }
+
+        tech.sort(comp);
+        return tech;
+    }
+
     // Search technicians
     public List<TechnicianResponse> search(String input) {
         if (input == null || input.trim().isEmpty()) {
@@ -69,6 +87,8 @@ public class TechnicianService {
         return matched.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+
+    // new create
     public TechnicianResponse create(TechnicianRequest req) {
         if (req.getPhone() != null && technicianRepository.existsByPhone(req.getPhone())) {
             throw new DuplicateKeyException("Số điện thoại đã tồn tại");
@@ -82,11 +102,14 @@ public class TechnicianService {
         t.setPosition(req.getPosition());
         t.setUserId(req.getUserId());
         t.setActive(true);
+        t.setCreatedAt(LocalDateTime.now());
+        t.setUpdatedAt(LocalDateTime.now());
 
         Technician saved = technicianRepository.save(t);
         return toResponse(saved);
     }
 
+    // update
     public TechnicianResponse update(String id, TechnicianRequest req) {
         Technician t = technicianRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy kỹ thuật viên với id: " + id));
@@ -101,6 +124,8 @@ public class TechnicianService {
         t.setPosition(req.getPosition());
         t.setUserId(req.getUserId());
 
+        t.setUpdatedAt(LocalDateTime.now());
+
         Technician saved = technicianRepository.save(t);
         return toResponse(saved);
     }
@@ -113,15 +138,20 @@ public class TechnicianService {
     }
 
     private TechnicianResponse toResponse(Technician t) {
-        return new TechnicianResponse(
-                t.getId(),
-                t.getTechCode(),
-                t.getName(),
-                t.getPhone(),
-                t.getSalaryBase(),
-                t.getPosition(),
-                t.getUserId(),
-                t.getActive()
-        );
+        TechnicianResponse res = new TechnicianResponse();
+        res.setId(t.getId());
+        res.setTechCode(t.getTechCode());
+        res.setName(t.getName());
+        res.setPhone(t.getPhone());
+        res.setBaseSalary(t.getSalaryBase());
+        res.setPosition(t.getPosition());
+        res.setUserId(t.getUserId());
+        res.setActive(t.getActive());
+        res.setCreatedAt(t.getCreatedAt());
+        res.setUpdatedAt(t.getUpdatedAt());
+        
+        return res;
     }
+
+
 }
