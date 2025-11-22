@@ -29,14 +29,20 @@ public class CarService {
     }
     
     // sort by createdAt
-    public List<CarResponse> sortByCreatedAt(List<CarResponse> cars, boolean asc) {
-        if (asc) {
-            cars.sort(Comparator.comparing(CarResponse::getCreatedAt));
-        } else {
-            cars.sort(Comparator.comparing(CarResponse::getCreatedAt).reversed());
+    public List<CarResponse> sortByCreatedAt(List<CarResponse> Cars, boolean asc) {
+
+        Comparator<CarResponse> comp = Comparator.comparing(
+                CarResponse::getCreatedAt,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        );
+
+        if (!asc) {
+            comp = comp.reversed();
         }
-        
-        return cars;
+
+        Cars.sort(comp);
+        return Cars
+        ;
     }
 
 
