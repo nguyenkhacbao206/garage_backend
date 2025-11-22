@@ -60,6 +60,18 @@ public class PartService {
         return mapToResponse(part);
     }
 
+    // search
+    public List<PartResponse> search(String keyword) {
+
+        List<Part> parts = partRepository
+                .findByNameContainingIgnoreCaseOrPartCodeContainingIgnoreCase(keyword, keyword);
+
+        return parts.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+
     // new create
     public PartResponse create(PartRequest req) {
 
