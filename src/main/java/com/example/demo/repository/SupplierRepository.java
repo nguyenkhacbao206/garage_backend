@@ -5,6 +5,7 @@ import com.example.demo.entity.Supplier;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -24,8 +25,12 @@ public interface SupplierRepository extends MongoRepository<Supplier, String> {
 
     List<Supplier> findBySupplierCodeContainingIgnoreCase(String supplierCode);
     
-    // Tìm kiếm theo nhiều trường cùng lúc
-    List<Supplier> findBySupplierCodeContainingIgnoreCaseOrNameContainingIgnoreCase(
-        String supplierCode, String name);
-
+    // Tìm kiếm nhiều trường với regex
+    @Query("{ $or: [ " +
+           "{ 'supplierCode': { $regex: ?0, $options: 'i' } }, " +
+           "{ 'name': { $regex: ?0, $options: 'i' } }, " +
+           "{ 'phone': { $regex: ?0, $options: 'i' } }, " +
+           "{ 'email': { $regex: ?0, $options: 'i' } } " +
+           "] }")
+    List<Supplier> searchByKeyword(String keyword);
 }
