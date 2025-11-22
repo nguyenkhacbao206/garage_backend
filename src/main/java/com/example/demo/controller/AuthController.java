@@ -9,6 +9,8 @@ import com.example.demo.entity.User;
 import com.example.demo.security.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +33,7 @@ public class AuthController {
     @Operation(summary = "Đăng ký tài khoản mới",
                description = "Tạo tài khoản người dùng với username, email, phonenumber và password.")
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest request) {
         User user = authService.register(request);
         user.setPassword(null); // Ẩn password khi trả về
         return ResponseEntity.ok(user);
