@@ -1,20 +1,28 @@
 package com.example.demo.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Email;
+// import jakarta.validation.constraints.Pattern;
 
 @Schema(description = "Dữ liệu đăng ký tài khoản mới")
 public class RegisterRequest {
 
     @Schema(description = "Tên người dùng", example = "baokhac")
+    @NotBlank(message = "Username không được để trống")
     private String username;
 
     @Schema(description = "Email của người dùng", example = "baokhac@example.com")
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không hợp lệ")
     private String email;
 
     @Schema(description = "Số điện thoại", example = "0909123456")
+    @NotBlank(message = "Số điện thoại không được để trống")
     private String phonenumber;
 
     @Schema(description = "Mật khẩu", example = "123456")
+    @NotBlank(message = "Mật khẩu không được để trống")
     private String password;
 
     public RegisterRequest() {}
