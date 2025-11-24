@@ -65,6 +65,28 @@ public ResponseEntity<?> search(@RequestParam String keyword) {
         }
     }
 
+    @GetMapping("/sort")
+    public ResponseEntity<?> sortSuppliers(@RequestParam(defaultValue = "false") boolean asc) {
+        try {
+            List<SupplierResponse> sortedSuppliers = supplierService.sortSuppliersByCreatedAt(asc);
+
+        if (sortedSuppliers.isEmpty()) {
+            throw new RuntimeException("Không tìm thấy Supplier nào");
+        }
+
+        return ResponseEntity.ok(sortedSuppliers);
+    } catch (RuntimeException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(ex.getMessage(), null));
+    } catch (Exception ex) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
+        }
+    }
+
+
 
     @Operation(summary = "Lấy nhà cung cấp theo ID")
     @GetMapping("/{id}")

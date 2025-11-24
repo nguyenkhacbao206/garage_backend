@@ -60,4 +60,3 @@ public class ServiceResponse {
         this.updatedAt = updatedAt;
     }
 }
-
