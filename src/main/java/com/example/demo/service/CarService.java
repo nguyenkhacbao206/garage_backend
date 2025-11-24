@@ -45,6 +45,25 @@ public class CarService {
         ;
     }
 
+    // Search cars
+    public List<CarResponse> searchCars(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllCars();
+        }
+
+        String search = keyword.trim().toLowerCase();
+
+        return carRepository.findAll().stream()
+                .filter(car ->
+                        (car.getPlate() != null && car.getPlate().toLowerCase().contains(search)) ||
+                        (car.getModel() != null && car.getModel().toLowerCase().contains(search)) ||
+                        (car.getManufacturer() != null && car.getManufacturer().toLowerCase().contains(search)) ||
+                        (car.getCustomerCode() != null && car.getCustomerCode().toLowerCase().contains(search))
+                )
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
 
     // Get all cars
     public List<CarResponse> getAllCars() {

@@ -50,6 +50,19 @@ public class CarController {
         }
     }
 
+    // search
+    @Operation(summary = "Tìm kiếm xe theo từ khóa")
+    @GetMapping("/search")
+    public ResponseEntity<?> searchCars(@RequestParam String keyword) {
+        try {
+            return ResponseEntity.ok(carService.searchCars(keyword));
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi tìm kiếm xe: " + e.getMessage());
+        }
+    }
+
     // Lấy xe theo ID
     @Operation(summary = "Lấy xe theo ID")
     @GetMapping("/{id}")
