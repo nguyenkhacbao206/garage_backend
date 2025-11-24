@@ -94,7 +94,7 @@ public class TechnicianService {
             throw new DuplicateKeyException("Phone number already exists!");
         }
 
-        if (req.getPhone() == null || req.getPhone().matches("0\\d{9}")) {
+        if (req.getPhone() == null || !req.getPhone().matches("0\\d{9}")) {
             throw new RuntimeException("phone number must start with 0 and exactly 10 digits");
         }
 
