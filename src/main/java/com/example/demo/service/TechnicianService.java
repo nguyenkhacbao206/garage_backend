@@ -127,6 +127,10 @@ public class TechnicianService {
             throw new DuplicateKeyException("Số điện thoại đã tồn tại");
         }
 
+        if (req.getPhone() == null || !req.getPhone().matches("0\\d{9}")) {
+            throw new RuntimeException("phone number must start with 0 and exactly 10 digits");
+        }
+
         t.setName(req.getName());
         t.setPhone(req.getPhone());
         t.setSalaryBase(req.getBaseSalary());
