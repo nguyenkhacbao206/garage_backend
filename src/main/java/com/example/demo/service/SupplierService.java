@@ -67,8 +67,8 @@ public List<Supplier> searchSuppliers(String keyword) {
     // Tạo mới supplier
     public Supplier create(SupplierRequest request) {
         String phone = request.getPhone();
-        if (phone == null || !phone.matches("\\d{10}")) {
-            throw new RuntimeException("Số điện thoại phải gồm đúng 10 chữ số!");
+        if (phone == null || !phone.matches("0\\d{9}")) {
+            throw new RuntimeException("Số điện thoại phải gồm đúng 10 chữ số và số 0  phải ở đầu!");
         }
         if (supplierRepository.existsByPhone(request.getPhone())) {
             throw new RuntimeException("Số điện thoại đã tồn tại!");
@@ -117,8 +117,8 @@ public List<Supplier> searchSuppliers(String keyword) {
 
             String phone = request.getPhone();
             if (phone != null) {
-            if (!phone.matches("\\d{10}")) {
-                throw new RuntimeException("Số điện thoại phải gồm đúng 10 chữ số!");
+            if (!phone.matches("0\\d{9}")) {
+                throw new RuntimeException("Số điện thoại phải gồm đúng 10 chữ số và số 0 phải ở đầu!");
             }
             if (!phone.equals(s.getPhone()) && supplierRepository.existsByPhone(phone)) {
                 throw new RuntimeException("Số điện thoại đã tồn tại!");
