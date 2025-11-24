@@ -10,9 +10,12 @@ import com.example.demo.dto.UpdateProfileRequest;
 import com.example.demo.dto.UserProfileResponse;
 import com.example.demo.service.UserProfileService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/profile")
 @CrossOrigin(origins = "*")
+@Tag(name = "User Profile", description = "API quản lý thông tin người dùng")
 public class UserProfileController {
 
     private final UserProfileService service;
