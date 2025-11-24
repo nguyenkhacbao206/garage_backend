@@ -41,6 +41,11 @@ public class TechnicianService {
     public List<TechnicianResponse> getAll() {
         return technicianRepository.findAll()
                 .stream()
+                .sorted((t1, t2) -> {
+                    if (t1.getCreatedAt() == null) return 1;
+                    if (t2.getCreatedAt() == null) return -1;
+                    return t2.getCreatedAt().compareTo(t1.getCreatedAt());
+                })
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
@@ -93,7 +98,7 @@ public class TechnicianService {
         if (req.getPhone() != null && technicianRepository.existsByPhone(req.getPhone())) {
             throw new DuplicateKeyException("Phone number already exists!");
         }
-        // check phone number
+        // check phone numbers
         if (req.getPhone() == null || !req.getPhone().matches("0\\d{9}")) {
             throw new RuntimeException("phone number must start with 0 and exactly 10 digits");
         }
