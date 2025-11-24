@@ -26,7 +26,7 @@ public class ImportInvoiceService {
     @Autowired
     private SupplierRepository supplierRepository;
 
-    private final DateTimeFormatter formatter = 
+    private final DateTimeFormatter formatter =
         DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
 
