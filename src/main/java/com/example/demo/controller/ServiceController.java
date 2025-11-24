@@ -43,6 +43,12 @@ public ResponseEntity<?> search(
         this.serviceService = serviceService;
     }
 
+    @GetMapping("/sort")
+    public ResponseEntity<?> sortServices(@RequestParam(defaultValue = "false") boolean asc) {
+        return ResponseEntity.ok(serviceService.sortServicesByCreatedAt(asc));
+    }
+
+
     @Operation(summary = "Lấy danh sách tất cả dịch vụ")
     @GetMapping
     public ResponseEntity<?> getAll() {

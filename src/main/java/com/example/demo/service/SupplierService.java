@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.SupplierResponse;
+import com.example.demo.dto.ServiceResponse;
 import com.example.demo.dto.SupplierRequest;
+import com.example.demo.entity.Supplier;
 import com.example.demo.entity.Supplier;
 import com.example.demo.repository.SupplierRepository;
 
@@ -20,20 +22,25 @@ public class SupplierService {
     @Autowired
     private SupplierRepository supplierRepository;
     // sort by created decrease, increase
-    public List<Supplier> sortByCreatedAt(List<Supplier> customers, boolean asc) {
+    
+    public List<SupplierResponse> sortSuppliersByCreatedAt(boolean asc) {
 
-        Comparator<Supplier> comp = Comparator.comparing(
-                Supplier::getCreatedAt,
-                Comparator.nullsLast(Comparator.naturalOrder())
-        );
+    List<Supplier> list = supplierRepository.findAll();
 
-        if (!asc) {
-            comp = comp.reversed();
-        }
+    Comparator<Supplier> comp = Comparator.comparing(
+            Supplier::getCreatedAt,
+            Comparator.nullsLast(Comparator.naturalOrder())
+    );
 
-        customers.sort(comp);
-        return customers;
+    if (!asc) {
+        comp = comp.reversed();
     }
+
+    return list.stream()
+            .sorted(comp)
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
+}
     // Get all cars
     public List<SupplierResponse> getAllCars() {
         return supplierRepository.findAll().stream()

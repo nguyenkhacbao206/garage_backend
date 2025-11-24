@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.ServiceRequest;
 import com.example.demo.dto.ServiceResponse;
-import com.example.demo.entity.Customer;
 import com.example.demo.entity.GarageService;
 import com.example.demo.repository.ServiceRepository;
 
@@ -30,20 +29,25 @@ public class ServiceService {
     }
     
     // sort by created decrease, increase
-    public List<Customer> sortByCreatedAt(List<Customer> customers, boolean asc) {
+    public List<ServiceResponse> sortServicesByCreatedAt(boolean asc) {
 
-        Comparator<Customer> comp = Comparator.comparing(
-                Customer::getCreatedAt,
-                Comparator.nullsLast(Comparator.naturalOrder())
-        );
+    List<GarageService> list = serviceRepository.findAll();
 
-        if (!asc) {
-            comp = comp.reversed();
-        }
+    Comparator<GarageService> comp = Comparator.comparing(
+            GarageService::getCreatedAt,
+            Comparator.nullsLast(Comparator.naturalOrder())
+    );
 
-        customers.sort(comp);
-        return customers;
+    if (!asc) {
+        comp = comp.reversed();
     }
+
+    return list.stream()
+            .sorted(comp)
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
+}
+
     //phần tìm kiếm
     public List<GarageService> searchServices(String serviceCode , String name) {
         boolean hasCode = serviceCode != null && !serviceCode.isEmpty();
