@@ -37,6 +37,31 @@ public class TechnicianController {
         }
     }
 
+    @GetMapping("/sort")
+    @Operation(summary = "Sắp xếp kỹ thuật viên theo ngày tạo")
+    public ResponseEntity<ApiResponse<List<TechnicianResponse>>> sort(
+            @RequestParam(defaultValue = "false") boolean asc
+    ) {
+        try {
+            // lấy toàn bộ danh sách
+            List<TechnicianResponse> list = technicianService.getAll();
+
+            // gọi hàm sort trong service
+            List<TechnicianResponse> sorted = technicianService.sortByCreatedAt(list, asc);
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    asc ? "Sắp xếp tăng dần thành công" : "Sắp xếp giảm dần thành công",
+                    sorted
+            ));
+        } catch (Exception ex) {
+            System.err.println("Lỗi sắp xếp kỹ thuật viên: " + ex.getMessage());
+            return ResponseEntity.badRequest().body(
+                    new ApiResponse<>("Lỗi sắp xếp: " + ex.getMessage(), null)
+            );
+        }
+    }
+
+
     @GetMapping("/search")
     @Operation(summary = "Tìm kiếm kỹ thuật viên theo mã, tên hoặc số điện thoại")
     public ResponseEntity<ApiResponse<List<TechnicianResponse>>> search(
