@@ -75,4 +75,18 @@ public class AuthService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+    // Sinh token mới sau khi đổi mật khẩu
+    public AuthResponse generateNewToken(User user) {
+        String accessToken = jwtService.generateAccessToken(user.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(user.getEmail());
+
+        return new AuthResponse(
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhonenumber(),
+                accessToken,
+                refreshToken
+        );
+    }
 }
