@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 
 @RestController
 @RequestMapping("/api/profile")
+@CrossOrigin
 @Tag(name = "User Profile", description = "API quản lý thông tin hồ sơ người dùng")
 public class UserProfileController {
 
@@ -23,11 +24,10 @@ public class UserProfileController {
         this.service = service;
     }
 
-
     @GetMapping
     @Operation(
         summary = "Lấy toàn bộ thông tin hồ sơ",
-        description = "Trả về toàn bộ thông tin profile của user đang đăng nhập. Nếu chưa có profile thì tự tạo profile mới."
+        description = "Trả về toàn bộ thông tin profile của user đang đăng nhập.\nNếu chưa có thì tự động tạo mới."
     )
     public ResponseEntity<?> getProfile() {
         try {
@@ -37,43 +37,47 @@ public class UserProfileController {
         }
     }
 
-
     @GetMapping("/{field}")
     @Operation(
         summary = "Lấy thông tin theo từng trường",
         description = """
-            Ví dụ các trường hợp hợp lệ:
-            - username
-            - email
-            - phonenumber
-            - gender
-            - birthday
-            - city
-            - hometown
-            - address
-            - avatar
-            - description
-            - createdAt
-            - updatedAt
-            """
+        Các field hợp lệ:
+
+        - id
+        - username
+        - email
+        - phonenumber
+        - gender
+        - birthday
+        - city
+        - hometown
+        - address
+        - avatar
+        - description
+        - createdAt
+        - updatedAt
+
+        Gọi API: /api/profile/{field}
+        """
     )
     public ResponseEntity<?> getField(
-            @Parameter(description = "Tên trường muốn lấy. Ví dụ: username, email, city, avatar.")
+            @Parameter(description = "Tên trường cần lấy")
             @PathVariable String field) {
 
         try {
-            Object result = service.getField(field);
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(service.getField(field));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
 
-
     @PutMapping
-    @Operation(summary = "Cập nhật toàn bộ hồ sơ người dùng")
+    @Operation(
+        summary = "Cập nhật toàn bộ hồ sơ người dùng",
+        description = "Cập nhật toàn bộ profile dựa vào JSON truyền vào."
+    )
     public ResponseEntity<?> updateProfile(
-            @Parameter(description = "Dữ liệu cập nhật thông tin người dùng")
+            @Parameter(description = "Dữ liệu cập nhật")
             @RequestBody UpdateProfileRequest req) {
 
         try {
@@ -83,11 +87,13 @@ public class UserProfileController {
         }
     }
 
-
     @PutMapping("/password")
-    @Operation(summary = "Đổi mật khẩu user đang đăng nhập")
+    @Operation(
+        summary = "Đổi mật khẩu người dùng",
+        description = "Truyền oldPassword và newPassword để đổi mật khẩu."
+    )
     public ResponseEntity<?> changePassword(
-            @Parameter(description = "Gồm mật khẩu cũ và mật khẩu mới")
+            @Parameter(description = "Mật khẩu cũ và mật khẩu mới")
             @RequestBody ChangePasswordRequest req) {
 
         try {
@@ -98,7 +104,10 @@ public class UserProfileController {
     }
 
     @PostMapping("/avatar")
-    @Operation(summary = "Upload avatar mới cho user")
+    @Operation(
+        summary = "Upload avatar mới",
+        description = "Upload file ảnh và lưu đường dẫn avatar."
+    )
     public ResponseEntity<?> uploadAvatar(
             @Parameter(description = "File ảnh avatar")
             @RequestParam("file") MultipartFile file) {
@@ -110,9 +119,11 @@ public class UserProfileController {
         }
     }
 
-
     @DeleteMapping("/avatar")
-    @Operation(summary = "Xóa avatar hiện tại của user")
+    @Operation(
+        summary = "Xóa avatar hiện tại",
+        description = "Xóa ảnh avatar của user khỏi hệ thống."
+    )
     public ResponseEntity<?> deleteAvatar() {
         try {
             return ResponseEntity.ok(service.deleteAvatar());
@@ -120,5 +131,4 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
-
 }
