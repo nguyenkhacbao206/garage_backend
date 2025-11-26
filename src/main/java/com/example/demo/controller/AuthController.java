@@ -49,10 +49,13 @@ public class AuthController {
     @Operation(summary = "Làm mới Access Token")
     public ResponseEntity<?> refresh(@RequestBody RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
-        if (refreshToken == null || !jwtService.validateToken(refreshToken)) {
+        
+        // Chỉ chấp nhận refresh token
+        if (refreshToken == null || !jwtService.isRefreshToken(refreshToken)) {
             return ResponseEntity.status(401)
                     .body("Refresh token không hợp lệ hoặc đã hết hạn!");
         }
+
         String email = jwtService.extractUsername(refreshToken);
         String newAccessToken = jwtService.generateAccessToken(email);
 
