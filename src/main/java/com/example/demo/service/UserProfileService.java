@@ -31,53 +31,55 @@ public class UserProfileService {
 
     private static final String UPLOAD_DIR = "uploads/avatars/";
 
-    public UserProfileService(
-            UserProfileRepository userProfileRepository,
-            UserRepository userRepository,
-            AuthService authService,
-            PasswordEncoder passwordEncoder
-    ) {
+    public UserProfileService(UserProfileRepository userProfileRepository,
+                              UserRepository userRepository,
+                              AuthService authService,
+                              PasswordEncoder passwordEncoder) {
         this.userProfileRepository = userProfileRepository;
         this.userRepository = userRepository;
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
     }
 
-    private String getCurrentUsername() {
+    // Lấy email từ token
+    private String getCurrentEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth.getName();
+        return auth.getName(); // username = email
     }
 
+    // Lấy profile đúng user từ bảng user_profiles
+    private UserProfile getOrCreateProfile() {
+        String email = getCurrentEmail();
+
+        // ✔ FIX: tìm đúng profile theo email
+        UserProfile profile = userProfileRepository.findByEmail(email).orElse(null);
+        if (profile != null) return profile;
+
+        // Tạo mới profile từ bảng User
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại!"));
+
+        UserProfile newProfile = new UserProfile();
+        newProfile.setUsername(user.getUsername());
+        newProfile.setEmail(user.getEmail());
+        newProfile.setPhonenumber(user.getPhonenumber());
+        newProfile.setPassword(user.getPassword());
+        newProfile.setCreatedAt(LocalDateTime.now());
+        newProfile.setUpdatedAt(LocalDateTime.now());
+
+        return userProfileRepository.save(newProfile);
+    }
+
+    // Lấy toàn bộ profile
     public UserProfileResponse getProfile() {
-        String username = getCurrentUsername();
-
-        User user = userRepository.findByEmail(username)
-            .orElseThrow(() -> new RuntimeException("User không tồn tại!"));
-
-        UserProfile profile = userProfileRepository.findByUsername(username);
-
-        if (profile == null) {
-            profile = new UserProfile();
-            profile.setUsername(user.getUsername());
-            profile.setEmail(user.getEmail());
-            profile.setPhonenumber(user.getPhonenumber());
-            profile.setPassword(user.getPassword());
-            profile.setCreatedAt(LocalDateTime.now());
-            profile.setUpdatedAt(LocalDateTime.now());
-            userProfileRepository.save(profile);
-        }
-
-        return convert(profile);
+        return convert(getOrCreateProfile());
     }
 
+    // Cập nhật profile
     public UserProfileResponse updateProfile(UpdateProfileRequest req) {
-        String username = getCurrentUsername();
-        UserProfile profile = userProfileRepository.findByUsername(username);
-
-        if (profile == null) throw new RuntimeException("Không tìm thấy user!");
+        UserProfile profile = getOrCreateProfile();
 
         profile.setUsername(req.getUsername());
-        profile.setEmail(req.getEmail());
         profile.setPhonenumber(req.getPhonenumber());
         profile.setBirthday(req.getBirthday());
         profile.setGender(req.getGender());
@@ -87,39 +89,46 @@ public class UserProfileService {
         profile.setDescription(req.getDescription());
         profile.setUpdatedAt(LocalDateTime.now());
 
-        return convert(userProfileRepository.save(profile));
+
+        userProfileRepository.save(profile);
+        return convert(profile);
     }
 
+    // Đổi mật khẩu
     public AuthResponse changePassword(ChangePasswordRequest req) {
-        String username = getCurrentUsername();
-        UserProfile profile = userProfileRepository.findByUsername(username);
-
-        if (profile == null) throw new RuntimeException("Không tìm thấy user!");
+        UserProfile profile = getOrCreateProfile();
 
         if (!passwordEncoder.matches(req.getOldPassword(), profile.getPassword())) {
             throw new RuntimeException("Mật khẩu cũ không đúng!");
         }
 
-        profile.setPassword(passwordEncoder.encode(req.getNewPassword().trim()));
+        // Update bảng UserProfile
+        String encodedPass = passwordEncoder.encode(req.getNewPassword());
+        profile.setPassword(encodedPass);
         profile.setUpdatedAt(LocalDateTime.now());
         userProfileRepository.save(profile);
 
+        // Update bảng User
         User user = userRepository.findByEmail(profile.getEmail())
-                .orElseThrow(() -> new RuntimeException("User không tồn tại trong bảng User!"));
+                .orElseThrow(() -> new RuntimeException("User không tồn tại!"));
 
+        user.setPassword(encodedPass);
+        userRepository.save(user);
+
+        // Trả token mới
         return authService.generateNewToken(user);
     }
 
+    // Upload avatar
     public UserProfileResponse uploadAvatar(MultipartFile file) {
-        String username = getCurrentUsername();
-        UserProfile profile = userProfileRepository.findByUsername(username);
-
-        if (profile == null) throw new RuntimeException("Không tìm thấy user!");
+        UserProfile profile = getOrCreateProfile();
 
         try {
             Files.createDirectories(Paths.get(UPLOAD_DIR));
-            String filename = username + "_" + file.getOriginalFilename();
+
+            String filename = profile.getUsername() + "_" + file.getOriginalFilename();
             Path path = Paths.get(UPLOAD_DIR + filename);
+
             Files.write(path, file.getBytes());
 
             profile.setAvatar("/avatars/" + filename);
@@ -127,16 +136,15 @@ public class UserProfileService {
             userProfileRepository.save(profile);
 
             return convert(profile);
+
         } catch (IOException e) {
             throw new RuntimeException("Lỗi upload avatar!");
         }
     }
 
+    // Xoá avatar
     public String deleteAvatar() {
-        String username = getCurrentUsername();
-        UserProfile profile = userProfileRepository.findByUsername(username);
-
-        if (profile == null) throw new RuntimeException("Không tìm thấy user!");
+        UserProfile profile = getOrCreateProfile();
 
         profile.setAvatar(null);
         profile.setUpdatedAt(LocalDateTime.now());
@@ -145,24 +153,7 @@ public class UserProfileService {
         return "Xóa avatar thành công!";
     }
 
-    private UserProfileResponse convert(UserProfile p) {
-        UserProfileResponse r = new UserProfileResponse();
-        r.setId(p.getId());
-        r.setUsername(p.getUsername());
-        r.setEmail(p.getEmail());
-        r.setPhonenumber(p.getPhonenumber());
-        r.setBirthday(p.getBirthday());
-        r.setGender(p.getGender());
-        r.setCity(p.getCity());
-        r.setHometown(p.getHometown());
-        r.setAddress(p.getAddress());
-        r.setAvatar(p.getAvatar());
-        r.setDescription(p.getDescription());
-        if (p.getCreatedAt() != null) r.setCreatedAt(p.getCreatedAt().toString());
-        if (p.getUpdatedAt() != null) r.setUpdatedAt(p.getUpdatedAt().toString());
-        return r;
-    }
-
+    // Lấy thông tin 1 trường
     public Object getField(String field) {
         UserProfileResponse p = getProfile();
 
@@ -183,4 +174,27 @@ public class UserProfileService {
             default -> throw new RuntimeException("Trường '" + field + "' không tồn tại!");
         };
     }
+
+    // Convert sang DTO
+    private UserProfileResponse convert(UserProfile p) {
+        UserProfileResponse r = new UserProfileResponse();
+
+        r.setId(p.getId());
+        r.setUsername(p.getUsername());
+        r.setEmail(p.getEmail());
+        r.setPhonenumber(p.getPhonenumber());
+        r.setBirthday(p.getBirthday());
+        r.setGender(p.getGender());
+        r.setCity(p.getCity());
+        r.setHometown(p.getHometown());
+        r.setAddress(p.getAddress());
+        r.setAvatar(p.getAvatar());
+        r.setDescription(p.getDescription());
+
+        if (p.getCreatedAt() != null) r.setCreatedAt(p.getCreatedAt().toString());
+        if (p.getUpdatedAt() != null) r.setUpdatedAt(p.getUpdatedAt().toString());
+
+        return r;
+    }
 }
+
