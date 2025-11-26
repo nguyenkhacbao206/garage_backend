@@ -4,12 +4,68 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class ImportInvoiceItemResponse {
+
     private String id;
     private String invoiceId;
-    private String supplierId;
-    private String supplierName;
-    private String partId;
-    private String partName;
+
+    // ------------ SUPPLIER (NHÚNG TRONG PART) ------------
+    public static class SupplierResponse {
+        private String supplierId;
+        private String supplierName;
+        private String supplierCode;
+        private String supplierAddress;
+        private String supplierEmail;
+        private String supplierPhone;
+        private String supplierDescription;
+
+        public String getSupplierId() { return supplierId; }
+        public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
+        public String getSupplierName() { return supplierName; }
+        public void setSupplierName(String supplierName) { this.supplierName = supplierName; }
+        public String getSupplierCode() { return supplierCode; }
+        public void setSupplierCode(String supplierCode) { this.supplierCode = supplierCode; }
+        public String getSupplierAddress() { return supplierAddress; }
+        public void setSupplierAddress(String supplierAddress) { this.supplierAddress = supplierAddress; }
+        public String getSupplierEmail() { return supplierEmail; }
+        public void setSupplierEmail(String supplierEmail) { this.supplierEmail = supplierEmail; }
+        public String getSupplierPhone() { return supplierPhone; }
+        public void setSupplierPhone(String supplierPhone) { this.supplierPhone = supplierPhone; }
+        public String getSupplierDescription() { return supplierDescription; }
+        public void setSupplierDescription(String supplierDescription) { this.supplierDescription = supplierDescription; }
+    }
+
+    // PART
+    public static class ImportPartResponse {
+        private String partId;
+        private String partName;
+        private String partCode;
+        private Double price;
+        private Integer stock;
+        private String description;
+
+        // Supplier nằm trong part
+        private SupplierResponse supplier;
+
+        public String getPartId() { return partId; }
+        public void setPartId(String partId) { this.partId = partId; }
+        public String getPartName() { return partName; }
+        public void setPartName(String partName) { this.partName = partName; }
+        public String getPartCode() { return partCode; }
+        public void setPartCode(String partCode) { this.partCode = partCode; }
+        public Double getPrice() { return price; }
+        public void setPrice(Double price) { this.price = price; }
+        public Integer getStock() { return stock; }
+        public void setStock(Integer stock) { this.stock = stock; }
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
+
+        public SupplierResponse getSupplier() { return supplier; }
+        public void setSupplier(SupplierResponse supplier) { this.supplier = supplier; }
+    }
+
+    private ImportPartResponse part;
+
+    // ITEM FIELDS
     private LocalDateTime date;
     private Integer quantity;
     private BigDecimal unitPrice;
@@ -18,21 +74,15 @@ public class ImportInvoiceItemResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public ImportInvoiceItemResponse() {}
-
-    // Getters & Setters
+    // GETTER / SETTER
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getInvoiceId() { return invoiceId; }
     public void setInvoiceId(String invoiceId) { this.invoiceId = invoiceId; }
-    public String getSupplierId() { return supplierId; }
-    public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
-    public String getSupplierName() { return supplierName; }
-    public void setSupplierName(String supplierName) { this.supplierName = supplierName; }
-    public String getPartId() { return partId; }
-    public void setPartId(String partId) { this.partId = partId; }
-    public String getPartName() { return partName; }
-    public void setPartName(String partName) { this.partName = partName; }
+
+    public ImportPartResponse getPart() { return part; }
+    public void setPart(ImportPartResponse part) { this.part = part; }
+
     public LocalDateTime getDate() { return date; }
     public void setDate(LocalDateTime date) { this.date = date; }
     public Integer getQuantity() { return quantity; }

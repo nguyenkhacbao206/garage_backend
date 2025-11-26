@@ -36,8 +36,6 @@ public class ImportInvoiceItemService {
         ImportInvoiceItemResponse res = new ImportInvoiceItemResponse();
         res.setId(e.getId());
         res.setInvoiceId(e.getInvoiceId());
-        res.setSupplierId(e.getSupplierId());
-        res.setPartId(e.getPartId());
         res.setDate(e.getDate());
         res.setQuantity(e.getQuantity());
         res.setUnitPrice(e.getUnitPrice());
@@ -46,8 +44,32 @@ public class ImportInvoiceItemService {
         res.setCreatedAt(e.getCreatedAt());
         res.setUpdatedAt(e.getUpdatedAt());
 
-        supplierRepo.findById(e.getSupplierId()).ifPresent(s -> res.setSupplierName(s.getName()));
-        partRepo.findById(e.getPartId()).ifPresent(p -> res.setPartName(p.getName()));
+        partRepo.findById(e.getPartId()).ifPresent(p -> {
+        ImportInvoiceItemResponse.ImportPartResponse part =
+                new ImportInvoiceItemResponse.ImportPartResponse();
+            part.setPartId(p.getId());
+            part.setPartName(p.getName());
+            part.setPartCode(p.getPartCode());
+            part.setPrice(p.getPrice());
+            part.setStock(p.getStock());
+            part.setDescription(p.getDescription());
+
+            
+            supplierRepo.findById(e.getSupplierId()).ifPresent(s -> {
+                ImportInvoiceItemResponse.SupplierResponse sup =
+                    new ImportInvoiceItemResponse.SupplierResponse();
+                sup.setSupplierId(s.getId());
+                sup.setSupplierName(s.getName());
+                sup.setSupplierCode(s.getSupplierCode());
+                sup.setSupplierAddress(s.getAddress());
+                sup.setSupplierEmail(s.getEmail());
+                sup.setSupplierPhone(s.getPhone());
+                sup.setSupplierDescription(s.getDescription());
+                part.setSupplier(sup);
+            });
+            
+            res.setPart(part);
+        });
 
         return res;
     }
@@ -72,7 +94,7 @@ public class ImportInvoiceItemService {
         e.setSupplierId(req.getSupplierId());
         e.setPartId(req.getPartId());
         e.setDate(req.getDate());
-        e.setDate(now); 
+        e.setDate(now);
         e.setQuantity(req.getQuantity());
         e.setUnitPrice(req.getUnitPrice());
         e.setTotal(total);
