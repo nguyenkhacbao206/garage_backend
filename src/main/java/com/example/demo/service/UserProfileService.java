@@ -50,14 +50,18 @@ public class UserProfileService {
 
     public UserProfileResponse getProfile() {
         String username = getCurrentUsername();
+
+        User user = userRepository.findByEmail(username)
+            .orElseThrow(() -> new RuntimeException("User không tồn tại!"));
+
         UserProfile profile = userProfileRepository.findByUsername(username);
 
         if (profile == null) {
             profile = new UserProfile();
-            profile.setUsername(username);
-            profile.setEmail(username);
-            profile.setPhonenumber(username);
-            profile.setPassword(passwordEncoder.encode("123456"));
+            profile.setUsername(user.getUsername());
+            profile.setEmail(user.getEmail());
+            profile.setPhonenumber(user.getPhonenumber());
+            profile.setPassword(user.getPassword());
             profile.setCreatedAt(LocalDateTime.now());
             profile.setUpdatedAt(LocalDateTime.now());
             userProfileRepository.save(profile);
