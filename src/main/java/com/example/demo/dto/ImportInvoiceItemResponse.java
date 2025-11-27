@@ -2,13 +2,15 @@ package com.example.demo.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ImportInvoiceItemResponse {
 
     private String id;
     private String invoiceId;
+    private List<ImportPartResponse> parts;
 
-    // ------------ SUPPLIER (NHÚNG TRONG PART) ------------
+    // SUPPLIER (NHÚNG TRONG PART)
     public static class SupplierResponse {
         private String supplierId;
         private String supplierName;
@@ -75,6 +77,10 @@ public class ImportInvoiceItemResponse {
     private LocalDateTime updatedAt;
 
     // GETTER / SETTER
+
+    public List<ImportPartResponse> getParts() { return parts; }
+    public void setParts(List<ImportPartResponse> partList) { this.parts = partList; }
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getInvoiceId() { return invoiceId; }

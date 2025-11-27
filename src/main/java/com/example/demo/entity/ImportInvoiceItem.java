@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(collection = "import_invoice_items")
 public class ImportInvoiceItem {
@@ -14,22 +15,33 @@ public class ImportInvoiceItem {
 
     private String invoiceId;
     private String supplierId;
-    private String partId;
 
     private LocalDateTime date;
 
-    private Integer quantity;
-    private BigDecimal unitPrice;
-    private BigDecimal total;
+    private BigDecimal total; // tổng của tất cả part
     private BigDecimal invoiceTotal;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public ImportInvoiceItem() {}
+    private List<PartInfo> parts; // list chứa tất cả part + quantity + unitPrice
 
-    // GETTERS & SETTERS
+    // ===== Nested class PartInfo =====
+    public static class PartInfo {
+        private String partId;
+        private Integer quantity;
+        private BigDecimal unitPrice;
 
+        // getters/setters
+        public String getPartId() { return partId; }
+        public void setPartId(String partId) { this.partId = partId; }
+        public Integer getQuantity() { return quantity; }
+        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+        public BigDecimal getUnitPrice() { return unitPrice; }
+        public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
+    }
+
+    // ===== GET/SET =====
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -39,17 +51,8 @@ public class ImportInvoiceItem {
     public String getSupplierId() { return supplierId; }
     public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
 
-    public String getPartId() { return partId; }
-    public void setPartId(String partId) { this.partId = partId; }
-
     public LocalDateTime getDate() { return date; }
     public void setDate(LocalDateTime date) { this.date = date; }
-
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
-
-    public BigDecimal getUnitPrice() { return unitPrice; }
-    public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
 
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
@@ -62,4 +65,7 @@ public class ImportInvoiceItem {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public List<PartInfo> getParts() { return parts; }
+    public void setParts(List<PartInfo> parts) { this.parts = parts; }
 }
