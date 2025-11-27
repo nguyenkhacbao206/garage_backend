@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -32,146 +33,135 @@ public class ImportInvoiceItemService {
         this.partRepo = partRepo;
     }
 
+    // Chuyển entity sang response
     private ImportInvoiceItemResponse toResponse(ImportInvoiceItem e) {
         ImportInvoiceItemResponse res = new ImportInvoiceItemResponse();
         res.setId(e.getId());
         res.setInvoiceId(e.getInvoiceId());
         res.setDate(e.getDate());
-        res.setQuantity(e.getQuantity());
-        res.setUnitPrice(e.getUnitPrice());
         res.setTotal(e.getTotal());
         res.setInvoiceTotal(e.getInvoiceTotal());
         res.setCreatedAt(e.getCreatedAt());
         res.setUpdatedAt(e.getUpdatedAt());
 
-        partRepo.findById(e.getPartId()).ifPresent(p -> {
-        ImportInvoiceItemResponse.ImportPartResponse part =
-                new ImportInvoiceItemResponse.ImportPartResponse();
-            part.setPartId(p.getId());
-            part.setPartName(p.getName());
-            part.setPartCode(p.getPartCode());
-            part.setPrice(p.getPrice());
-            part.setStock(p.getStock());
-            part.setDescription(p.getDescription());
+        List<ImportInvoiceItemResponse.ImportPartResponse> partList = new ArrayList<>();
 
-            
-            supplierRepo.findById(e.getSupplierId()).ifPresent(s -> {
-                ImportInvoiceItemResponse.SupplierResponse sup =
-                    new ImportInvoiceItemResponse.SupplierResponse();
-                sup.setSupplierId(s.getId());
-                sup.setSupplierName(s.getName());
-                sup.setSupplierCode(s.getSupplierCode());
-                sup.setSupplierAddress(s.getAddress());
-                sup.setSupplierEmail(s.getEmail());
-                sup.setSupplierPhone(s.getPhone());
-                sup.setSupplierDescription(s.getDescription());
-                part.setSupplier(sup);
+        for (ImportInvoiceItem.PartInfo pi : e.getParts()) {
+            partRepo.findById(pi.getPartId()).ifPresent(p -> {
+                ImportInvoiceItemResponse.ImportPartResponse part = new ImportInvoiceItemResponse.ImportPartResponse();
+                part.setPartId(p.getId());
+                part.setPartName(p.getName());
+                part.setPartCode(p.getPartCode());
+                part.setPrice(p.getPrice());
+                part.setStock(p.getStock());
+                part.setDescription(p.getDescription());
+
+                // Supplier nằm trong mỗi part
+                supplierRepo.findById(e.getSupplierId()).ifPresent(s -> {
+                    ImportInvoiceItemResponse.SupplierResponse sup = new ImportInvoiceItemResponse.SupplierResponse();
+                    sup.setSupplierId(s.getId());
+                    sup.setSupplierName(s.getName());
+                    sup.setSupplierCode(s.getSupplierCode());
+                    sup.setSupplierAddress(s.getAddress());
+                    sup.setSupplierEmail(s.getEmail());
+                    sup.setSupplierPhone(s.getPhone());
+                    sup.setSupplierDescription(s.getDescription());
+                    part.setSupplier(sup);
+                });
+
+                partList.add(part);
             });
-            
-            res.setPart(part);
-        });
+        }
 
+        res.setParts(partList);
         return res;
     }
 
-    private BigDecimal calculateTotal(ImportInvoiceItemRequest req) {
-        return req.getUnitPrice().multiply(BigDecimal.valueOf(req.getQuantity()));
-    }
-
-    private BigDecimal calculateInvoiceTotal(String invoiceId) {
-        List<ImportInvoiceItem> items = repo.findByInvoiceId(invoiceId);
-        return items.stream()
-                .map(ImportInvoiceItem::getTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
+    // Tạo hóa đơn mới
     public ImportInvoiceItemResponse create(ImportInvoiceItemRequest req) {
-        BigDecimal total = calculateTotal(req);
         LocalDateTime now = LocalDateTime.now();
 
         ImportInvoiceItem e = new ImportInvoiceItem();
         e.setInvoiceId(req.getInvoiceId());
         e.setSupplierId(req.getSupplierId());
-        e.setPartId(req.getPartId());
         e.setDate(req.getDate());
-        e.setDate(now);
-        e.setQuantity(req.getQuantity());
-        e.setUnitPrice(req.getUnitPrice());
-        e.setTotal(total);
         e.setCreatedAt(now);
         e.setUpdatedAt(now);
 
-        repo.save(e);
+        // Map danh sách part từ request
+        List<ImportInvoiceItem.PartInfo> partList = req.getParts().stream().map(p -> {
+            ImportInvoiceItem.PartInfo pi = new ImportInvoiceItem.PartInfo();
+            pi.setPartId(p.getPartId());
+            pi.setQuantity(p.getQuantity());
+            pi.setUnitPrice(p.getUnitPrice());
+            return pi;
+        }).collect(Collectors.toList());
+        e.setParts(partList);
 
-        // Cập nhật invoiceTotal
-        BigDecimal invoiceTotal = calculateInvoiceTotal(req.getInvoiceId());
-        e.setInvoiceTotal(invoiceTotal);
-        repo.save(e);
+        // Tính tổng tiền hóa đơn
+        BigDecimal total = partList.stream()
+                .map(p -> p.getUnitPrice().multiply(BigDecimal.valueOf(p.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        e.setTotal(total);
+        e.setInvoiceTotal(total);
+
+        repo.save(e);
         return toResponse(e);
     }
 
+    // Lấy tất cả
     public List<ImportInvoiceItemResponse> getAll() {
         return repo.findAll().stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
-    public List<ImportInvoiceItemResponse> getByInvoiceId(String invoiceId) {
-        return repo.findByInvoiceId(invoiceId).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
+    // Lấy theo ID
     public Optional<ImportInvoiceItemResponse> getById(String id) {
         return repo.findById(id).map(this::toResponse);
     }
 
+    // Update hóa đơn
     public Optional<ImportInvoiceItemResponse> update(String id, ImportInvoiceItemRequest req) {
         Optional<ImportInvoiceItem> opt = repo.findById(id);
         if (opt.isEmpty()) return Optional.empty();
 
         ImportInvoiceItem e = opt.get();
-        BigDecimal total = calculateTotal(req);
         e.setInvoiceId(req.getInvoiceId());
         e.setSupplierId(req.getSupplierId());
-        e.setPartId(req.getPartId());
-        e.setQuantity(req.getQuantity());
-        e.setUnitPrice(req.getUnitPrice());
-        e.setTotal(total);
+        e.setDate(req.getDate());
         e.setUpdatedAt(LocalDateTime.now());
 
-        repo.save(e);
+        List<ImportInvoiceItem.PartInfo> partList = req.getParts().stream().map(p -> {
+            ImportInvoiceItem.PartInfo pi = new ImportInvoiceItem.PartInfo();
+            pi.setPartId(p.getPartId());
+            pi.setQuantity(p.getQuantity());
+            pi.setUnitPrice(p.getUnitPrice());
+            return pi;
+        }).collect(Collectors.toList());
+        e.setParts(partList);
 
-        // Cập nhật invoiceTotal
-        BigDecimal invoiceTotal = calculateInvoiceTotal(req.getInvoiceId());
-        e.setInvoiceTotal(invoiceTotal);
-        repo.save(e);
+        BigDecimal total = partList.stream()
+                .map(p -> p.getUnitPrice().multiply(BigDecimal.valueOf(p.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        e.setTotal(total);
+        e.setInvoiceTotal(total);
 
+        repo.save(e);
         return Optional.of(toResponse(e));
     }
 
+    // Xóa hóa đơn
     public boolean delete(String id) {
         Optional<ImportInvoiceItem> opt = repo.findById(id);
         if (opt.isEmpty()) return false;
 
-        String invoiceId = opt.get().getInvoiceId();
         repo.deleteById(id);
-
-        // Update invoiceTotal cho các item còn lại
-        List<ImportInvoiceItem> items = repo.findByInvoiceId(invoiceId);
-        BigDecimal invoiceTotal = items.stream()
-                .map(ImportInvoiceItem::getTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        items.forEach(item -> {
-            item.setInvoiceTotal(invoiceTotal);
-            repo.save(item);
-        });
-
         return true;
     }
 
+    // Sắp xếp theo createdAt
     public List<ImportInvoiceItemResponse> sortByCreatedAt(List<ImportInvoiceItemResponse> items, boolean asc) {
         Comparator<ImportInvoiceItemResponse> comp = Comparator.comparing(
                 ImportInvoiceItemResponse::getCreatedAt,
@@ -181,4 +171,9 @@ public class ImportInvoiceItemService {
         items.sort(comp);
         return items;
     }
+
+    // Getter repositories nếu cần
+    public ImportInvoiceItemRepository getRepo() { return repo; }
+    public SupplierRepository getSupplierRepo() { return supplierRepo; }
+    public PartRepository getPartRepo() { return partRepo; }
 }
