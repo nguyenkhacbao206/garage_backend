@@ -5,9 +5,11 @@ import java.util.List;
 public class RepairOrderRequest {
     private String customerId;
     private String carId;
-    private String technicianId; 
-    private String status;        
-    private List<RepairOrderItemRequest> items;
+    private List<String> technicianIds;
+    private String note;
+    private List<RepairOrderItemRequest> parts;
+    private List<RepairOrderItemRequest> services;
+    private String status;
 
     public RepairOrderRequest() {}
 
@@ -25,11 +27,32 @@ public class RepairOrderRequest {
         this.carId = carId; 
     }
 
-    public String getTechnicianId() { 
-        return technicianId; 
+    public List<String> getTechnicianIds() { 
+        return technicianIds; 
     }
-    public void setTechnicianId(String technicianId) { 
-        this.technicianId = technicianId; 
+    public void setTechnicianIds(List<String> technicianIds) { 
+        this.technicianIds = technicianIds; 
+    }
+
+    public String getNote() { 
+        return note; 
+    }
+    public void setNote(String note) { 
+        this.note = note; 
+    }
+
+    public List<RepairOrderItemRequest> getParts() { 
+        return parts; 
+    }
+    public void setParts(List<RepairOrderItemRequest> parts) { 
+        this.parts = parts; 
+    }
+
+    public List<RepairOrderItemRequest> getServices() { 
+        return services; 
+    }
+    public void setServices(List<RepairOrderItemRequest> services) { 
+        this.services = services; 
     }
 
     public String getStatus() { 
@@ -37,12 +60,5 @@ public class RepairOrderRequest {
     }
     public void setStatus(String status) { 
         this.status = status; 
-    }
-
-    public List<RepairOrderItemRequest> getItems() { 
-        return items; 
-    }
-    public void setItems(List<RepairOrderItemRequest> items) { 
-        this.items = items; 
     }
 }
