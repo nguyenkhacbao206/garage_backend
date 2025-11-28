@@ -1,10 +1,12 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.PaymentRequest;
 import com.example.demo.dto.PaymentResponse;
 import com.example.demo.dto.UpdatePaymentStatusRequest;
 import com.example.demo.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,40 +22,65 @@ public class PaymentController {
 
     public PaymentController(PaymentService paymentService) { this.paymentService = paymentService; }
 
-    @Operation(summary = "Tạo payment cho RepairOrder")
     @PostMapping
-    public ResponseEntity<PaymentResponse> createPayment(@RequestBody PaymentRequest request) {
-        PaymentResponse resp = paymentService.createPayment(request);
-        return ResponseEntity.ok(resp);
+    @Operation(summary = "Tạo payment cho RepairOrder")
+    public ResponseEntity<ApiResponse<PaymentResponse>> createPayment(@RequestBody PaymentRequest request) {
+        try {
+            PaymentResponse resp = paymentService.createPayment(request);
+            return ResponseEntity.ok(new ApiResponse<>("Tạo payment thành công", resp));
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
-    @Operation(summary = "Lấy payment theo id")
     @GetMapping("/{id}")
-    public ResponseEntity<PaymentResponse> getPayment(@PathVariable String id) {
-        return ResponseEntity.ok(paymentService.getPayment(id));
+    @Operation(summary = "Lấy payment theo id")
+    public ResponseEntity<ApiResponse<PaymentResponse>> getPayment(
+            @Parameter(description = "ID của Payment") @PathVariable String id) {
+        try {
+            return ResponseEntity.ok(new ApiResponse<>("Thành công", paymentService.getPayment(id)));
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
-    @Operation(summary = "Lấy danh sách payment (có thể filter theo orderId hoặc status bằng query params)")
     @GetMapping
-    public ResponseEntity<List<PaymentResponse>> listPayments(
+    @Operation(summary = "Lấy danh sách payment")
+    public ResponseEntity<ApiResponse<List<PaymentResponse>>> listPayments(
             @RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "status", required = false) String status) {
-
-        if (orderId != null) return ResponseEntity.ok(paymentService.findByRepairOrderId(orderId));
-        if (status != null) return ResponseEntity.ok(paymentService.findByStatus(status));
-        return ResponseEntity.ok(paymentService.listPayments());
+        try {
+            List<PaymentResponse> result;
+            if (orderId != null) result = paymentService.findByRepairOrderId(orderId);
+            else if (status != null) result = paymentService.findByStatus(status);
+            else result = paymentService.listPayments();
+            return ResponseEntity.ok(new ApiResponse<>("Thành công", result));
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
-    @Operation(summary = "Cập nhật trạng thái payment")
     @PutMapping("/{id}/status")
-    public ResponseEntity<PaymentResponse> updateStatus(@PathVariable String id, @RequestBody UpdatePaymentStatusRequest req) {
-        return ResponseEntity.ok(paymentService.updateStatus(id, req.getStatus()));
+    @Operation(summary = "Cập nhật trạng thái payment")
+    public ResponseEntity<ApiResponse<PaymentResponse>> updateStatus(
+            @Parameter(description = "ID của Payment") @PathVariable String id,
+            @RequestBody UpdatePaymentStatusRequest req) {
+        try {
+            return ResponseEntity.ok(new ApiResponse<>("Cập nhật trạng thái thành công", paymentService.updateStatus(id, req.getStatus())));
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
-    @Operation(summary = "Xóa payment")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable String id) {
-        paymentService.deleteById(id);
-        return ResponseEntity.noContent().build();
+    @Operation(summary = "Xóa payment")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @Parameter(description = "ID của Payment") @PathVariable String id) {
+        try {
+            paymentService.deleteById(id);
+            return ResponseEntity.ok(new ApiResponse<>("Xóa payment thành công", null));
+        } catch (Exception e) {
+            throw e;
+        }
     }
 }

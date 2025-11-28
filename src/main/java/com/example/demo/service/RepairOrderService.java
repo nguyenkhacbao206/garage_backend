@@ -1,80 +1,129 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.RepairOrder;
+import com.example.demo.entity.RepairOrderItem;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.RepairOrderItemRepository;
 import com.example.demo.repository.RepairOrderRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RepairOrderService {
 
     private final RepairOrderRepository repository;
+    private final RepairOrderItemRepository itemRepository;
 
-    public RepairOrderService(RepairOrderRepository repository) {
+    public RepairOrderService(RepairOrderRepository repository,
+                              RepairOrderItemRepository itemRepository) {
         this.repository = repository;
+        this.itemRepository = itemRepository;
     }
 
-    // Tạo RepairOrder mới
     public RepairOrder createRepairOrder(RepairOrder order) {
-        if (order.getDateReceived() == null) {
-            order.setDateReceived(LocalDateTime.now());
-        }
-        if (order.getStatus() == null) {
-            order.setStatus("PENDING");
-        }
+        order.setStatus(order.getStatus() == null ? "PENDING" : order.getStatus());
         if (order.getOrderCode() == null) {
             order.setOrderCode("ORD-" + System.currentTimeMillis());
         }
+        order.setDateReceived(LocalDateTime.now());
         return repository.save(order);
     }
 
-    // Lấy tất cả RepairOrder
     public List<RepairOrder> getAllOrders() {
         return repository.findAll();
     }
 
-    // Lấy RepairOrder theo id
-    public Optional<RepairOrder> getOrderById(String id) {
-        return repository.findById(id);
+    public RepairOrder getOrderById(String id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("RepairOrder not found with id: " + id));
     }
 
-    // Cập nhật RepairOrder 
-    public RepairOrder updateOrder(String id, RepairOrder updatedOrder) {
+    public RepairOrder updateOrder(String id, RepairOrder updated) {
         return repository.findById(id).map(order -> {
-            if (updatedOrder.getStatus() != null) order.setStatus(updatedOrder.getStatus());
-            if (updatedOrder.getItems() != null) order.setItems(updatedOrder.getItems());
-            if (updatedOrder.getDateReturned() != null) order.setDateReturned(updatedOrder.getDateReturned());
+            if (updated.getStatus() != null) order.setStatus(updated.getStatus());
+            if (updated.getNote() != null) order.setNote(updated.getNote());
+            if (updated.getCustomerId() != null) order.setCustomerId(updated.getCustomerId());
+            if (updated.getCarId() != null) order.setCarId(updated.getCarId());
+            if (updated.getTechnicianIds() != null) order.setTechnicianIds(updated.getTechnicianIds());
+            if (updated.getParts() != null) order.setParts(updated.getParts());
+            if (updated.getServices() != null) order.setServices(updated.getServices());
+            if (updated.getDateReceived() != null) order.setDateReceived(updated.getDateReceived());
+            if (updated.getDateReturned() != null) order.setDateReturned(updated.getDateReturned());
+
+            order.calculateEstimatedTotal();
             return repository.save(order);
-        }).orElseThrow(() -> new RuntimeException("RepairOrder not found with id: " + id));
+        }).orElseThrow(() -> new ResourceNotFoundException("RepairOrder not found with id: " + id));
     }
 
-    // Đánh dấu sửa xong
-    public RepairOrder completeOrder(String id) {
-        return repository.findById(id).map(order -> {
-            order.setStatus("COMPLETED");
-            if (order.getDateReturned() == null) {
-                order.setDateReturned(LocalDateTime.now());
-            }
-            return repository.save(order);
-        }).orElseThrow(() -> new RuntimeException("RepairOrder not found with id: " + id));
-    }
-
-    // Thanh toán
-    public RepairOrder payOrder(String id) {
-        return repository.findById(id).map(order -> {
-            order.setStatus("PAID");
-            if (order.getDateReturned() == null) {
-                order.setDateReturned(LocalDateTime.now());
-            }
-            return repository.save(order);
-        }).orElseThrow(() -> new RuntimeException("RepairOrder not found with id: " + id));
-    }
-
-    // Xóa đơn
     public void deleteOrder(String id) {
         repository.deleteById(id);
+    }
+
+    public RepairOrder completeOrder(String id) {
+        RepairOrder order = getOrderById(id);
+        order.setStatus("COMPLETED");
+        order.setDateReturned(LocalDateTime.now());
+        return repository.save(order);
+    }
+
+    public RepairOrder payOrder(String id) {
+        RepairOrder order = getOrderById(id);
+        order.setStatus("PAID");
+        order.setDateReturned(LocalDateTime.now());
+        return repository.save(order);
+    }
+
+    public RepairOrderItem addItem(String repairOrderId, RepairOrderItem item, boolean isPart) {
+        RepairOrder order = getOrderById(repairOrderId);
+
+        item.setRepairOrderId(order.getId());
+        item.setCreatedAt(LocalDateTime.now());
+        item.recalcTotal();
+
+        RepairOrderItem savedItem = itemRepository.save(item);
+
+        if (isPart) order.getParts().add(savedItem);
+        else order.getServices().add(savedItem);
+
+        order.calculateEstimatedTotal();
+        repository.save(order);
+
+        return savedItem;
+    }
+
+    public RepairOrderItem updateItem(String itemId, RepairOrderItem updatedItem) {
+        RepairOrderItem item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
+
+        if (updatedItem.getName() != null) item.setName(updatedItem.getName());
+        if (updatedItem.getUnitPrice() != null) item.setUnitPrice(updatedItem.getUnitPrice());
+        if (updatedItem.getQuantity() != null) item.setQuantity(updatedItem.getQuantity());
+        item.recalcTotal();
+
+        itemRepository.save(item);
+
+        // Update order total
+        RepairOrder order = getOrderById(item.getRepairOrderId());
+        order.calculateEstimatedTotal();
+        repository.save(order);
+
+        return item;
+    }
+
+    public void deleteItem(String repairOrderId, String itemId, boolean isPart) {
+        RepairOrder order = getOrderById(repairOrderId);
+        itemRepository.deleteById(itemId);
+
+        if (isPart) order.getParts().removeIf(i -> i.getId().equals(itemId));
+        else order.getServices().removeIf(i -> i.getId().equals(itemId));
+
+        order.calculateEstimatedTotal();
+        repository.save(order);
+    }
+
+    public List<RepairOrderItem> getItems(String repairOrderId) {
+        return itemRepository.findByRepairOrderId(repairOrderId);
     }
 }
