@@ -104,20 +104,17 @@ public class UserProfileController {
     }
 
     @PostMapping("/avatar")
-    @Operation(
-        summary = "Upload avatar mới",
-        description = "Upload file ảnh và lưu đường dẫn avatar."
-    )
-    public ResponseEntity<?> uploadAvatar(
-            @Parameter(description = "File ảnh avatar")
-            @RequestParam("file") MultipartFile file) {
+    @Operation(summary = "Upload avatar mới")
+        public ResponseEntity<?> uploadAvatar(
+                @Parameter(description = "File ảnh avatar")
+                @RequestParam("file") MultipartFile file)  {
 
-        try {
-            return ResponseEntity.ok(service.uploadAvatar(file));
-        } catch (Exception ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            try {
+                return ResponseEntity.ok(service.uploadAvatar(file));
+            } catch (Exception ex) {
+                return ResponseEntity.badRequest().body(ex.getMessage());
+            }
         }
-    }
 
     @DeleteMapping("/avatar")
     @Operation(
