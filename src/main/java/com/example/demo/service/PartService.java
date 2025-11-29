@@ -8,9 +8,9 @@ import com.example.demo.repository.PartRepository;
 import com.example.demo.repository.SupplierRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
-import org.springframework.data.domain.Sort;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,25 +27,23 @@ public class PartService {
 
     private String generatePartCode() {
         Part lastPart = partRepository.findTopByOrderByPartCodeDesc();
+
         if (lastPart == null || lastPart.getPartCode() == null) {
             return "PT-001";
         }
-        String lastCode = lastPart.getPartCode().replace("PT-", "");
-        int number = Integer.parseInt(lastCode);
-        int next = number + 1;
-        if (next < 1000) {
-            return String.format("PT-%03d", next);
-        }
-        return "PT-" + next;
+
+        String lastCode = lastPart.getPartCode().substring(3);
+        int next = Integer.parseInt(lastCode) + 1;
+
+        return String.format("PT-%03d", next);
     }
 
-    // get all
+    // GET ALL with sorting
     public List<PartResponse> getAll(String order) {
 
-        // Sort theo createdAt
         Sort sort = order.equalsIgnoreCase("asc")
-                ? Sort.by(Sort.Direction.ASC, "createdAt") // tăng dần
-                : Sort.by(Sort.Direction.DESC, "createdAt"); // giảm dần
+                ? Sort.by(Sort.Direction.ASC, "createdAt")
+                : Sort.by(Sort.Direction.DESC, "createdAt");
 
         return partRepository.findAll(sort)
                 .stream()
@@ -53,16 +51,16 @@ public class PartService {
                 .collect(Collectors.toList());
     }
 
-    // get by id
+    // GET BY ID
     public PartResponse getById(String id) {
         Part part = partRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phụ tùng"));
+
         return mapToResponse(part);
     }
 
-    // search
+    // SEARCH
     public List<PartResponse> search(String keyword) {
-
         List<Part> parts = partRepository
                 .findByNameContainingIgnoreCaseOrPartCodeContainingIgnoreCase(keyword, keyword);
 
@@ -71,33 +69,32 @@ public class PartService {
                 .collect(Collectors.toList());
     }
 
-
-    // new create
+    // CREATE
     public PartResponse create(PartRequest req) {
 
         Supplier supplier = supplierRepository.findById(req.getSupplierId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy supplier"));
 
-        String newPartCode = generatePartCode();
-
         Part part = new Part(
-                newPartCode,
+                generatePartCode(),
                 req.getName(),
                 req.getPrice(),
                 req.getStock(),
                 req.getDescription(),
                 req.getSupplierId(),
-                supplier 
+                supplier
         );
 
-        part.setCreatedAt(LocalDateTime.now());
-        part.setUpdatedAt(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        part.setCreatedAt(now);
+        part.setUpdatedAt(now);
 
         partRepository.save(part);
+
         return mapToResponse(part);
     }
 
-    // update
+    // UPDATE
     public PartResponse update(String id, PartRequest req) {
         Part part = partRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phụ tùng"));
@@ -111,7 +108,7 @@ public class PartService {
             Supplier supplier = supplierRepository.findById(req.getSupplierId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy supplier"));
             part.setSupplierId(req.getSupplierId());
-            part.setSupplier(supplier); 
+            part.setSupplier(supplier);
         }
 
         part.setUpdatedAt(LocalDateTime.now());
@@ -120,7 +117,7 @@ public class PartService {
         return mapToResponse(part);
     }
 
-    // delete
+    // DELETE
     public void delete(String id) {
         if (!partRepository.existsById(id)) {
             throw new RuntimeException("Không tìm thấy phụ tùng");
@@ -128,7 +125,7 @@ public class PartService {
         partRepository.deleteById(id);
     }
 
-    // mapping
+    // MAPPING
     private PartResponse mapToResponse(Part part) {
         PartResponse res = new PartResponse(
                 part.getId(),
@@ -146,5 +143,4 @@ public class PartService {
 
         return res;
     }
-
 }
