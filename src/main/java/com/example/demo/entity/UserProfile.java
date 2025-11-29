@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 @Document(collection = "user_profiles")
 public class UserProfile {
@@ -12,6 +13,8 @@ public class UserProfile {
     private String id;
 
     private String username;
+    
+    @Indexed(unique = true)
     private String email;
     private String phonenumber;
 
