@@ -12,16 +12,16 @@ public class User {
     private String email;
     private String phonenumber;
     private String password;
-    private String role;
+    // private String role;
 
     public User() {}
 
-    public User(String username, String email, String phonenumber, String password, String role) {
+    public User(String username, String email, String phonenumber, String password) {
         this.username = username;
         this.email = email;
         this.phonenumber = phonenumber;
         this.password = password;
-        this.role = role;
+        // this.role = role;
     }
 
     public String getId() { 
@@ -39,9 +39,9 @@ public class User {
     public String getPassword() { 
         return password; 
     }
-    public String getRole() { 
-        return role; 
-    }
+    // public String getRole() { 
+    //     return role; 
+    // }
 
     public void setId(String id) { 
         this.id = id; 
@@ -58,7 +58,7 @@ public class User {
     public void setPassword(String password) { 
         this.password = password; 
     }
-    public void setRole(String role) {
-         this.role = role; 
-        }
+    // public void setRole(String role) {
+    //      this.role = role; 
+    //     }
 }

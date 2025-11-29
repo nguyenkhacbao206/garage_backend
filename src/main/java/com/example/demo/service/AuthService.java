@@ -39,8 +39,8 @@ public class AuthService {
         request.getUsername(),
         request.getEmail(),
         request.getPhonenumber(),
-        passwordEncoder.encode(request.getPassword()),
-        "ROLE_USER"
+        passwordEncoder.encode(request.getPassword())
+        // "ROLE_USER"
         );
 
         return userRepository.save(user);
