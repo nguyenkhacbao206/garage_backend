@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 @Document(collection = "users")
 public class User {
@@ -9,6 +10,8 @@ public class User {
     @Id
     private String id;
     private String username;
+    
+    @Indexed(unique = true)
     private String email;
     private String phonenumber;
     private String password;

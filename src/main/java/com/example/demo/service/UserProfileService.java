@@ -44,14 +44,14 @@ public class UserProfileService {
     // Lấy email từ token
     private String getCurrentEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth.getName(); // username = email
+        return auth.getName(); 
     }
 
     // Lấy profile đúng user từ bảng user_profiles
     private UserProfile getOrCreateProfile() {
         String email = getCurrentEmail();
 
-        // ✔ FIX: tìm đúng profile theo email
+       
         UserProfile profile = userProfileRepository.findByEmail(email).orElse(null);
         if (profile != null) return profile;
 
