@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 
 import org.springframework.security.core.Authentication;
@@ -41,21 +42,34 @@ public class UserProfileService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    // SANITIZE
+    private String sanitizeFileName(String input) {
+        // Bỏ dấu tiếng Việt
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+
+        // Thay dấu cách bằng _
+        normalized = normalized.replaceAll(" ", "_");
+
+        // Loại ký tự không hợp lệ
+        normalized = normalized.replaceAll("[^a-zA-Z0-9._-]", "");
+
+        return normalized;
+    }
+
     // Lấy email từ token
     private String getCurrentEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth.getName(); 
+        return auth.getName();
     }
 
-    // Lấy profile đúng user từ bảng user_profiles
+    // Lấy profile đúng user
     private UserProfile getOrCreateProfile() {
         String email = getCurrentEmail();
 
-       
         UserProfile profile = userProfileRepository.findByEmail(email).orElse(null);
         if (profile != null) return profile;
 
-        // Tạo mới profile từ bảng User
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại!"));
 
@@ -70,12 +84,12 @@ public class UserProfileService {
         return userProfileRepository.save(newProfile);
     }
 
-    // Lấy toàn bộ profile
+    // Lấy profile
     public UserProfileResponse getProfile() {
         return convert(getOrCreateProfile());
     }
 
-    // Cập nhật profile
+    // Update profile
     public UserProfileResponse updateProfile(UpdateProfileRequest req) {
         UserProfile profile = getOrCreateProfile();
 
@@ -89,12 +103,11 @@ public class UserProfileService {
         profile.setDescription(req.getDescription());
         profile.setUpdatedAt(LocalDateTime.now());
 
-
         userProfileRepository.save(profile);
         return convert(profile);
     }
 
-    // Đổi mật khẩu
+    // change password
     public AuthResponse changePassword(ChangePasswordRequest req) {
         UserProfile profile = getOrCreateProfile();
 
@@ -102,33 +115,32 @@ public class UserProfileService {
             throw new RuntimeException("Mật khẩu cũ không đúng!");
         }
 
-        // Update bảng UserProfile
         String encodedPass = passwordEncoder.encode(req.getNewPassword());
         profile.setPassword(encodedPass);
         profile.setUpdatedAt(LocalDateTime.now());
         userProfileRepository.save(profile);
 
-        // Update bảng User
         User user = userRepository.findByEmail(profile.getEmail())
                 .orElseThrow(() -> new RuntimeException("User không tồn tại!"));
 
         user.setPassword(encodedPass);
         userRepository.save(user);
 
-        // Trả token mới
         return authService.generateNewToken(user);
     }
 
-    // Upload avatar
+    // upload avatar
     public UserProfileResponse uploadAvatar(MultipartFile file) {
         UserProfile profile = getOrCreateProfile();
 
         try {
             Files.createDirectories(Paths.get(UPLOAD_DIR));
 
-            String filename = profile.getUsername() + "_" + file.getOriginalFilename();
-            Path path = Paths.get(UPLOAD_DIR + filename);
+            // Tạo tên file an toàn
+            String rawName = profile.getUsername() + "_" + file.getOriginalFilename();
+            String filename = sanitizeFileName(rawName);
 
+            Path path = Paths.get(UPLOAD_DIR + filename);
             Files.write(path, file.getBytes());
 
             profile.setAvatar("/avatars/" + filename);
@@ -142,7 +154,7 @@ public class UserProfileService {
         }
     }
 
-    // Xoá avatar
+    // Delete avatar
     public String deleteAvatar() {
         UserProfile profile = getOrCreateProfile();
 
@@ -153,7 +165,7 @@ public class UserProfileService {
         return "Xóa avatar thành công!";
     }
 
-    // Lấy thông tin 1 trường
+    // Get field
     public Object getField(String field) {
         UserProfileResponse p = getProfile();
 
@@ -175,7 +187,8 @@ public class UserProfileService {
         };
     }
 
-    // Convert sang DTO
+    
+    // Convert Entity => DTO
     private UserProfileResponse convert(UserProfile p) {
         UserProfileResponse r = new UserProfileResponse();
 
@@ -197,4 +210,3 @@ public class UserProfileService {
         return r;
     }
 }
-
