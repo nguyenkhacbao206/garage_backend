@@ -8,6 +8,7 @@ import com.example.demo.repository.RepairOrderRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,12 +23,22 @@ public class RepairOrderService {
         this.itemRepository = itemRepository;
     }
 
+    
     public RepairOrder createRepairOrder(RepairOrder order) {
-        order.setStatus(order.getStatus() == null ? "PENDING" : order.getStatus());
-        if (order.getOrderCode() == null) {
+
+        if (order.getStatus() == null)
+            order.setStatus("PENDING");
+
+        if (order.getOrderCode() == null)
             order.setOrderCode("ORD-" + System.currentTimeMillis());
-        }
+
         order.setDateReceived(LocalDateTime.now());
+
+        // tránh null list
+        if (order.getParts() == null) order.setParts(new ArrayList<>());
+        if (order.getServices() == null) order.setServices(new ArrayList<>());
+
+        order.calculateEstimatedTotal();
         return repository.save(order);
     }
 
@@ -40,8 +51,10 @@ public class RepairOrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder not found with id: " + id));
     }
 
+   
     public RepairOrder updateOrder(String id, RepairOrder updated) {
         return repository.findById(id).map(order -> {
+
             if (updated.getStatus() != null) order.setStatus(updated.getStatus());
             if (updated.getNote() != null) order.setNote(updated.getNote());
             if (updated.getCustomerId() != null) order.setCustomerId(updated.getCustomerId());
@@ -54,6 +67,7 @@ public class RepairOrderService {
 
             order.calculateEstimatedTotal();
             return repository.save(order);
+
         }).orElseThrow(() -> new ResourceNotFoundException("RepairOrder not found with id: " + id));
     }
 
@@ -75,6 +89,7 @@ public class RepairOrderService {
         return repository.save(order);
     }
 
+    
     public RepairOrderItem addItem(String repairOrderId, RepairOrderItem item, boolean isPart) {
         RepairOrder order = getOrderById(repairOrderId);
 
@@ -93,6 +108,7 @@ public class RepairOrderService {
         return savedItem;
     }
 
+   
     public RepairOrderItem updateItem(String itemId, RepairOrderItem updatedItem) {
         RepairOrderItem item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
@@ -100,11 +116,11 @@ public class RepairOrderService {
         if (updatedItem.getName() != null) item.setName(updatedItem.getName());
         if (updatedItem.getUnitPrice() != null) item.setUnitPrice(updatedItem.getUnitPrice());
         if (updatedItem.getQuantity() != null) item.setQuantity(updatedItem.getQuantity());
-        item.recalcTotal();
 
+        item.recalcTotal();
         itemRepository.save(item);
 
-        // Update order total
+        // update tổng đơn
         RepairOrder order = getOrderById(item.getRepairOrderId());
         order.calculateEstimatedTotal();
         repository.save(order);
@@ -112,8 +128,10 @@ public class RepairOrderService {
         return item;
     }
 
+    
     public void deleteItem(String repairOrderId, String itemId, boolean isPart) {
         RepairOrder order = getOrderById(repairOrderId);
+
         itemRepository.deleteById(itemId);
 
         if (isPart) order.getParts().removeIf(i -> i.getId().equals(itemId));
