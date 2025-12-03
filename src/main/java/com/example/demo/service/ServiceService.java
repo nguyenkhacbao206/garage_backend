@@ -41,19 +41,24 @@ public class ServiceService {
     }
 
     // SEARCH
-    public List<GarageService> searchServices(String serviceCode, String name) {
+    public List<ServiceResponse> searchServices(String serviceCode, String name) {
         boolean hasCode = serviceCode != null && !serviceCode.isEmpty();
         boolean hasName = name != null && !name.isEmpty();
 
+        List<GarageService> list;
         if (!hasCode && !hasName) {
-            return serviceRepository.findAll();
+            list = serviceRepository.findAll();
         } else if (hasCode && hasName) {
-            return serviceRepository.findByServiceCodeContainingIgnoreCaseOrNameContainingIgnoreCase(serviceCode, name);
+            list = serviceRepository.findByServiceCodeContainingIgnoreCaseOrNameContainingIgnoreCase(serviceCode, name);
         } else if (hasCode) {
-            return serviceRepository.findByServiceCodeContainingIgnoreCase(serviceCode);
+            list = serviceRepository.findByServiceCodeContainingIgnoreCase(serviceCode);
         } else {
-            return serviceRepository.findByNameContainingIgnoreCase(name);
+            list = serviceRepository.findByNameContainingIgnoreCase(name);
         }
+
+        return list.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
 
     // CONVERT
@@ -74,9 +79,10 @@ public class ServiceService {
     }
 
     // GET BY ID
-    public Optional<ServiceResponse> getServiceById(String id) {
-        return serviceRepository.findById(id)
-                .map(this::convertToResponse);
+    public ServiceResponse getServiceById(String id) {
+        GarageService service = serviceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Dịch vụ không tồn tại"));
+        return convertToResponse(service);
     }
 
     // CREATE
@@ -128,10 +134,10 @@ public class ServiceService {
     }
 
     // DELETE
-    public void deleteService(String id) {
-        if (!serviceRepository.existsById(id)) {
-            throw new RuntimeException("Dịch vụ không tồn tại!");
-        }
+    public ServiceResponse deleteService(String id) {
+        GarageService service = serviceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Dịch vụ không tồn tại!"));
         serviceRepository.deleteById(id);
+        return new ServiceResponse("Xóa thành công", service);
     }
 }
