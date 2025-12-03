@@ -23,21 +23,21 @@ public class ServiceController {
 
     private final ServiceService serviceService;
 
-    @Operation(summary = "Tìm kiếm dịch vụ theo mã dịch vụ hoặc tên")
-@GetMapping("/search")
-public ResponseEntity<?> search(
-        @RequestParam(required = false) String serviceCode,
-        @RequestParam(required = false) String name
-) {
-    try {
-        List<GarageService> results = serviceService.searchServices(serviceCode, name);
-        return ResponseEntity.ok(results);
-    } catch (RuntimeException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
-    } catch (Exception e) {
-        return ResponseEntity.internalServerError().body("Lỗi khi tìm kiếm dịch vụ: " + e.getMessage());
-    }
-}
+//     @Operation(summary = "Tìm kiếm dịch vụ theo mã dịch vụ hoặc tên")
+// @GetMapping("/search")
+// public ResponseEntity<?> search(
+//         @RequestParam(required = false) String serviceCode,
+//         @RequestParam(required = false) String name
+// ) {
+//     try {
+//         List<GarageService> results = serviceService.searchServices(serviceCode, name);
+//         return ResponseEntity.ok(results);
+//     } catch (RuntimeException e) {
+//         return ResponseEntity.badRequest().body(e.getMessage());
+//     } catch (Exception e) {
+//         return ResponseEntity.internalServerError().body("Lỗi khi tìm kiếm dịch vụ: " + e.getMessage());
+//     }
+// }
 
     public ServiceController(ServiceService serviceService){
         this.serviceService = serviceService;
@@ -71,16 +71,23 @@ public ResponseEntity<?> search(
     }
 
     @Operation(summary = "Thêm dịch vụ mới")
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody ServiceRequest request) {
-        try {
-            return ResponseEntity.ok(serviceService.createService(request));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
+@PostMapping
+public ResponseEntity<ServiceResponse> create(@RequestBody ServiceRequest request) {
+    try {
+        
+        ServiceResponse response = serviceService.createService(request);
+        return ResponseEntity.ok(response);
+    } catch (RuntimeException e) {
+        ServiceResponse errorResponse = new ServiceResponse();
+        errorResponse.setMessage(e.getMessage());
+        return ResponseEntity.badRequest().body(errorResponse);
+    } catch (Exception e) {
+        ServiceResponse errorResponse = new ServiceResponse();
+        errorResponse.setMessage("Lỗi server: " + e.getMessage());
+        return ResponseEntity.internalServerError().body(errorResponse);
     }
+}
+
 
     @Operation(summary = "Cập nhật dịch vụ theo ID")
     @PutMapping("/{id}")
