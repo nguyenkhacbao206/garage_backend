@@ -1,6 +1,7 @@
 package com.example.demo.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDateTime;
 
 @Schema(description = "Đối tượng phản hồi từ API dịch vụ")
 public class ServiceResponse {
@@ -11,17 +12,24 @@ public class ServiceResponse {
     @Schema(description = "Dữ liệu trả về (1 dịch vụ hoặc danh sách)")
     private Object data;
 
-    public ServiceResponse() {}
+    @Schema(description = "Thời gian trả về")
+    private LocalDateTime timestamp;
+
+    public ServiceResponse() {
+        this.timestamp = LocalDateTime.now();
+    }
 
     public ServiceResponse(String message, Object data) {
         this.message = message;
         this.data = data;
+        this.timestamp = LocalDateTime.now();
     }
 
-    // Getter / Setter
+    // getters/setters
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
-
     public Object getData() { return data; }
     public void setData(Object data) { this.data = data; }
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
 }
