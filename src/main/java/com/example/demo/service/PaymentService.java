@@ -35,17 +35,17 @@ public class PaymentService {
         RepairOrder ro = repairOrderRepository.findById(request.getRepairOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder not found: " + request.getRepairOrderId()));
 
-        User cashier = null;
-        if (request.getCashierId() != null) {
-            cashier = userRepository.findById(request.getCashierId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Cashier not found: " + request.getCashierId()));
-        }
+        // User cashier = null;
+        // if (request.getCashierId() != null) {
+        //     cashier = userRepository.findById(request.getCashierId())
+        //             .orElseThrow(() -> new ResourceNotFoundException("Cashier not found: " + request.getCashierId()));
+        // }
 
         BigDecimal total = ro.calculateEstimatedTotal();
 
         Payment p = new Payment();
         p.setRepairOrderId(ro.getId());
-        p.setCashierId(cashier != null ? cashier.getId() : null);
+        // p.setCashierId(cashier != null ? cashier.getId() : null);
         p.setAmount(total);
         p.setMethod(request.getMethod() == null ? "CASH" : request.getMethod());
         p.setStatus("SUCCESS");
@@ -111,7 +111,7 @@ public class PaymentService {
         return new PaymentResponse(
                 p.getId(),
                 p.getRepairOrderId(),
-                p.getCashierId(),
+                // p.getCashierId(),
                 p.getAmount(),
                 p.getMethod(),
                 p.getStatus(),

@@ -18,8 +18,8 @@ public class Payment {
     @Schema(description = "ID của RepairOrder (tham chiếu)", example = "652a1a2b3c4d5e6f7a8b9c0d")
     private String repairOrderId;
 
-    @Schema(description = "ID của cashier/user thực hiện thu tiền", example = "67123abc9087bcff1234aa12")
-    private String cashierId;
+    // @Schema(description = "ID của cashier/user thực hiện thu tiền", example = "67123abc9087bcff1234aa12")
+    // private String cashierId;
 
     @Schema(description = "Số tiền thanh toán", example = "150000.00")
     private BigDecimal amount;
@@ -53,12 +53,12 @@ public class Payment {
         this.repairOrderId = repairOrderId; 
     }
 
-    public String getCashierId() { 
-        return cashierId; 
-    }
-    public void setCashierId(String cashierId) { 
-        this.cashierId = cashierId; 
-    }
+    // public String getCashierId() { 
+    //     return cashierId; 
+    // }
+    // public void setCashierId(String cashierId) { 
+    //     this.cashierId = cashierId; 
+    // }
 
     public BigDecimal getAmount() { 
         return amount; 

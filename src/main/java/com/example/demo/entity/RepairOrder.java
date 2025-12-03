@@ -33,7 +33,9 @@ public class RepairOrder {
 
     // parts and services (separate arrays)
     private List<RepairOrderItem> parts = new ArrayList<>();
-    private List<RepairOrderItem> services = new ArrayList<>();
+
+    private List<String> serviceIds = new ArrayList<>();
+    private List<Object> services = new ArrayList<>();
 
     private BigDecimal estimatedTotal = BigDecimal.ZERO;
 
@@ -118,10 +120,16 @@ public class RepairOrder {
         this.parts = parts;
     }
 
-    public List<RepairOrderItem> getServices() { 
+    public List<String> getServiceIds() { 
+        return serviceIds;
+    }
+    public void setServiceIds(List<String> serviceIds) { 
+        this.serviceIds = serviceIds;
+    }
+    public List<Object> getServices() {
         return services;
     }
-    public void setServices(List<RepairOrderItem> services) { 
+    public void setServices(List<Object> services) {
         this.services = services;
     }
 
@@ -156,19 +164,27 @@ public class RepairOrder {
     // calculate estimated total
     public BigDecimal calculateEstimatedTotal() {
         BigDecimal total = BigDecimal.ZERO;
+
+        // tính tổng parts
         if (parts != null) {
             for (RepairOrderItem it : parts) {
                 if (it.getTotal() == null) it.recalcTotal();
                 if (it.getTotal() != null) total = total.add(it.getTotal());
             }
         }
+
+        // tính tổng services
         if (services != null) {
-            for (RepairOrderItem it : services) {
-                if (it.getTotal() == null) it.recalcTotal();
-                if (it.getTotal() != null) total = total.add(it.getTotal());
+            for (Object obj : services) {
+                if (obj instanceof RepairOrderItem it) {
+                    if (it.getTotal() == null) it.recalcTotal();
+                    if (it.getTotal() != null) total = total.add(it.getTotal());
+                }
             }
         }
+
         this.estimatedTotal = total;
         return total;
     }
+
 }

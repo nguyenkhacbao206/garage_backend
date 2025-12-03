@@ -49,15 +49,15 @@ public class RepairOrderService {
             }
         }
 
-        order.setServices(new ArrayList<>());
-        if (request.getServices() != null) {
-            for (RepairOrderItemRequest itemReq : request.getServices()) {
-                RepairOrderItem item = new RepairOrderItem();
-                item.setId(itemReq.getId());
-                item.setQuantity(itemReq.getQuantity());
-                order.getServices().add(item);
-            }
-        }
+        // order.setServices(new ArrayList<>());
+        // if (request.getServices() != null) {
+        //     for (RepairOrderItemRequest itemReq : request.getServices()) {
+        //         RepairOrderItem item = new RepairOrderItem();
+        //         item.setId(itemReq.getId());
+        //         // item.setQuantity(itemReq.getQuantity());
+        //         order.getServices().add(item);
+        //     }
+        // }
 
         order.calculateEstimatedTotal();
         return repository.save(order);
@@ -73,7 +73,7 @@ public class RepairOrderService {
             if (updated.getCarId() != null) order.setCarId(updated.getCarId());
             if (updated.getTechnicianIds() != null) order.setTechnicianIds(updated.getTechnicianIds());
             if (updated.getParts() != null) order.setParts(updated.getParts());
-            if (updated.getServices() != null) order.setServices(updated.getServices());
+            if (updated.getServiceIds() != null) order.setServiceIds(updated.getServiceIds());
             if (updated.getDateReceived() != null) order.setDateReceived(updated.getDateReceived());
             if (updated.getDateReturned() != null) order.setDateReturned(updated.getDateReturned());
             order.calculateEstimatedTotal();
@@ -89,6 +89,7 @@ public class RepairOrderService {
         order.setCustomerId(req.getCustomerId());
         order.setCarId(req.getCarId());
         order.setTechnicianIds(req.getTechnicianIds());
+        order.setServiceIds(req.getServiceIds());
         order.setNote(req.getNote());
         order.setStatus(req.getStatus());
 
@@ -102,15 +103,15 @@ public class RepairOrderService {
             order.setParts(partItems);
         }
 
-        if (req.getServices() != null) {
-            List<RepairOrderItem> serviceItems = req.getServices().stream().map(i -> {
-                RepairOrderItem item = new RepairOrderItem();
-                item.setId(i.getId());
-                item.setQuantity(i.getQuantity());
-                return item;
-            }).toList();
-            order.setServices(serviceItems);
-        }
+        // if (req.getServices() != null) {
+        //     List<RepairOrderItem> serviceItems = req.getServices().stream().map(i -> {
+        //         RepairOrderItem item = new RepairOrderItem();
+        //         item.setId(i.getId());
+        //         // item.setQuantity(i.getQuantity());
+        //         return item;
+        //     }).toList();
+        //     order.setServices(serviceItems);
+        // }
 
         return order;
     }
@@ -144,18 +145,18 @@ public class RepairOrderService {
         }
 
         // map services
-        if (order.getServices() != null) {
-            List<RepairOrderItemResponse> services = order.getServices().stream().map(i -> {
-                RepairOrderItemResponse item = new RepairOrderItemResponse();
-                item.setId(i.getId());
-                // item.setName(i.getName());
-                // item.setUnitPrice(i.getUnitPrice());
-                item.setQuantity(i.getQuantity());
-                // item.setTotal(i.getTotal());
-                return item;
-            }).toList();
-            res.setServices(services);
-        }
+        // if (order.getServices() != null) {
+        //     List<RepairOrderItemResponse> services = order.getServices().stream().map(i -> {
+        //         RepairOrderItemResponse item = new RepairOrderItemResponse();
+        //         item.setId(i.getId());
+        //         // item.setName(i.getName());
+        //         // item.setUnitPrice(i.getUnitPrice());
+        //         // item.setQuantity(i.getQuantity());
+        //         // item.setTotal(i.getTotal());
+        //         return item;
+        //     }).toList();
+        //     res.setServices(services);
+        // }
 
         // map customer
         if (order.getCustomerId() != null) {
@@ -245,7 +246,7 @@ public class RepairOrderService {
         RepairOrder order = getOrderById(repairOrderId);
         itemRepository.deleteById(itemId);
         if (isPart) order.getParts().removeIf(i -> i.getId().equals(itemId));
-        else order.getServices().removeIf(i -> i.getId().equals(itemId));
+        else order.getServices().removeIf(i -> i instanceof RepairOrderItem it && it.getId().equals(itemId));
         order.calculateEstimatedTotal();
         repository.save(order);
     }
