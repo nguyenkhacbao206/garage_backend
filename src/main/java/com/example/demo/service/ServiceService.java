@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.ServiceRequest;
-import com.example.demo.dto.ServiceResponse;
 import com.example.demo.entity.GarageService;
 import com.example.demo.repository.ServiceRepository;
 
@@ -24,63 +23,25 @@ public class ServiceService {
         this.serviceRepository = serviceRepository;
     }
 
-    // SORT BY CREATED
-    public List<ServiceResponse> sortServicesByCreatedAt(boolean asc) {
-        List<GarageService> list = serviceRepository.findAll();
-        Comparator<GarageService> comp = Comparator.comparing(
-                GarageService::getCreatedAt,
-                Comparator.nullsLast(Comparator.naturalOrder())
-        );
-        if (!asc) {
-            comp = comp.reversed();
-        }
-        return list.stream()
-                .sorted(comp)
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-    }
-
-    // SEARCH
-    public List<GarageService> searchServices(String serviceCode, String name) {
-        boolean hasCode = serviceCode != null && !serviceCode.isEmpty();
-        boolean hasName = name != null && !name.isEmpty();
-
-        if (!hasCode && !hasName) {
-            return serviceRepository.findAll();
-        } else if (hasCode && hasName) {
-            return serviceRepository.findByServiceCodeContainingIgnoreCaseOrNameContainingIgnoreCase(serviceCode, name);
-        } else if (hasCode) {
-            return serviceRepository.findByServiceCodeContainingIgnoreCase(serviceCode);
-        } else {
-            return serviceRepository.findByNameContainingIgnoreCase(name);
-        }
-    }
-
-    // CONVERT
-    private ServiceResponse convertToResponse(GarageService service) {
-        return new ServiceResponse("Thành công", service);
-    }
-
-    // GET ALL
-    public List<ServiceResponse> getAllServices() {
+    // Lấy tất cả dịch vụ (raw) để Controller wrap vào ServiceResponse
+    public List<GarageService> getAllServicesRaw() {
         return serviceRepository.findAll().stream()
                 .sorted((a, b) -> {
                     String codeA = a.getServiceCode() == null ? "" : a.getServiceCode();
                     String codeB = b.getServiceCode() == null ? "" : b.getServiceCode();
                     return codeB.compareTo(codeA);
                 })
-                .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    // GET BY ID
-    public Optional<ServiceResponse> getServiceById(String id) {
+    // Lấy dịch vụ theo ID
+    public GarageService getServiceByIdRaw(String id) {
         return serviceRepository.findById(id)
-                .map(this::convertToResponse);
+                .orElseThrow(() -> new RuntimeException("Dịch vụ không tồn tại"));
     }
 
-    // CREATE
-    public ServiceResponse createService(ServiceRequest request) {
+    // Tạo dịch vụ
+    public GarageService createService(ServiceRequest request) {
         if (serviceRepository.existsByName(request.getName())) {
             throw new RuntimeException("Tên dịch vụ đã tồn tại!");
         }
@@ -104,12 +65,11 @@ public class ServiceService {
         }
         service.setServiceCode(newCode);
 
-        GarageService saved = serviceRepository.save(service);
-        return convertToResponse(saved);
+        return serviceRepository.save(service);
     }
 
-    // UPDATE
-    public ServiceResponse updateService(String id, ServiceRequest request) {
+    // Cập nhật dịch vụ
+    public GarageService updateService(String id, ServiceRequest request) {
         GarageService service = serviceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Dịch vụ không tồn tại!"));
 
@@ -123,15 +83,39 @@ public class ServiceService {
         if (request.getPrice() != null) service.setPrice(request.getPrice());
         service.setUpdatedAt(LocalDateTime.now());
 
-        GarageService updated = serviceRepository.save(service);
-        return convertToResponse(updated);
+        return serviceRepository.save(service);
     }
 
-    // DELETE
-    public void deleteService(String id) {
-        if (!serviceRepository.existsById(id)) {
-            throw new RuntimeException("Dịch vụ không tồn tại!");
-        }
+    // Xóa dịch vụ
+    public GarageService deleteService(String id) {
+        GarageService service = serviceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Dịch vụ không tồn tại!"));
         serviceRepository.deleteById(id);
+        return service;
+    }
+
+    // Search dịch vụ
+    public List<GarageService> searchServicesRaw(String serviceCode, String name) {
+        boolean hasCode = serviceCode != null && !serviceCode.isEmpty();
+        boolean hasName = name != null && !name.isEmpty();
+
+        List<GarageService> list;
+        if (!hasCode && !hasName) {
+            list = serviceRepository.findAll();
+        } else if (hasCode && hasName) {
+            list = serviceRepository.findByServiceCodeContainingIgnoreCaseOrNameContainingIgnoreCase(serviceCode, name);
+        } else if (hasCode) {
+            list = serviceRepository.findByServiceCodeContainingIgnoreCase(serviceCode);
+        } else {
+            list = serviceRepository.findByNameContainingIgnoreCase(name);
+        }
+
+        return list.stream()
+                .sorted((a, b) -> {
+                    String codeA = a.getServiceCode() == null ? "" : a.getServiceCode();
+                    String codeB = b.getServiceCode() == null ? "" : b.getServiceCode();
+                    return codeB.compareTo(codeA);
+                })
+                .collect(Collectors.toList());
     }
 }
