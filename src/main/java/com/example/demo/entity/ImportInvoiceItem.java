@@ -26,7 +26,7 @@ public class ImportInvoiceItem {
 
     private List<PartInfo> parts; // list chứa tất cả part + quantity + unitPrice
 
-    // ===== Nested class PartInfo =====
+    // Nested class PartInfo
     public static class PartInfo {
         private String partId;
         private Integer quantity;
@@ -41,7 +41,7 @@ public class ImportInvoiceItem {
         public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
     }
 
-    // ===== GET/SET =====
+    // GET/SET
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
