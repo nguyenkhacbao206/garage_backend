@@ -23,6 +23,22 @@ public class ServiceService {
         this.serviceRepository = serviceRepository;
     }
 
+    // sort by created decrease, increase
+    public List<GarageService> sortByCreatedAt(List<GarageService> garageServices, boolean asc) {
+
+        Comparator<GarageService> comp = Comparator.comparing(
+                GarageService::getCreatedAt,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        );
+
+        if (!asc) {
+            comp = comp.reversed();
+        }
+
+        garageServices.sort(comp);
+        return garageServices;
+    }
+
     // Lấy tất cả dịch vụ (raw) để Controller wrap vào ServiceResponse
     public List<GarageService> getAllServicesRaw() {
         return serviceRepository.findAll().stream()

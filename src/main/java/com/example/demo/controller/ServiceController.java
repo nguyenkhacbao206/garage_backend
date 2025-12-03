@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.ServiceRequest;
 import com.example.demo.dto.ServiceResponse;
 import com.example.demo.service.ServiceService;
@@ -24,6 +25,27 @@ public class ServiceController {
     public ServiceController(ServiceService serviceService) {
         this.serviceService = serviceService;
     }
+
+    //SORT
+    @GetMapping("/sort")
+    @Operation(summary = "Sắp xếp item nhập theo ngày tạo")
+    public ResponseEntity<ApiResponse<List<GarageService>>> sort(
+            @RequestParam(defaultValue = "false") boolean asc
+    ) {
+        try {
+            List<GarageService> list = serviceService.getAllServicesRaw();
+            List<GarageService> sorted = serviceService.sortByCreatedAt(list, asc);
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                asc ? "Sắp xếp tăng dần thành công" : "Sắp xếp giảm dần thành công",
+                sorted
+            ));
+    }    catch (Exception ex) {
+            System.err.println("Lỗi khi sắp xếp item nhập: " + ex.getMessage());
+            throw new RuntimeException("Lỗi khi sắp xếp item nhập", ex);
+        }
+}
+
 
     @Operation(summary = "Lấy danh sách tất cả dịch vụ")
     @GetMapping
