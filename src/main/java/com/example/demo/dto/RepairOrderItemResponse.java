@@ -1,7 +1,9 @@
 package com.example.demo.dto;
 
 import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RepairOrderItemResponse {
     private String id;
     private String name;

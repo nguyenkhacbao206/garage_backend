@@ -65,7 +65,12 @@ public class SecurityConfig {
                     "/avatars/**",
                     "/api/services",
                     "/api/services/search",
-                    "/api/bookings/**"
+                    "/api/bookings/**",
+                    "/api/chat/**",
+                    "/ws/**",
+                    "/app/**",
+                    "/topic/**",
+                    "/private/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

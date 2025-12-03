@@ -13,7 +13,7 @@ public class RepairOrderRequest {
     private List<String> technicianIds;
     private String note;
     private List<RepairOrderItemRequest> parts;
-    private List<RepairOrderItemRequest> services;
+    private List<String> serviceIds;
     private String status;
 
     public RepairOrderRequest() {}
@@ -87,12 +87,12 @@ public class RepairOrderRequest {
         this.parts = parts;
     }
 
-    public List<RepairOrderItemRequest> getServices() {
-        return services;
+    public List<String> getServiceIds() {
+        return serviceIds;
     }
 
-    public void setServices(List<RepairOrderItemRequest> services) {
-        this.services = services;
+    public void setServices(List<String> serviceIds) {
+        this.serviceIds = serviceIds;
     }
 
     public String getStatus() {

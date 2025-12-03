@@ -15,7 +15,7 @@ public class RepairOrderResponse {
     private String note;
     private String status;
     private List<RepairOrderItemResponse> parts;
-    private List<RepairOrderItemResponse> services;
+    private List<String> serviceIds;
     private BigDecimal estimatedTotal;
     private LocalDateTime dateReceived;
     private LocalDateTime dateReturned;
@@ -91,11 +91,11 @@ public class RepairOrderResponse {
         this.parts = parts;
     }
 
-    public List<RepairOrderItemResponse> getServices() { 
-        return services;
+    public List<String> getServiceIds() { 
+        return serviceIds;
     }
-    public void setServices(List<RepairOrderItemResponse> services) { 
-        this.services = services;
+    public void setServiceIds(List<String> serviceIds) { 
+        this.serviceIds = serviceIds;
     }
 
     public BigDecimal getEstimatedTotal() { 

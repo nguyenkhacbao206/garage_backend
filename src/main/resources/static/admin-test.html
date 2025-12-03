@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>ADMIN</h2>
+
+<input id="msg" placeholder="Tin nhắn...">
+<button onclick="sendMsg()">Gửi</button>
+
+<div id="chat"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<script>
+let sender = "admin";
+let socket = new SockJS("/ws");
+let stomp = Stomp.over(socket);
+
+stomp.connect({}, () => {
+    stomp.subscribe("/topic/messages", (message) => {
+        let msg = JSON.parse(message.body);
+        document.getElementById("chat").innerHTML += 
+            `<p><b>${msg.sender}:</b> ${msg.content}</p>`;
+    });
+});
+
+function sendMsg() {
+    stomp.send("/app/chat", {}, JSON.stringify({
+        sender: sender,
+        content: document.getElementById("msg").value
+    }));
+}
+</script>
+</body>
+</html>

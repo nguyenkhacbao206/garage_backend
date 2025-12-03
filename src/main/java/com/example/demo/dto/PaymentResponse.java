@@ -8,7 +8,7 @@ public class PaymentResponse {
 
     private String id;
     private String repairOrderId;
-    private String cashierId;
+    // private String cashierId;
     private BigDecimal amount;
     private String method;
     private String status;
@@ -17,11 +17,11 @@ public class PaymentResponse {
 
     public PaymentResponse() {}
 
-    public PaymentResponse(String id, String repairOrderId, String cashierId, BigDecimal amount,
+    public PaymentResponse(String id, String repairOrderId, BigDecimal amount,
                            String method, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.repairOrderId = repairOrderId;
-        this.cashierId = cashierId;
+        // this.cashierId = cashierId;
         this.amount = amount;
         this.method = method;
         this.status = status;
@@ -44,12 +44,12 @@ public class PaymentResponse {
         this.repairOrderId = repairOrderId; 
     }
 
-    public String getCashierId() { 
-        return cashierId; 
-    }
-    public void setCashierId(String cashierId) { 
-        this.cashierId = cashierId; 
-    }
+    // public String getCashierId() { 
+    //     return cashierId; 
+    // }
+    // public void setCashierId(String cashierId) { 
+    //     this.cashierId = cashierId; 
+    // }
 
     public BigDecimal getAmount() { 
         return amount; 
