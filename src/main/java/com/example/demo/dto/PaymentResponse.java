@@ -2,12 +2,16 @@ package com.example.demo.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import com.example.demo.entity.RepairOrder;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class PaymentResponse {
 
     private String id;
     private String repairOrderId;
+    private RepairOrder repairOrder;
     // private String cashierId;
     private BigDecimal amount;
     private String method;
@@ -17,10 +21,11 @@ public class PaymentResponse {
 
     public PaymentResponse() {}
 
-    public PaymentResponse(String id, String repairOrderId, BigDecimal amount,
+    public PaymentResponse(String id, String repairOrderId, RepairOrder repairOrder,BigDecimal amount,
                            String method, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.repairOrderId = repairOrderId;
+        this.repairOrder = repairOrder;
         // this.cashierId = cashierId;
         this.amount = amount;
         this.method = method;
@@ -44,7 +49,15 @@ public class PaymentResponse {
         this.repairOrderId = repairOrderId; 
     }
 
-    // public String getCashierId() { 
+
+    public RepairOrder getRepairOrder() {
+        return repairOrder;
+    }
+
+    public void setRepairOrder(RepairOrder repairOrder) {
+        this.repairOrder = repairOrder;
+    }
+        // public String getCashierId() { 
     //     return cashierId; 
     // }
     // public void setCashierId(String cashierId) { 

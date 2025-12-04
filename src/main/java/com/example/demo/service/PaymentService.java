@@ -108,9 +108,12 @@ public class PaymentService {
     }
 
     private PaymentResponse toResponse(Payment p) {
+        RepairOrder ro = repairOrderRepository.findById(p.getRepairOrderId())
+            .orElse(null);
         return new PaymentResponse(
                 p.getId(),
                 p.getRepairOrderId(),
+                ro,
                 // p.getCashierId(),
                 p.getAmount(),
                 p.getMethod(),
