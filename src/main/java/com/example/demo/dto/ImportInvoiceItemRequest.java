@@ -29,6 +29,8 @@ public class ImportInvoiceItemRequest {
         @NotBlank
         private String partId;
 
+        private String name;
+
         @Schema(description = "Số lượng", example = "20")
         @NotNull
         @Min(1)
@@ -42,6 +44,12 @@ public class ImportInvoiceItemRequest {
         // GET/SET
         public String getPartId() { return partId; }
         public void setPartId(String partId) { this.partId = partId; }
+        public String getName() {
+            return name;
+        }
+        public void setName(String name) {
+            this.name = name;
+        } 
         public Integer getQuantity() { return quantity; }
         public void setQuantity(Integer quantity) { this.quantity = quantity; }
         public BigDecimal getUnitPrice() { return unitPrice; }
