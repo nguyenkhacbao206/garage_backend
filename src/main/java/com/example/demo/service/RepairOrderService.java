@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RepairOrderService {
@@ -58,15 +59,18 @@ public class RepairOrderService {
             }
         }
 
-        // order.setServices(new ArrayList<>());
-        // if (request.getServices() != null) {
-        //     for (RepairOrderItemRequest itemReq : request.getServices()) {
-        //         RepairOrderItem item = new RepairOrderItem();
-        //         item.setId(itemReq.getId());
-        //         // item.setQuantity(itemReq.getQuantity());
-        //         order.getServices().add(item);
-        //     }
-        // }
+        order.setService(new ArrayList<>());
+        if (request.getServiceIds() != null) {
+            for (String serviceId : request.getServiceIds()) {
+                RepairOrderItem item = new RepairOrderItem();
+                item.setId(serviceId);
+                // item.setQuantity(1);
+                order.getService().add(item);
+                order.getServiceIds().add(serviceId);
+            }
+        }
+
+
 
         order.calculateEstimatedTotal();
         order = repository.save(order);
@@ -114,15 +118,19 @@ public class RepairOrderService {
             order.setParts(partItems);
         }
 
-        // if (req.getServices() != null) {
-        //     List<RepairOrderItem> serviceItems = req.getServices().stream().map(i -> {
-        //         RepairOrderItem item = new RepairOrderItem();
-        //         item.setId(i.getId());
-        //         // item.setQuantity(i.getQuantity());
-        //         return item;
-        //     }).toList();
-        //     order.setServices(serviceItems);
-        // }
+        if (req.getServiceIds() != null && !req.getServiceIds().isEmpty()) {
+
+            List<Object> serviceItems = req.getServiceIds().stream()
+                    .map(id -> {
+                        RepairOrderItem item = new RepairOrderItem();
+                        item.setId(id);
+                        return (Object) item;  
+                    })
+                    .collect(Collectors.toList()); 
+
+            order.setService(serviceItems); 
+        }
+
 
         return order;
     }
