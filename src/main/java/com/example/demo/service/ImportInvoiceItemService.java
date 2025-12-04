@@ -92,6 +92,7 @@ public class ImportInvoiceItemService {
         List<ImportInvoiceItem.PartInfo> partList = req.getParts().stream().map(p -> {
             ImportInvoiceItem.PartInfo pi = new ImportInvoiceItem.PartInfo();
             pi.setPartId(p.getPartId());
+            pi.setName(p.getName());
             pi.setQuantity(p.getQuantity());
             pi.setUnitPrice(p.getUnitPrice());
             return pi;
