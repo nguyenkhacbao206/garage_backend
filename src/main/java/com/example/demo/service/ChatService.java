@@ -1,25 +1,37 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ChatMessage;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.example.demo.dto.ChatMessageDTO;
+import com.example.demo.entity.ChatMessageEntity;
+import com.example.demo.repository.ChatMessageRepository;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ChatService {
 
-    private final SimpMessagingTemplate messagingTemplate;
+    private final ChatMessageRepository repository;
 
-    public ChatService(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
+    public ChatService(ChatMessageRepository repository) {
+        this.repository = repository;
     }
 
-    // Gửi tin tới tất cả (chat room)
-    public void sendPublicMessage(ChatMessage message) {
-        messagingTemplate.convertAndSend("/topic/messages", message);
+    public ChatMessageEntity saveMessage(ChatMessageDTO dto) {
+        ChatMessageEntity entity = new ChatMessageEntity(
+                dto.getSender(),
+                dto.getMessage(),
+                dto.getReceiver(),
+                LocalDateTime.now()
+        );
+        return repository.save(entity);
     }
 
-    // Gửi tin riêng
-    public void sendPrivateMessage(ChatMessage message) {
-        messagingTemplate.convertAndSend("/queue/" + message.getReceiver(), message);
+    public List<ChatMessageEntity> getAllMessages() {
+        return repository.findAll();
+    }
+
+    public List<ChatMessageEntity> getMessagesByReceiver(String receiver) {
+        return repository.findByReceiver(receiver);
     }
 }

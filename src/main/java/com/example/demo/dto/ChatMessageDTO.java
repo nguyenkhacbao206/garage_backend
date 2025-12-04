@@ -1,13 +1,13 @@
 package com.example.demo.dto;
 
-public class ChatMessage {
+public class ChatMessageDTO {
     private String sender;
     private String message;
     private String receiver; // nếu muốn chat riêng
 
-    public ChatMessage() {}
+    public ChatMessageDTO() {}
 
-    public ChatMessage(String sender, String message, String receiver) {
+    public ChatMessageDTO(String sender, String message, String receiver) {
         this.sender = sender;
         this.message = message;
         this.receiver = receiver;
