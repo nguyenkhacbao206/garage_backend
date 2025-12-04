@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.demo.entity.Technician;
+
 public class RepairOrderResponse {
     private String id;
     private String orderCode;
@@ -12,10 +14,12 @@ public class RepairOrderResponse {
     private String carId;
     private CarResponse car;           
     private List<String> technicianIds;
+    private List<TechnicianResponse> technician;
     private String note;
     private String status;
     private List<RepairOrderItemResponse> parts;
     private List<String> serviceIds;
+    private List<GarageServiceResponse> service;
     private BigDecimal estimatedTotal;
     private LocalDateTime dateReceived;
     private LocalDateTime dateReturned;
@@ -69,6 +73,12 @@ public class RepairOrderResponse {
     public void setTechnicianIds(List<String> technicianIds) { 
         this.technicianIds = technicianIds;
     }
+    public List<TechnicianResponse> getTechnician() {
+        return technician;
+    }
+    public void setTechnician(List<TechnicianResponse> technician) {
+        this.technician = technician;
+    }
 
     public String getNote() { 
         return note;
@@ -96,6 +106,13 @@ public class RepairOrderResponse {
     }
     public void setServiceIds(List<String> serviceIds) { 
         this.serviceIds = serviceIds;
+    }
+
+    public List<GarageServiceResponse> getService() {
+        return service;
+    }
+    public void setService(List<GarageServiceResponse> service) {
+        this.service = service;
     }
 
     public BigDecimal getEstimatedTotal() { 

@@ -26,16 +26,16 @@ public class RepairOrder {
     private Object car;
 
     // technicians
-    private List<String> technicianIds = new ArrayList<>();
-    private List<Object> technicians = new ArrayList<>();
+    private List<String> technicianIds;
+    private List<Object> technician;
 
     private String note;
 
     // parts and services (separate arrays)
     private List<RepairOrderItem> parts = new ArrayList<>();
 
-    private List<String> serviceIds = new ArrayList<>();
-    private List<Object> services = new ArrayList<>();
+    private List<String> serviceIds;
+    private List<Object> service;
 
     private BigDecimal estimatedTotal = BigDecimal.ZERO;
 
@@ -99,11 +99,11 @@ public class RepairOrder {
         this.technicianIds = technicianIds;
     }
 
-    public List<Object> getTechnicians() { 
-        return technicians;
+    public List<Object> getTechnician() { 
+        return technician;
     }
-    public void setTechnicians(List<Object> technicians) { 
-        this.technicians = technicians;
+    public void setTechnician(List<Object> technician) { 
+        this.technician = technician;
     }
 
     public String getNote() { 
@@ -126,11 +126,11 @@ public class RepairOrder {
     public void setServiceIds(List<String> serviceIds) { 
         this.serviceIds = serviceIds;
     }
-    public List<Object> getServices() {
-        return services;
+    public List<Object> getService() {
+        return service;
     }
-    public void setServices(List<Object> services) {
-        this.services = services;
+    public void setService(List<Object> service) {
+        this.service = service;
     }
 
     public BigDecimal getEstimatedTotal() { 
@@ -174,8 +174,8 @@ public class RepairOrder {
         }
 
         // tính tổng services
-        if (services != null) {
-            for (Object obj : services) {
+        if (service != null) {
+            for (Object obj : service) {
                 if (obj instanceof RepairOrderItem it) {
                     if (it.getTotal() == null) it.recalcTotal();
                     if (it.getTotal() != null) total = total.add(it.getTotal());

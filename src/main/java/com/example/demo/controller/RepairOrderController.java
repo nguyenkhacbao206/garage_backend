@@ -44,7 +44,7 @@ public class RepairOrderController {
     @Operation(summary = "Tạo đơn sửa chữa mới")
     public ResponseEntity<ApiResponse<RepairOrderResponse>> create(@RequestBody RepairOrderRequest request) {
         try {
-            RepairOrderResponse resp = service.convertToResponse(service.createRepairOrder(request));
+            RepairOrderResponse resp = service.createRepairOrder(request);
             return ResponseEntity.ok(new ApiResponse<>("Tạo đơn thành công", resp));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(e.getMessage(), null));
@@ -90,7 +90,7 @@ public class RepairOrderController {
             @PathVariable String id,
             @RequestBody RepairOrderRequest request) {
         try {
-            RepairOrderResponse resp = service.convertToResponse(service.updateOrder(id, request));
+            RepairOrderResponse resp = service.updateOrder(id, request);
             return ResponseEntity.ok(new ApiResponse<>("Cập nhật thành công", resp));
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

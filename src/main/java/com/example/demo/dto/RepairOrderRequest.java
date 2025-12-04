@@ -91,7 +91,7 @@ public class RepairOrderRequest {
         return serviceIds;
     }
 
-    public void setServices(List<String> serviceIds) {
+    public void setServiceIds(List<String> serviceIds) {
         this.serviceIds = serviceIds;
     }
 
