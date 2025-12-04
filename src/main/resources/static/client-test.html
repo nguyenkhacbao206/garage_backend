@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <meta charset="UTF-8">
+    <title>Client Chat</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #chat { border: 1px solid #ccc; height: 300px; overflow-y: auto; padding: 5px; margin-bottom: 10px; }
+        input { width: 300px; padding: 5px; }
+        button { padding: 5px 10px; }
+    </style>
+</head>
 <body>
 <h2>CLIENT</h2>
 
+<div id="chat"></div>
 <input id="msg" placeholder="Tin nhắn...">
 <button onclick="sendMsg()">Gửi</button>
-
-<div id="chat"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
@@ -20,15 +29,20 @@ stomp.connect({}, () => {
     stomp.subscribe("/topic/messages", (message) => {
         let msg = JSON.parse(message.body);
         document.getElementById("chat").innerHTML += 
-            `<p><b>${msg.sender}:</b> ${msg.content}</p>`;
+            `<p><b>${msg.sender}:</b> ${msg.message}</p>`;
+        document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
     });
 });
 
 function sendMsg() {
+    let content = document.getElementById("msg").value;
+    if(!content) return;
     stomp.send("/app/chat", {}, JSON.stringify({
         sender: sender,
-        content: document.getElementById("msg").value
+        message: content,
+        receiver: null
     }));
+    document.getElementById("msg").value = "";
 }
 </script>
 </body>

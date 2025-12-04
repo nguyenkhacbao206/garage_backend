@@ -1,28 +1,48 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.ChatMessage;
+import com.example.demo.dto.ChatMessageDTO;
+import com.example.demo.entity.ChatMessageEntity;
 import com.example.demo.service.ChatService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.stereotype.Controller;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/chat")
 public class ChatController {
 
     private final ChatService chatService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public ChatController(ChatService chatService) {
+    public ChatController(ChatService chatService, SimpMessagingTemplate messagingTemplate) {
         this.chatService = chatService;
+        this.messagingTemplate = messagingTemplate;
     }
 
-    // Client gửi /app/chat
     @MessageMapping("/chat")
-    public void handlePublicChat(ChatMessage message) {
-        chatService.sendPublicMessage(message);
+    public void sendMessage(ChatMessageDTO dto) {
+        // Lưu Mongo
+        chatService.saveMessage(dto);
+
+        // Gửi WebSocket
+        if(dto.getReceiver() == null || dto.getReceiver().isEmpty()) {
+            // chat public
+            messagingTemplate.convertAndSend("/topic/messages", dto);
+        } else {
+            // chat riêng
+            messagingTemplate.convertAndSend("/topic/private." + dto.getReceiver(), dto);
+        }
     }
 
-    // Client gửi /app/private
-    @MessageMapping("/private")
-    public void handlePrivateChat(ChatMessage message) {
-        chatService.sendPrivateMessage(message);
+    @GetMapping("/history")
+    public List<ChatMessageEntity> getAllMessages() {
+        return chatService.getAllMessages();
+    }
+
+    @GetMapping("/history/{receiver}")
+    public List<ChatMessageEntity> getMessagesByReceiver(@PathVariable String receiver) {
+        return chatService.getMessagesByReceiver(receiver);
     }
 }
