@@ -2,6 +2,9 @@ package com.example.demo.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.example.demo.dto.RepairOrderResponse;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
@@ -20,6 +23,7 @@ public class Payment {
 
     // @Schema(description = "ID của cashier/user thực hiện thu tiền", example = "67123abc9087bcff1234aa12")
     // private String cashierId;
+    private RepairOrderResponse repairOrderSnapshot;
 
     @Schema(description = "Số tiền thanh toán", example = "150000.00")
     private BigDecimal amount;
@@ -51,6 +55,13 @@ public class Payment {
     }
     public void setRepairOrderId(String repairOrderId) { 
         this.repairOrderId = repairOrderId; 
+    }
+
+    public RepairOrderResponse getRepairOrderSnapshot() { 
+        return repairOrderSnapshot; 
+    }
+    public void setRepairOrderSnapshot(RepairOrderResponse repairOrderSnapshot) { 
+        this.repairOrderSnapshot = repairOrderSnapshot; 
     }
 
     // public String getCashierId() { 
