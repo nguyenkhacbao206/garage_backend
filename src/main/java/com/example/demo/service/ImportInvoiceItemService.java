@@ -17,7 +17,6 @@ import com.example.demo.entity.ImportInvoiceItem;
 import com.example.demo.repository.ImportInvoiceItemRepository;
 import com.example.demo.repository.PartRepository;
 import com.example.demo.repository.SupplierRepository;
-
 @Service
 public class ImportInvoiceItemService {
 
@@ -35,64 +34,74 @@ public class ImportInvoiceItemService {
         this.partRepo = partRepo;
     }
 
+    // Tạo mã tự động MHD-001
+    private String generateNewCode() {
+        ImportInvoiceItem last = repo.findFirstByOrderByImportInvoiceItemCodeDesc();
+
+        if (last == null || last.getImportInvoiceItemCode() == null) {
+            return "MHD-001";
+        }
+
+        String maxCode = last.getImportInvoiceItemCode(); // MHD-007
+        int number = Integer.parseInt(maxCode.substring(4));
+        number++;
+
+        return "MHD-" + String.format("%03d", number);
+    }
+
     // Convert entity -> response
     private ImportInvoiceItemResponse toResponse(ImportInvoiceItem e) {
         ImportInvoiceItemResponse res = new ImportInvoiceItemResponse();
+
         res.setId(e.getId());
         res.setInvoiceId(e.getInvoiceId());
+        // res.setSupplierId(e.getSupplierId());
         res.setDate(e.getDate());
         res.setTotal(e.getTotal());
-        res.setNote(e.getNote());
         res.setInvoiceTotal(e.getInvoiceTotal());
+        res.setImportInvoiceItemCode(e.getImportInvoiceItemCode());
+        res.setNote(e.getNote());
         res.setCreatedAt(e.getCreatedAt());
         res.setUpdatedAt(e.getUpdatedAt());
 
-        // Tạo mã tự tăng: MHD-001
-        ImportInvoiceItem last = repo.findFirstByOrderByImportInvoiceItemCodeDesc();
-        String newCode;
-
-        if (last == null || last.getImportInvoiceItemCode() == null) {
-            newCode = "MHD-001";
-        } else {
-            String maxCode = last.getImportInvoiceItemCode();
-            String numberPart = maxCode.substring(4);
-            int number = Integer.parseInt(numberPart);
-            number++;
-            newCode = "MHD-" + String.format("%03d", number);
-        }
-
-        res.setImportInvoiceItemCode(newCode);
-
         List<ImportInvoiceItemResponse.ImportPartResponse> partList = new ArrayList<>();
 
-        for (ImportInvoiceItem.PartInfo pi : e.getParts()) {
-            partRepo.findById(pi.getPartId()).ifPresent(p -> {
-                ImportInvoiceItemResponse.ImportPartResponse part = new ImportInvoiceItemResponse.ImportPartResponse();
-                part.setPartId(p.getId());
-                part.setPartName(p.getName());
-                part.setPartCode(p.getPartCode());
-                part.setPrice(p.getPrice());
-                part.setStock(p.getStock());
-                part.setDescription(p.getDescription());
+        if (e.getParts() != null) {
+            for (ImportInvoiceItem.PartInfo pi : e.getParts()) {
 
-                res.setQuantity(pi.getQuantity());
-                res.setUnitPrice(pi.getUnitPrice());
+                partRepo.findById(pi.getPartId()).ifPresent(p -> {
 
-                // Supplier
-                supplierRepo.findById(e.getSupplierId()).ifPresent(s -> {
-                    ImportInvoiceItemResponse.SupplierResponse sup = new ImportInvoiceItemResponse.SupplierResponse();
-                    sup.setSupplierId(s.getId());
-                    sup.setSupplierName(s.getName());
-                    sup.setSupplierCode(s.getSupplierCode());
-                    sup.setSupplierAddress(s.getAddress());
-                    sup.setSupplierEmail(s.getEmail());
-                    sup.setSupplierPhone(s.getPhone());
-                    sup.setSupplierDescription(s.getDescription());
-                    part.setSupplier(sup);
+                    ImportInvoiceItemResponse.ImportPartResponse part = 
+                        new ImportInvoiceItemResponse.ImportPartResponse();
+
+                    part.setPartId(p.getId());
+                    part.setPartName(p.getName());
+                    part.setPartCode(p.getPartCode());
+                    part.setPrice(p.getPrice());
+                    part.setStock(p.getStock());
+                    part.setDescription(p.getDescription());
+
+                    res.setQuantity(pi.getQuantity());
+                    res.setUnitPrice(pi.getUnitPrice());
+
+                    // Supplier
+                    supplierRepo.findById(e.getSupplierId()).ifPresent(s -> {
+                        ImportInvoiceItemResponse.SupplierResponse sup = 
+                            new ImportInvoiceItemResponse.SupplierResponse();
+
+                        sup.setSupplierId(s.getId());
+                        sup.setSupplierName(s.getName());
+                        sup.setSupplierCode(s.getSupplierCode());
+                        sup.setSupplierAddress(s.getAddress());
+                        sup.setSupplierEmail(s.getEmail());
+                        sup.setSupplierPhone(s.getPhone());
+                        sup.setSupplierDescription(s.getDescription());
+                        part.setSupplier(sup);
+                    });
+
+                    partList.add(part);
                 });
-
-                partList.add(part);
-            });
+            }
         }
 
         res.setParts(partList);
@@ -101,6 +110,7 @@ public class ImportInvoiceItemService {
 
     // CREATE
     public ImportInvoiceItemResponse create(ImportInvoiceItemRequest req) {
+
         LocalDateTime now = LocalDateTime.now();
 
         ImportInvoiceItem e = new ImportInvoiceItem();
@@ -110,18 +120,24 @@ public class ImportInvoiceItemService {
         e.setCreatedAt(now);
         e.setUpdatedAt(now);
 
+        e.setImportInvoiceItemCode(generateNewCode());
+
         // Map parts
-        List<ImportInvoiceItem.PartInfo> partList = req.getParts().stream().map(p -> {
-            ImportInvoiceItem.PartInfo pi = new ImportInvoiceItem.PartInfo();
-            pi.setPartId(p.getPartId());
-            pi.setName(p.getName());
-            pi.setQuantity(p.getQuantity());
-            pi.setUnitPrice(p.getUnitPrice());
-            return pi;
-        }).collect(Collectors.toList());
+        List<ImportInvoiceItem.PartInfo> partList =
+                req.getParts() != null ?
+                        req.getParts().stream().map(p -> {
+                            ImportInvoiceItem.PartInfo pi = new ImportInvoiceItem.PartInfo();
+                            pi.setPartId(p.getPartId());
+                            pi.setName(p.getName());
+                            pi.setQuantity(p.getQuantity());
+                            pi.setUnitPrice(p.getUnitPrice());
+                            return pi;
+                        }).collect(Collectors.toList()) :
+                        new ArrayList<>();
+
         e.setParts(partList);
 
-        // Tổng
+        // Tổng tiền
         BigDecimal total = partList.stream()
                 .map(p -> p.getUnitPrice().multiply(BigDecimal.valueOf(p.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -130,6 +146,7 @@ public class ImportInvoiceItemService {
         e.setInvoiceTotal(total);
 
         repo.save(e);
+
         return toResponse(e);
     }
 
@@ -144,50 +161,60 @@ public class ImportInvoiceItemService {
     }
 
     public Optional<ImportInvoiceItemResponse> update(String id, ImportInvoiceItemRequest req) {
+
         Optional<ImportInvoiceItem> opt = repo.findById(id);
         if (opt.isEmpty()) return Optional.empty();
+
+        LocalDateTime now = LocalDateTime.now();
 
         ImportInvoiceItem e = opt.get();
         e.setInvoiceId(req.getInvoiceId());
         e.setSupplierId(req.getSupplierId());
         e.setDate(req.getDate());
-        e.setUpdatedAt(LocalDateTime.now());
+        e.setUpdatedAt(now);
 
-        List<ImportInvoiceItem.PartInfo> partList = req.getParts().stream().map(p -> {
-            ImportInvoiceItem.PartInfo pi = new ImportInvoiceItem.PartInfo();
-            pi.setPartId(p.getPartId());
-            pi.setQuantity(p.getQuantity());
-            pi.setUnitPrice(p.getUnitPrice());
-            return pi;
-        }).collect(Collectors.toList());
+        List<ImportInvoiceItem.PartInfo> partList =
+                req.getParts() != null ?
+                        req.getParts().stream().map(p -> {
+                            ImportInvoiceItem.PartInfo pi = new ImportInvoiceItem.PartInfo();
+                            pi.setPartId(p.getPartId());
+                            pi.setQuantity(p.getQuantity());
+                            pi.setUnitPrice(p.getUnitPrice());
+                            return pi;
+                        }).collect(Collectors.toList())
+                        : new ArrayList<>();
+
         e.setParts(partList);
 
         BigDecimal total = partList.stream()
                 .map(p -> p.getUnitPrice().multiply(BigDecimal.valueOf(p.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         e.setTotal(total);
         e.setInvoiceTotal(total);
 
         repo.save(e);
+
         return Optional.of(toResponse(e));
     }
 
     public boolean delete(String id) {
-        Optional<ImportInvoiceItem> opt = repo.findById(id);
-        if (opt.isEmpty()) return false;
-
+        if (!repo.existsById(id)) return false;
         repo.deleteById(id);
         return true;
     }
-    // Sắp xếp theo createdAt
+
+    // SORT
     public List<ImportInvoiceItemResponse> sortByCreatedAt(List<ImportInvoiceItemResponse> items, boolean asc) {
-        Comparator<ImportInvoiceItemResponse> comp = Comparator.comparing(
-                ImportInvoiceItemResponse::getCreatedAt,
-                Comparator.nullsLast(Comparator.naturalOrder())
-        );
+        Comparator<ImportInvoiceItemResponse> comp =
+                Comparator.comparing(
+                        ImportInvoiceItemResponse::getCreatedAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                );
+
         if (!asc) comp = comp.reversed();
+
         items.sort(comp);
         return items;
     }
-
 }
