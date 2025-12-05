@@ -1,13 +1,5 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ImportInvoiceItemRequest;
-import com.example.demo.dto.ImportInvoiceItemResponse;
-import com.example.demo.entity.ImportInvoiceItem;
-import com.example.demo.repository.ImportInvoiceItemRepository;
-import com.example.demo.repository.PartRepository;
-import com.example.demo.repository.SupplierRepository;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,6 +7,16 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.ImportInvoiceItemRequest;
+import com.example.demo.dto.ImportInvoiceItemResponse;
+import com.example.demo.entity.ImportInvoiceItem;
+import com.example.demo.repository.ImportInvoiceItemRepository;
+import com.example.demo.repository.PartRepository;
+import com.example.demo.repository.SupplierRepository;
 
 @Service
 public class ImportInvoiceItemService {
@@ -33,16 +35,33 @@ public class ImportInvoiceItemService {
         this.partRepo = partRepo;
     }
 
-    // Chuyển entity sang response
+    // Convert entity -> response
     private ImportInvoiceItemResponse toResponse(ImportInvoiceItem e) {
         ImportInvoiceItemResponse res = new ImportInvoiceItemResponse();
         res.setId(e.getId());
         res.setInvoiceId(e.getInvoiceId());
         res.setDate(e.getDate());
         res.setTotal(e.getTotal());
+        res.setNote(e.getNote());
         res.setInvoiceTotal(e.getInvoiceTotal());
         res.setCreatedAt(e.getCreatedAt());
         res.setUpdatedAt(e.getUpdatedAt());
+
+        // Tạo mã tự tăng: MHD-001
+        ImportInvoiceItem last = repo.findFirstByOrderByImportInvoiceItemCodeDesc();
+        String newCode;
+
+        if (last == null || last.getImportInvoiceItemCode() == null) {
+            newCode = "MHD-001";
+        } else {
+            String maxCode = last.getImportInvoiceItemCode();
+            String numberPart = maxCode.substring(4);
+            int number = Integer.parseInt(numberPart);
+            number++;
+            newCode = "MHD-" + String.format("%03d", number);
+        }
+
+        res.setImportInvoiceItemCode(newCode);
 
         List<ImportInvoiceItemResponse.ImportPartResponse> partList = new ArrayList<>();
 
@@ -56,7 +75,10 @@ public class ImportInvoiceItemService {
                 part.setStock(p.getStock());
                 part.setDescription(p.getDescription());
 
-                // Supplier nằm trong mỗi part
+                res.setQuantity(pi.getQuantity());
+                res.setUnitPrice(pi.getUnitPrice());
+
+                // Supplier
                 supplierRepo.findById(e.getSupplierId()).ifPresent(s -> {
                     ImportInvoiceItemResponse.SupplierResponse sup = new ImportInvoiceItemResponse.SupplierResponse();
                     sup.setSupplierId(s.getId());
@@ -77,7 +99,7 @@ public class ImportInvoiceItemService {
         return res;
     }
 
-    // Tạo hóa đơn mới
+    // CREATE
     public ImportInvoiceItemResponse create(ImportInvoiceItemRequest req) {
         LocalDateTime now = LocalDateTime.now();
 
@@ -88,7 +110,7 @@ public class ImportInvoiceItemService {
         e.setCreatedAt(now);
         e.setUpdatedAt(now);
 
-        // Map danh sách part từ request
+        // Map parts
         List<ImportInvoiceItem.PartInfo> partList = req.getParts().stream().map(p -> {
             ImportInvoiceItem.PartInfo pi = new ImportInvoiceItem.PartInfo();
             pi.setPartId(p.getPartId());
@@ -99,7 +121,7 @@ public class ImportInvoiceItemService {
         }).collect(Collectors.toList());
         e.setParts(partList);
 
-        // Tính tổng tiền hóa đơn
+        // Tổng
         BigDecimal total = partList.stream()
                 .map(p -> p.getUnitPrice().multiply(BigDecimal.valueOf(p.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -111,19 +133,16 @@ public class ImportInvoiceItemService {
         return toResponse(e);
     }
 
-    // Lấy tất cả
     public List<ImportInvoiceItemResponse> getAll() {
         return repo.findAll().stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
-    // Lấy theo ID
     public Optional<ImportInvoiceItemResponse> getById(String id) {
         return repo.findById(id).map(this::toResponse);
     }
 
-    // Update hóa đơn
     public Optional<ImportInvoiceItemResponse> update(String id, ImportInvoiceItemRequest req) {
         Optional<ImportInvoiceItem> opt = repo.findById(id);
         if (opt.isEmpty()) return Optional.empty();
@@ -153,7 +172,6 @@ public class ImportInvoiceItemService {
         return Optional.of(toResponse(e));
     }
 
-    // Xóa hóa đơn
     public boolean delete(String id) {
         Optional<ImportInvoiceItem> opt = repo.findById(id);
         if (opt.isEmpty()) return false;
@@ -161,7 +179,6 @@ public class ImportInvoiceItemService {
         repo.deleteById(id);
         return true;
     }
-
     // Sắp xếp theo createdAt
     public List<ImportInvoiceItemResponse> sortByCreatedAt(List<ImportInvoiceItemResponse> items, boolean asc) {
         Comparator<ImportInvoiceItemResponse> comp = Comparator.comparing(
@@ -173,8 +190,4 @@ public class ImportInvoiceItemService {
         return items;
     }
 
-    // Getter repositories nếu cần
-    public ImportInvoiceItemRepository getRepo() { return repo; }
-    public SupplierRepository getSupplierRepo() { return supplierRepo; }
-    public PartRepository getPartRepo() { return partRepo; }
 }

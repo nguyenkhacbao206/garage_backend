@@ -14,8 +14,9 @@ public class ImportInvoiceItem {
     private String id;
 
     private String invoiceId;
+    private String importInvoiceItemCode;
     private String supplierId;
-
+    private String note;
     private LocalDateTime date;
 
     private BigDecimal total; // tổng của tất cả part
@@ -54,6 +55,12 @@ public class ImportInvoiceItem {
 
     public String getInvoiceId() { return invoiceId; }
     public void setInvoiceId(String invoiceId) { this.invoiceId = invoiceId; }
+
+    public String getImportInvoiceItemCode() { return importInvoiceItemCode; }
+    public void setImportInvoiceItemCode(String importInvoiceItemCode) { this.importInvoiceItemCode = importInvoiceItemCode; }
+
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
 
     public String getSupplierId() { return supplierId; }
     public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
