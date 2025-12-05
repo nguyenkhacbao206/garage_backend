@@ -45,6 +45,7 @@ public class PaymentService {
 
         Payment p = new Payment();
         p.setRepairOrderId(ro.getId());
+        p.setRepairOrderSnapshot(repairOrderService.convertToResponse(ro));
         p.setAmount(total);
         p.setMethod(request.getMethod() == null ? "CASH" : request.getMethod());
         p.setStatus("SUCCESS");
@@ -53,12 +54,14 @@ public class PaymentService {
 
         Payment saved = paymentRepository.save(p);
 
+        // Cập nhật RepairOrder
         ro.setStatus("PAID");
         ro.setDateReturned(LocalDateTime.now());
         repairOrderRepository.save(ro);
 
         return toResponse(saved);
     }
+
 
     public PaymentResponse getPayment(String id) {
         Payment p = paymentRepository.findById(id)
@@ -118,6 +121,7 @@ public class PaymentService {
         PaymentResponse resp = new PaymentResponse();
         resp.setId(p.getId());
         resp.setRepairOrderId(p.getRepairOrderId());
+        resp.setRepairOrder(p.getRepairOrderSnapshot());
         resp.setRepairOrder(roResponse);
         resp.setAmount(p.getAmount());
         resp.setMethod(p.getMethod());
