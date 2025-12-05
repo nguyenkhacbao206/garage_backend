@@ -54,7 +54,10 @@ public class RepairOrderService {
             for (RepairOrderItemRequest itemReq : request.getParts()) {
                 RepairOrderItem item = new RepairOrderItem();
                 item.setId(itemReq.getId());
+                item.setName(item.getName());
+                item.setUnitPrice(item.getUnitPrice());
                 item.setQuantity(itemReq.getQuantity());
+                item.setTotal(item.getTotal());
                 order.getParts().add(item);
             }
         }
@@ -156,7 +159,10 @@ public class RepairOrderService {
             List<RepairOrderItemResponse> parts = order.getParts().stream().map(i -> {
                 RepairOrderItemResponse item = new RepairOrderItemResponse();
                 item.setId(i.getId());
+                item.setName(i.getName());
+                item.setUnitPrice(i.getUnitPrice());
                 item.setQuantity(i.getQuantity());
+                item.setTotal(i.getTotal());
                 return item;
             }).toList();
             res.setParts(parts);
