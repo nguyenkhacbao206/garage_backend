@@ -23,29 +23,28 @@ public class PaymentService {
     private final RepairOrderRepository repairOrderRepository;
     private final UserRepository userRepository;
 
+   
+    private final RepairOrderService repairOrderService;
+
     public PaymentService(PaymentRepository paymentRepository,
                           RepairOrderRepository repairOrderRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          RepairOrderService repairOrderService  
+    ) {
         this.paymentRepository = paymentRepository;
         this.repairOrderRepository = repairOrderRepository;
         this.userRepository = userRepository;
+        this.repairOrderService = repairOrderService; 
     }
 
     public PaymentResponse createPayment(PaymentRequest request) {
         RepairOrder ro = repairOrderRepository.findById(request.getRepairOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("RepairOrder not found: " + request.getRepairOrderId()));
 
-        // User cashier = null;
-        // if (request.getCashierId() != null) {
-        //     cashier = userRepository.findById(request.getCashierId())
-        //             .orElseThrow(() -> new ResourceNotFoundException("Cashier not found: " + request.getCashierId()));
-        // }
-
         BigDecimal total = ro.calculateEstimatedTotal();
 
         Payment p = new Payment();
         p.setRepairOrderId(ro.getId());
-        // p.setCashierId(cashier != null ? cashier.getId() : null);
         p.setAmount(total);
         p.setMethod(request.getMethod() == null ? "CASH" : request.getMethod());
         p.setStatus("SUCCESS");
@@ -108,18 +107,24 @@ public class PaymentService {
     }
 
     private PaymentResponse toResponse(Payment p) {
+
         RepairOrder ro = repairOrderRepository.findById(p.getRepairOrderId())
-            .orElse(null);
-        return new PaymentResponse(
-                p.getId(),
-                p.getRepairOrderId(),
-                ro,
-                // p.getCashierId(),
-                p.getAmount(),
-                p.getMethod(),
-                p.getStatus(),
-                p.getCreatedAt(),
-                p.getUpdatedAt()
-        );
+                .orElse(null);
+
+        var roResponse = ro != null
+                ? repairOrderService.convertToResponse(ro)  
+                : null;
+
+        PaymentResponse resp = new PaymentResponse();
+        resp.setId(p.getId());
+        resp.setRepairOrderId(p.getRepairOrderId());
+        resp.setRepairOrder(roResponse);
+        resp.setAmount(p.getAmount());
+        resp.setMethod(p.getMethod());
+        resp.setStatus(p.getStatus());
+        resp.setCreatedAt(p.getCreatedAt());
+        resp.setUpdatedAt(p.getUpdatedAt());
+
+        return resp;
     }
 }
