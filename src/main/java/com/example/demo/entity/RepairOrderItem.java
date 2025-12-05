@@ -18,7 +18,7 @@ public class RepairOrderItem {
     private String name;          
     private BigDecimal unitPrice;
     private Integer quantity;
-    private BigDecimal total;
+    private BigDecimal total = BigDecimal.ZERO;   // luôn khởi tạo = 0
 
     public RepairOrderItem() {}
 
@@ -59,19 +59,27 @@ public class RepairOrderItem {
         recalcTotal();
     }
 
-    public Integer getQuantity() { return quantity; }
+    public Integer getQuantity() { 
+        return quantity; 
+    }
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
         recalcTotal();
     }
 
-    public BigDecimal getTotal() { return total; }
-    public void setTotal(BigDecimal total) { this.total = total; }
+    public BigDecimal getTotal() { 
+        return total; 
+    }
+    public void setTotal(BigDecimal total) { 
+        this.total = (total != null ? total : BigDecimal.ZERO);
+    }
 
-    // tính tổng = unitPrice * quantity
+    
     public void recalcTotal() {
         if (unitPrice != null && quantity != null) {
             this.total = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        } else {
+            this.total = BigDecimal.ZERO;
         }
     }
 }

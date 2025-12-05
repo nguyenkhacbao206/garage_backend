@@ -1,13 +1,14 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Document(collection = "repair_orders")
 public class RepairOrder {
@@ -35,9 +36,10 @@ public class RepairOrder {
     private List<RepairOrderItem> parts = new ArrayList<>();
 
     private List<String> serviceIds;
-    private List<Object> service;
+    private List<RepairOrderItem> service = new ArrayList<>();
 
     private BigDecimal estimatedTotal = BigDecimal.ZERO;
+    private BigDecimal serviceFee = BigDecimal.ZERO;
 
     private String status; // PENDING, IN_PROGRESS, COMPLETED, PAID
 
@@ -126,10 +128,10 @@ public class RepairOrder {
     public void setServiceIds(List<String> serviceIds) { 
         this.serviceIds = serviceIds;
     }
-    public List<Object> getService() {
+    public List<RepairOrderItem> getService() {
         return service;
     }
-    public void setService(List<Object> service) {
+    public void setService(List<RepairOrderItem> service) {
         this.service = service;
     }
 
@@ -138,6 +140,14 @@ public class RepairOrder {
     }
     public void setEstimatedTotal(BigDecimal estimatedTotal) { 
         this.estimatedTotal = estimatedTotal;
+    }
+
+    public BigDecimal getServiceFee() {
+        return serviceFee;
+    }
+
+    public void setServiceFee(BigDecimal serviceFee) {
+        this.serviceFee = serviceFee;
     }
 
     public String getStatus() { 
@@ -163,28 +173,38 @@ public class RepairOrder {
 
     // calculate estimated total
     public BigDecimal calculateEstimatedTotal() {
-        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal partTotal = BigDecimal.ZERO;
+        BigDecimal serviceTotal = BigDecimal.ZERO;
 
-        // tính tổng parts
+        // Tính tổng phụ tùng
         if (parts != null) {
             for (RepairOrderItem it : parts) {
-                if (it.getTotal() == null) it.recalcTotal();
-                if (it.getTotal() != null) total = total.add(it.getTotal());
-            }
-        }
-
-        // tính tổng services
-        if (service != null) {
-            for (Object obj : service) {
-                if (obj instanceof RepairOrderItem it) {
+                if (it != null) {
                     if (it.getTotal() == null) it.recalcTotal();
-                    if (it.getTotal() != null) total = total.add(it.getTotal());
+                    partTotal = partTotal.add(it.getTotal());
                 }
             }
         }
 
+        // Tính tổng dịch vụ
+        if (service != null) {
+            for (RepairOrderItem it : service) {
+                if (it != null) {
+                    if (it.getTotal() == null) it.recalcTotal();
+                    serviceTotal = serviceTotal.add(it.getTotal());
+                }
+            }
+        }
+
+        BigDecimal fee = serviceFee != null ? serviceFee : BigDecimal.ZERO;
+
+        BigDecimal total = partTotal.add(serviceTotal).add(fee);
+
         this.estimatedTotal = total;
+
         return total;
     }
+
+
 
 }
