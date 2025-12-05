@@ -60,6 +60,7 @@ public class RepairOrderService {
         }
 
         order.setService(new ArrayList<>());
+        order.setServiceIds(new ArrayList<>());
         if (request.getServiceIds() != null) {
             for (String serviceId : request.getServiceIds()) {
                 RepairOrderItem item = new RepairOrderItem();
