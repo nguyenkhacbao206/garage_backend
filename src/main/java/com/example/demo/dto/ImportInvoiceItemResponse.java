@@ -8,6 +8,8 @@ public class ImportInvoiceItemResponse {
 
     private String id;
     private String invoiceId;
+    private String importInvoiceItemCode;
+
     private List<ImportPartResponse> parts;
 
     // SUPPLIER (NHÚNG TRONG PART)
@@ -73,6 +75,7 @@ public class ImportInvoiceItemResponse {
     private BigDecimal unitPrice;
     private BigDecimal total;
     private BigDecimal invoiceTotal;
+    private String note;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -85,6 +88,13 @@ public class ImportInvoiceItemResponse {
     public void setId(String id) { this.id = id; }
     public String getInvoiceId() { return invoiceId; }
     public void setInvoiceId(String invoiceId) { this.invoiceId = invoiceId; }
+    
+    public String getImportInvoiceItemCode(){return importInvoiceItemCode;}
+    public void setImportInvoiceItemCode(String importInvoiceItemCode) {this.importInvoiceItemCode = importInvoiceItemCode;}
+
+
+    public String getNote(){return note;}
+    public void setNote(String note) {this.note = note;}
 
     public ImportPartResponse getPart() { return part; }
     public void setPart(ImportPartResponse part) { this.part = part; }
