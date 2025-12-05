@@ -118,9 +118,9 @@ public class CarService {
         Car car = carRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + id));
 
-        if (!car.getPlate().equals(request.getPlate()) && carRepository.existsByPlate(request.getPlate())) {
-            throw new RuntimeException("Biển số xe đã tồn tại!");
-        }
+        // if (!car.getPlate().equals(request.getPlate()) && carRepository.existsByPlate(request.getPlate())) {
+        //     throw new RuntimeException("Biển số xe đã tồn tại!");
+        // }
 
         car.setPlate(request.getPlate());
         car.setModel(request.getModel());

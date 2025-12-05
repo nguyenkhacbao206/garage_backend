@@ -1,5 +1,6 @@
 package com.example.demo.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class RepairOrderRequest {
@@ -15,6 +16,7 @@ public class RepairOrderRequest {
     private List<RepairOrderItemRequest> parts;
     private List<String> serviceIds;
     private String status;
+    private BigDecimal serviceFee;
 
     public RepairOrderRequest() {}
 
@@ -102,4 +104,13 @@ public class RepairOrderRequest {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public BigDecimal getServiceFee() {
+        return serviceFee;
+    }
+
+    public void setServiceFee(BigDecimal serviceFee) {
+        this.serviceFee = serviceFee;
+    }
+
 }

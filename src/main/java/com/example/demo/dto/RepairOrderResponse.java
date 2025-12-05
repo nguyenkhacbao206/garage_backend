@@ -21,6 +21,7 @@ public class RepairOrderResponse {
     private List<String> serviceIds;
     private List<GarageServiceResponse> service;
     private BigDecimal estimatedTotal;
+    private BigDecimal serviceFee;
     private LocalDateTime dateReceived;
     private LocalDateTime dateReturned;
 
@@ -121,6 +122,15 @@ public class RepairOrderResponse {
     public void setEstimatedTotal(BigDecimal estimatedTotal) { 
         this.estimatedTotal = estimatedTotal;
     }
+
+    public BigDecimal getServiceFee() {
+        return serviceFee;
+    }
+
+    public void setServiceFee(BigDecimal serviceFee) {
+        this.serviceFee = serviceFee;
+    }
+
 
     public LocalDateTime getDateReceived() { 
         return dateReceived;
