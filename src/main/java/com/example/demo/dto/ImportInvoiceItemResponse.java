@@ -10,9 +10,10 @@ public class ImportInvoiceItemResponse {
     private String invoiceId;
     private String importInvoiceItemCode;
 
-    private List<ImportPartResponse> parts;
+    private SupplierResponse supplier;
+    // private List<ImportPartResponse> parts;
 
-    // SUPPLIER (NHÚNG TRONG PART)
+    // (SUPPLIER (NHÚNG TRONG PART))ngược lại
     public static class SupplierResponse {
         private String supplierId;
         private String supplierName;
@@ -21,6 +22,8 @@ public class ImportInvoiceItemResponse {
         private String supplierEmail;
         private String supplierPhone;
         private String supplierDescription;
+
+        private List<ImportPartResponse> parts;
 
         public String getSupplierId() { return supplierId; }
         public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
@@ -36,6 +39,9 @@ public class ImportInvoiceItemResponse {
         public void setSupplierPhone(String supplierPhone) { this.supplierPhone = supplierPhone; }
         public String getSupplierDescription() { return supplierDescription; }
         public void setSupplierDescription(String supplierDescription) { this.supplierDescription = supplierDescription; }
+
+        public List<ImportPartResponse> getParts() { return parts; }
+        public void setParts(List<ImportPartResponse> partList) { this.parts = partList; }
     }
 
     // PART
@@ -47,8 +53,6 @@ public class ImportInvoiceItemResponse {
         private Integer stock;
         private String description;
 
-        // Supplier nằm trong part
-        private SupplierResponse supplier;
 
         public String getPartId() { return partId; }
         public void setPartId(String partId) { this.partId = partId; }
@@ -62,9 +66,6 @@ public class ImportInvoiceItemResponse {
         public void setStock(Integer stock) { this.stock = stock; }
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
-
-        public SupplierResponse getSupplier() { return supplier; }
-        public void setSupplier(SupplierResponse supplier) { this.supplier = supplier; }
     }
 
     private ImportPartResponse part;
@@ -81,8 +82,11 @@ public class ImportInvoiceItemResponse {
 
     // GETTER / SETTER
 
-    public List<ImportPartResponse> getParts() { return parts; }
-    public void setParts(List<ImportPartResponse> partList) { this.parts = partList; }
+    // public List<ImportPartResponse> getParts() { return parts; }
+    // public void setParts(List<ImportPartResponse> partList) { this.parts = partList; }
+
+    public SupplierResponse getSupplier(){ return supplier;}
+    public void setSupplier(SupplierResponse supplier) {this.supplier = supplier;}
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
