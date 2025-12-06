@@ -37,6 +37,10 @@ public class PartBookingRequest {
     @Schema(description = "Địa chỉ khách hàng", example = "Hanoi")
     private String address;
 
+    @Schema(description = "Trạng đặt hàng", example = "true")
+    private Boolean isActive;
+
+
     //GETTER / SETTER
     public String getSupplierId() { return supplierId; }
     public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
@@ -64,4 +68,8 @@ public class PartBookingRequest {
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+    
+    public Boolean isActive() { return isActive; }
+    public void setIsActive(Boolean isActive ) { this.isActive = isActive; }
+
 }
