@@ -15,6 +15,7 @@ public class Part {
     private String name;
     // private String unit;
     private Double price;
+    private Double salePrice;
     private Integer stock;
     private String description;
     private String supplierId;
@@ -25,10 +26,11 @@ public class Part {
 
     public Part() {}
 
-    public Part(String partCode, String name, Double price, Integer stock, String description, String supplierId, Supplier supplier) {
+    public Part(String partCode, String name, Double price, Double salePrice, Integer stock, String description, String supplierId, Supplier supplier) {
         this.partCode = partCode;
         this.name = name;
         // this.unit = unit;
+        this.salePrice = salePrice;
         this.price = price;
         this.stock = stock;
         this.description = description;
@@ -78,6 +80,9 @@ public class Part {
     public void setPrice(Double price) {
         this.price = price;
     }
+
+    public Double getSalePrice() { return salePrice; }
+    public void setSalePrice(Double salePrice) { this.salePrice =salePrice ;}
 
     public Integer getStock() {
         return stock;
