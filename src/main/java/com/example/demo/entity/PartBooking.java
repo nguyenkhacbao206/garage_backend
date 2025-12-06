@@ -19,11 +19,13 @@ public class PartBooking {
     private Integer quantity;       // Số lượng đặt
     private String note;
     private Integer remainingStock; // Số lượng còn lại sau khi trừ
-    private String price;
+    private Double price;
     private String phone;
     private String address;
     private String customerName;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
 
     // GETTER / SETTER
     public String getId() {
@@ -79,6 +81,14 @@ public class PartBooking {
     public void setRemainingStock(Integer remainingStock) {
         this.remainingStock = remainingStock;
     }
+    
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
     public String getNote() { return note;}
     public void setNote(String note) { this.note = note;}
@@ -97,11 +107,10 @@ public class PartBooking {
     public String getAddress() {return address;}
     public void setAddress(String address) {this.address=address;}
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
 }
