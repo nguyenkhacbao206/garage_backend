@@ -36,7 +36,7 @@ public class RepairOrderService {
         this.technicianRepository = technicianRepository;
     }
 
-    // Load service info to convert serviceId → RepairOrderItem
+    // Load service info để convert serviceId → RepairOrderItem
     private RepairOrderItem buildServiceItemFromServiceId(String serviceId) {
         GarageService sv = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found: " + serviceId));
@@ -50,11 +50,12 @@ public class RepairOrderService {
         return item;
     }
 
-    // CREATE ORDER
+    // create
     public RepairOrderResponse createRepairOrder(RepairOrderRequest request) {
 
-        RepairOrder order = new RepairOrder();
+        final RepairOrder order = new RepairOrder(); // final để lambda có thể dùng
 
+        // Thông tin cơ bản
         order.setCustomerId(request.getCustomerId());
         order.setCarId(request.getCarId());
         order.setTechnicianIds(request.getTechnicianIds());
@@ -62,11 +63,22 @@ public class RepairOrderService {
         order.setStatus(request.getStatus() != null ? request.getStatus() : "PENDING");
         order.setOrderCode("ORD-" + System.currentTimeMillis());
         order.setDateReceived(LocalDateTime.now());
-
-        // GÁN SERVICE FEE
         order.setServiceFee(request.getServiceFee());
 
-        // PARTS
+        // Lưu snapshot xe
+        if (request.getCarId() != null) {
+            carRepository.findById(request.getCarId()).ifPresent(car -> {
+                order.setCarSnapshot(new RepairOrder.CarSnapshot(
+                    car.getId(),
+                    car.getPlate(),
+                    car.getModel(),
+                    car.getManufacturer(),
+                    car.getCustomerId()
+                ));
+            });
+        }
+
+        // Parts
         order.setParts(new ArrayList<>());
         if (request.getParts() != null) {
             for (RepairOrderItemRequest itemReq : request.getParts()) {
@@ -80,7 +92,7 @@ public class RepairOrderService {
             }
         }
 
-        // SERVICES
+        // Services
         order.setService(new ArrayList<>());
         order.setServiceIds(new ArrayList<>());
 
@@ -91,11 +103,16 @@ public class RepairOrderService {
             }
         }
 
+        // Tính tổng
         order.calculateEstimatedTotal();
-        order = repository.save(order);
 
-        return convertToResponse(order);
+        // Lưu vào database
+        RepairOrder savedOrder = repository.save(order);
+
+        // Trả về response
+        return convertToResponse(savedOrder);
     }
+
 
     // UPDATE ORDER
     public RepairOrderResponse updateOrder(String id, RepairOrderRequest request) {
@@ -106,24 +123,31 @@ public class RepairOrderService {
             if (patch.getStatus() != null) order.setStatus(patch.getStatus());
             if (patch.getNote() != null) order.setNote(patch.getNote());
             if (patch.getCustomerId() != null) order.setCustomerId(patch.getCustomerId());
-            if (patch.getCarId() != null) order.setCarId(patch.getCarId());
+
+            if (patch.getCarId() != null && !patch.getCarId().equals(order.getCarId())) {
+                order.setCarId(patch.getCarId());
+                carRepository.findById(patch.getCarId()).ifPresent(car -> {
+                    order.setCarSnapshot(new RepairOrder.CarSnapshot(
+                        car.getId(),
+                        car.getPlate(),
+                        car.getModel(),
+                        car.getManufacturer(),
+                        car.getCustomerId()
+                    ));
+                });
+            }
+
             if (patch.getTechnicianIds() != null) order.setTechnicianIds(patch.getTechnicianIds());
 
-            // UPDATE SERVICE FEE
             if (patch.getServiceFee() != null) order.setServiceFee(patch.getServiceFee());
 
-            // PARTS
-            if (patch.getParts() != null)
-                order.setParts(patch.getParts());
+            if (patch.getParts() != null) order.setParts(patch.getParts());
 
-            // SERVICES
             if (patch.getServiceIds() != null) {
                 order.setServiceIds(patch.getServiceIds());
-
                 List<RepairOrderItem> serviceItems = patch.getServiceIds().stream()
                         .map(this::buildServiceItemFromServiceId)
                         .collect(Collectors.toList());
-
                 order.setService(serviceItems);
             }
 
@@ -138,9 +162,8 @@ public class RepairOrderService {
         return convertToResponse(saved);
     }
 
-    // Convert request to entity for update
+    // Convert request → entity cho update
     public RepairOrder convertRequestToEntity(RepairOrderRequest req) {
-
         RepairOrder order = new RepairOrder();
         order.setCustomerId(req.getCustomerId());
         order.setCarId(req.getCarId());
@@ -149,8 +172,9 @@ public class RepairOrderService {
         order.setStatus(req.getStatus());
         order.setServiceIds(req.getServiceIds());
         order.setServiceFee(req.getServiceFee());   
+        order.setDateReceived(req.getDateReceived());
+        order.setDateReturned(req.getDateReturned());
 
-        // PARTS
         if (req.getParts() != null) {
             List<RepairOrderItem> partItems = req.getParts().stream().map(i -> {
                 RepairOrderItem item = new RepairOrderItem();
@@ -160,14 +184,14 @@ public class RepairOrderService {
                 item.setQuantity(i.getQuantity());
                 item.setTotal(i.getTotal());
                 return item;
-            }).toList();
+            }).collect(Collectors.toList());
             order.setParts(partItems);
         }
 
         return order;
     }
 
-    // Convert to response
+    // Convert → response
     public RepairOrderResponse convertToResponse(RepairOrder order) {
         RepairOrderResponse res = new RepairOrderResponse();
 
@@ -182,9 +206,8 @@ public class RepairOrderService {
         res.setDateReceived(order.getDateReceived());
         res.setDateReturned(order.getDateReturned());
         res.setEstimatedTotal(order.getEstimatedTotal());
-        res.setServiceFee(order.getServiceFee()); // trả về cho FE
+        res.setServiceFee(order.getServiceFee());
 
-        // PARTS
         if (order.getParts() != null) {
             res.setParts(order.getParts().stream().map(i -> {
                 RepairOrderItemResponse dto = new RepairOrderItemResponse();
@@ -194,66 +217,96 @@ public class RepairOrderService {
                 dto.setQuantity(i.getQuantity());
                 dto.setTotal(i.getTotal());
                 return dto;
-            }).toList());
+            }).collect(Collectors.toList()));
         }
 
-        // SERVICE
         if (order.getServiceIds() != null) {
-            List<GarageServiceResponse> serviceList =
-                    serviceRepository.findAllById(order.getServiceIds()).stream().map(sv -> {
-                        GarageServiceResponse dto = new GarageServiceResponse();
-                        dto.setId(sv.getId());
-                        dto.setServiceCode(sv.getServiceCode());
-                        dto.setName(sv.getName());
-                        dto.setDescription(sv.getDescription());
-                        dto.setPrice(sv.getPrice());
-                        dto.setCreatedAt(sv.getCreatedAt());
-                        dto.setUpdatedAt(sv.getUpdatedAt());
-                        return dto;
-                    }).toList();
-
+            List<GarageServiceResponse> serviceList = order.getServiceIds().stream().map(sid ->
+                serviceRepository.findById(sid).map(sv -> {
+                    GarageServiceResponse dto = new GarageServiceResponse();
+                    dto.setId(sv.getId());
+                    dto.setServiceCode(sv.getServiceCode());
+                    dto.setName(sv.getName());
+                    dto.setDescription(sv.getDescription());
+                    dto.setPrice(sv.getPrice());
+                    dto.setCreatedAt(sv.getCreatedAt());
+                    dto.setUpdatedAt(sv.getUpdatedAt());
+                    return dto;
+                }).orElseGet(() -> {
+                    GarageServiceResponse dto = new GarageServiceResponse();
+                    dto.setId(sid);
+                    dto.setName("Service đã bị xóa");
+                    return dto;
+                })
+            ).collect(Collectors.toList());
             res.setService(serviceList);
         }
 
-        // TECHNICIAN
         if (order.getTechnicianIds() != null) {
-            res.setTechnician(
-                    technicianRepository.findAllById(order.getTechnicianIds()).stream().map(t -> {
-                        TechnicianResponse dto = new TechnicianResponse();
-                        dto.setId(t.getId());
-                        dto.setTechCode(t.getTechCode());
-                        dto.setName(t.getName());
-                        dto.setPhone(t.getPhone());
-                        dto.setBaseSalary(t.getSalaryBase());
-                        dto.setPosition(t.getPosition());
-                        dto.setUserId(t.getUserId());
-                        dto.setActive(t.getActive());
-                        dto.setCreatedAt(t.getCreatedAt());
-                        dto.setUpdatedAt(t.getUpdatedAt());
-                        return dto;
-                    }).toList()
-            );
+            List<TechnicianResponse> techList = order.getTechnicianIds().stream().map(tid ->
+                technicianRepository.findById(tid).map(t -> {
+                    TechnicianResponse dto = new TechnicianResponse();
+                    dto.setId(t.getId());
+                    dto.setTechCode(t.getTechCode());
+                    dto.setName(t.getName());
+                    dto.setPhone(t.getPhone());
+                    dto.setBaseSalary(t.getSalaryBase());
+                    dto.setPosition(t.getPosition());
+                    dto.setUserId(t.getUserId());
+                    dto.setActive(t.getActive());
+                    dto.setCreatedAt(t.getCreatedAt());
+                    dto.setUpdatedAt(t.getUpdatedAt());
+                    return dto;
+                }).orElseGet(() -> {
+                    TechnicianResponse dto = new TechnicianResponse();
+                    dto.setId(tid);
+                    dto.setName("Technician đã bị xóa");
+                    return dto;
+                })
+            ).collect(Collectors.toList());
+            res.setTechnician(techList);
         }
 
-        // CUSTOMER
+        // Customer
         if (order.getCustomerId() != null) {
-            customerRepository.findById(order.getCustomerId()).ifPresent(c -> {
-                CustomerResponse cr = new CustomerResponse();
-                cr.setMessage("Lấy thông tin khách hàng thành công");
-                cr.setData(c);
-                res.setCustomer(cr);
-            });
+            CustomerResponse cr = customerRepository.findById(order.getCustomerId())
+                    .map(c -> {
+                        CustomerResponse r = new CustomerResponse();
+                        r.setMessage("Lấy thông tin khách hàng thành công");
+                        r.setData(c);
+                        return r;
+                    }).orElseGet(() -> {
+                        CustomerResponse r = new CustomerResponse();
+                        r.setMessage("Khách hàng đã bị xóa");
+                        r.setData(null);
+                        return r;
+                    });
+            res.setCustomer(cr);
         }
 
-        // CAR
-        if (order.getCarId() != null) {
-            carRepository.findById(order.getCarId()).ifPresent(c -> {
+        // Car: ưu tiên snapshot
+        if (order.getCarSnapshot() != null) {
+            RepairOrder.CarSnapshot snap = order.getCarSnapshot();
+            CarResponse carResp = new CarResponse();
+            carResp.setId(snap.getId());
+            carResp.setPlate(snap.getPlate());
+            carResp.setModel(snap.getModel());
+            carResp.setManufacturer(snap.getManufacturer());
+            carResp.setCustomerId(snap.getCustomerId());
+            res.setCar(carResp);
+        } else if (order.getCarId() != null) {
+            carRepository.findById(order.getCarId()).ifPresentOrElse(c -> {
                 CarResponse dto = new CarResponse();
                 dto.setId(c.getId());
                 dto.setPlate(c.getPlate());
                 dto.setModel(c.getModel());
                 dto.setManufacturer(c.getManufacturer());
                 dto.setCustomerId(c.getCustomerId());
+                res.setCar(dto);
+            }, () -> {
+                CarResponse dto = new CarResponse();
+                dto.setId(order.getCarId());
+                dto.setPlate("Xe đã bị xóa");
                 res.setCar(dto);
             });
         }

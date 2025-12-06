@@ -1,6 +1,7 @@
 package com.example.demo.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class RepairOrderRequest {
@@ -17,6 +18,9 @@ public class RepairOrderRequest {
     private List<String> serviceIds;
     private String status;
     private BigDecimal serviceFee;
+    private LocalDateTime dateReceived;
+    private LocalDateTime dateReturned;
+
 
     public RepairOrderRequest() {}
 
@@ -111,6 +115,22 @@ public class RepairOrderRequest {
 
     public void setServiceFee(BigDecimal serviceFee) {
         this.serviceFee = serviceFee;
+    }
+
+    public LocalDateTime getDateReceived() {
+    return dateReceived;
+}
+
+    public void setDateReceived(LocalDateTime dateReceived) {
+        this.dateReceived = dateReceived;
+    }
+
+    public LocalDateTime getDateReturned() {
+        return dateReturned;
+    }
+
+    public void setDateReturned(LocalDateTime dateReturned) {
+        this.dateReturned = dateReturned;
     }
 
 }
