@@ -118,17 +118,24 @@ public class CarService {
         Car car = carRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + id));
 
-        // if (!car.getPlate().equals(request.getPlate()) && carRepository.existsByPlate(request.getPlate())) {
-        //     throw new RuntimeException("Biển số xe đã tồn tại!");
-        // }
+        // Cập nhật từng trường nếu request có gửi dữ liệu
+        if (request.getPlate() != null) {
+            car.setPlate(request.getPlate());
+        }
 
-        car.setPlate(request.getPlate());
-        car.setModel(request.getModel());
-        car.setManufacturer(request.getManufacturer());
-        car.setDescription(request.getDescription());
+        if (request.getModel() != null) {
+            car.setModel(request.getModel());
+        }
 
-        car.setUpdatedAt(LocalDateTime.now());
+        if (request.getManufacturer() != null) {
+            car.setManufacturer(request.getManufacturer());
+        }
 
+        if (request.getDescription() != null) {
+            car.setDescription(request.getDescription());
+        }
+
+        // Update customer nếu có gửi customerId mới
         if (request.getCustomerId() != null && !request.getCustomerId().equals(car.getCustomerId())) {
             Customer newCustomer = customerRepository.findById(request.getCustomerId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + request.getCustomerId()));
@@ -136,12 +143,16 @@ public class CarService {
             car.setCustomerCode(newCustomer.getCustomerCode());
         }
 
+        // Update active 
         if (request.getActive() != null) {
             car.setActive(request.getActive());
         }
 
+        car.setUpdatedAt(LocalDateTime.now());
+
         return convertToResponse(carRepository.save(car));
     }
+
 
     // Delete car
     public void deleteCar(String id) {
