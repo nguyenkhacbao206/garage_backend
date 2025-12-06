@@ -1,11 +1,9 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.*;
 import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtService;
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.AuthResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,25 +27,48 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
-    // Register
+    
+    // REGISTER USER
     public User register(RegisterRequest request) {
+
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
 
-       User user = new User(
-        request.getUsername(),
-        request.getEmail(),
-        request.getPhonenumber(),
-        passwordEncoder.encode(request.getPassword())
-        // "ROLE_USER"
+        User user = new User(
+                request.getUsername(),
+                request.getEmail(),
+                request.getPhonenumber(),
+                passwordEncoder.encode(request.getPassword()),
+                "ROLE_USER"
         );
 
         return userRepository.save(user);
     }
 
-    // Login
+    
+    // REGISTER ADMIN
+    public User registerAdmin(RegisterRequest request) {
+
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        User admin = new User(
+                request.getUsername(),
+                request.getEmail(),
+                request.getPhonenumber(),
+                passwordEncoder.encode(request.getPassword()),
+                "ROLE_ADMIN"
+        );
+
+        return userRepository.save(admin);
+    }
+
+    
+    // LOGIN USER
     public AuthResponse login(LoginRequest request) {
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -55,29 +76,53 @@ public class AuthService {
                 )
         );
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getByEmail(request.getEmail());
 
-        String accessToken = jwtService.generateAccessToken(user.getEmail());
-        String refreshToken = jwtService.generateRefreshToken(user.getEmail());
+        if (!user.getRole().equals("ROLE_USER")) {
+            throw new RuntimeException("Tài khoản này không phải User!");
+        }
 
-        return new AuthResponse(
-            user.getUsername(),
-            user.getEmail(),
-            user.getPhonenumber(),
-            accessToken, 
-            refreshToken
-            );
+        return buildTokens(user);
     }
 
-    // Lấy user theo email
+    
+    // LOGIN ADMIN
+    public AuthResponse adminLogin(LoginRequest request) {
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        User admin = getByEmail(request.getEmail());
+
+        if (!admin.getRole().equals("ROLE_ADMIN")) {
+            throw new RuntimeException("Bạn không có quyền admin");
+        }
+
+        return buildTokens(admin);
+    }
+
+    
+    // LẤY USER TỪ EMAIL
     public User getByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
     }
 
-    // Sinh token mới sau khi đổi mật khẩu
+    
+    // TẠO TOKEN MỚI (CHANGEPASSWORD)
+    
     public AuthResponse generateNewToken(User user) {
+        return buildTokens(user);
+    }
+
+    
+    // TOKEN BUILDER
+    
+    private AuthResponse buildTokens(User user) {
         String accessToken = jwtService.generateAccessToken(user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 

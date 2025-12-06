@@ -25,14 +25,16 @@ public class RegisterRequest {
     @Schema(description = "Mật khẩu", example = "123456")
     @NotBlank(message = "Mật khẩu không được để trống")
     private String password;
+    private String role;
 
     public RegisterRequest() {}
 
-    public RegisterRequest(String username, String email, String phonenumber, String password) {
+    public RegisterRequest(String username, String email, String phonenumber, String password, String role) {
         this.username = username;
         this.email = email;
         this.phonenumber = phonenumber;
         this.password = password;
+        this.role = role;
     }
 
     // getters và setters
@@ -59,5 +61,11 @@ public class RegisterRequest {
     }
     public void setPassword(String password) { 
         this.password = password; 
+    }
+    public String getRole() {
+        return role;
+    }
+    public void setRole(String role) {
+        this.role = role;
     }
 }
