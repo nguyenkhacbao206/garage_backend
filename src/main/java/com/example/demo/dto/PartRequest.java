@@ -16,6 +16,11 @@ public class PartRequest {
     @Min(value = 0, message = "Giá phải >= 0")
     private Double price;
 
+    @NotNull(message = "Giá bán không được để trống")
+    @Min(value = 0, message = "Giá phải >= 0")
+    private Double salePrice;
+
+
     @NotNull(message = "Số lượng tồn kho không được để trống")
     @Min(value = 0, message = "Tồn kho phải >= 0")
     private Integer stock;
@@ -51,6 +56,14 @@ public class PartRequest {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public Double getSalePrice() {
+        return salePrice;
+    }
+
+    public void setSalePrice(Double salePrice) {
+        this.salePrice = salePrice;
     }
 
     public Integer getStock() {
