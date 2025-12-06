@@ -15,32 +15,28 @@ public class RepairOrder {
 
     @Id
     private String id;
-
     private String orderCode;
 
     // customer
     private String customerId;
-    private Object customer; // optional populated object
+    private Object customer;
 
     // car
     private String carId;
     private Object car;
+    private CarSnapshot carSnapshot;  //  lưu snapshot xe
 
     // technicians
     private List<String> technicianIds;
     private List<Object> technician;
 
     private String note;
-
-    // parts and services (separate arrays)
     private List<RepairOrderItem> parts = new ArrayList<>();
-
     private List<String> serviceIds;
     private List<RepairOrderItem> service = new ArrayList<>();
 
     private BigDecimal estimatedTotal = BigDecimal.ZERO;
     private BigDecimal serviceFee = BigDecimal.ZERO;
-
     private String status; // PENDING, IN_PROGRESS, COMPLETED, PAID
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -51,7 +47,59 @@ public class RepairOrder {
 
     public RepairOrder() {}
 
-    // getters / setters (generated)
+   
+    public static class CarSnapshot {
+        private String id;
+        private String plate;
+        private String model;
+        private String manufacturer;
+        private String customerId;
+
+        public CarSnapshot() {}
+
+        public CarSnapshot(String id, String plate, String model, String manufacturer, String customerId) {
+            this.id = id;
+            this.plate = plate;
+            this.model = model;
+            this.manufacturer = manufacturer;
+            this.customerId = customerId;
+        }
+
+        // getters & setters
+        public String getId() { 
+            return id;
+        }
+        public void setId(String id) { 
+            this.id = id;
+        }
+        public String getPlate() { 
+            return plate;
+        }
+        public void setPlate(String plate) { 
+            this.plate = plate;
+        }
+        public String getModel() { 
+            return model;
+        }
+        public void setModel(String model) { 
+            this.model = model;
+        }
+        public String getManufacturer() { 
+            return manufacturer;
+        }
+        public void setManufacturer(String manufacturer) { 
+            this.manufacturer = manufacturer;
+        }
+        public String getCustomerId() { 
+            return customerId;
+        }
+        public void setCustomerId(String customerId) { 
+            this.customerId = customerId;
+        }
+   
+    }
+
+   
     public String getId() { 
         return id;
     }
@@ -94,6 +142,13 @@ public class RepairOrder {
         this.car = car;
     }
 
+    public CarSnapshot getCarSnapshot() { 
+        return carSnapshot;
+    }
+    public void setCarSnapshot(CarSnapshot carSnapshot) { 
+        this.carSnapshot = carSnapshot;
+    }
+
     public List<String> getTechnicianIds() { 
         return technicianIds;
     }
@@ -128,10 +183,11 @@ public class RepairOrder {
     public void setServiceIds(List<String> serviceIds) { 
         this.serviceIds = serviceIds;
     }
-    public List<RepairOrderItem> getService() {
+
+    public List<RepairOrderItem> getService() { 
         return service;
     }
-    public void setService(List<RepairOrderItem> service) {
+    public void setService(List<RepairOrderItem> service) { 
         this.service = service;
     }
 
@@ -142,11 +198,10 @@ public class RepairOrder {
         this.estimatedTotal = estimatedTotal;
     }
 
-    public BigDecimal getServiceFee() {
+    public BigDecimal getServiceFee() { 
         return serviceFee;
     }
-
-    public void setServiceFee(BigDecimal serviceFee) {
+    public void setServiceFee(BigDecimal serviceFee) { 
         this.serviceFee = serviceFee;
     }
 
@@ -171,12 +226,13 @@ public class RepairOrder {
         this.dateReturned = dateReturned;
     }
 
-    // calculate estimated total
+  
+    // Calculate total
+    
     public BigDecimal calculateEstimatedTotal() {
         BigDecimal partTotal = BigDecimal.ZERO;
         BigDecimal serviceTotal = BigDecimal.ZERO;
 
-        // Tính tổng phụ tùng
         if (parts != null) {
             for (RepairOrderItem it : parts) {
                 if (it != null) {
@@ -186,7 +242,6 @@ public class RepairOrder {
             }
         }
 
-        // Tính tổng dịch vụ
         if (service != null) {
             for (RepairOrderItem it : service) {
                 if (it != null) {
@@ -199,12 +254,7 @@ public class RepairOrder {
         BigDecimal fee = serviceFee != null ? serviceFee : BigDecimal.ZERO;
 
         BigDecimal total = partTotal.add(serviceTotal).add(fee);
-
         this.estimatedTotal = total;
-
         return total;
     }
-
-
-
 }
