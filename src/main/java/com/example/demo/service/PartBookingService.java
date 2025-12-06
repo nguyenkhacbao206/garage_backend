@@ -79,6 +79,7 @@ public class PartBookingService {
         booking.setRemainingStock(updatedPart.getStock());
         booking.setNote(req.getNote());
         booking.setCustomerName(req.getCustomerName());
+        booking.setIsActive(req.isActive());
         booking.setPhone(req.getPhone());
         booking.setAddress(req.getAddress());
         booking.setCreatedAt(LocalDateTime.now());

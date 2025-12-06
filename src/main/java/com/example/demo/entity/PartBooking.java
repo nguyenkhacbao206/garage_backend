@@ -22,6 +22,7 @@ public class PartBooking {
     private Double price;
     private String phone;
     private String address;
+    private Boolean isActive;
     private String customerName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -92,6 +93,9 @@ public class PartBooking {
 
     public String getNote() { return note;}
     public void setNote(String note) { this.note = note;}
+
+    public Boolean getIsActive() { return isActive;}
+    public void setIsActive(Boolean isActive) { this.isActive = isActive;}
 
     public String getCustomerName() {
         return customerName;
