@@ -108,7 +108,7 @@ public class ImportInvoiceItemService {
                     part.setPartId(p.getId());
                     part.setPartName(p.getName());
                     part.setPartCode(p.getPartCode());
-                    part.setPrice(p.getPrice());
+                    // part.setPrice(p.getPrice());
                     part.setStock(p.getStock());
                     part.setDescription(p.getDescription());
 

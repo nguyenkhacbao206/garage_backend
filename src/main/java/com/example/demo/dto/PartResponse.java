@@ -9,7 +9,7 @@ public class PartResponse {
     private String partCode;
     private String name;
     // private String unit;
-    private Double price;
+    // private Double price;
     private Double salePrice;
     private Integer stock;
     private String description;
@@ -20,12 +20,12 @@ public class PartResponse {
 
     public PartResponse() {}
 
-    public PartResponse(String id, String partCode, String name, Double price, Double salePrice, Integer stock, String description, String supplierId, Supplier supplier) {
+    public PartResponse(String id, String partCode, String name, Double salePrice, Integer stock, String description, String supplierId, Supplier supplier) {
         this.id = id;
         this.partCode = partCode;
         this.name = name;
         // this.unit = unit;
-        this.price = price;
+        // this.price = price;
         this.salePrice = salePrice;
         this.stock = stock;
         this.description = description;
@@ -68,13 +68,13 @@ public class PartResponse {
     //     this.unit = unit;
     // }
 
-    public Double getPrice() {
-        return price;
-    }
+    // public Double getPrice() {
+    //     return price;
+    // }
 
-    public void setPrice(Double price) {
-        this.price = price;
-    }
+    // public void setPrice(Double price) {
+    //     this.price = price;
+    // }
 
     public Double getSalePrice() {
         return salePrice;

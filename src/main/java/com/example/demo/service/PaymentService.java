@@ -66,7 +66,7 @@ public class PaymentService {
 
         Payment saved = paymentRepository.save(p);
 
-    // check trừ stock part
+    // check apart from stock part when payment
         if (ro.getParts() != null) {
             for (RepairOrderItem item : ro.getParts()) {
 

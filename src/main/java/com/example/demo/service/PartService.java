@@ -78,7 +78,6 @@ public class PartService {
         Part part = new Part(
                 generatePartCode(),
                 req.getName(),
-                req.getPrice(),
                 req.getSalePrice(),
                 req.getStock(),
                 req.getDescription(),
@@ -101,7 +100,7 @@ public class PartService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phụ tùng"));
 
         if (req.getName() != null) part.setName(req.getName());
-        if (req.getPrice() != null) part.setPrice(req.getPrice());
+        // if (req.getPrice() != null) part.setPrice(req.getPrice());
         if (req.getStock() != null) part.setStock(req.getStock());
         if (req.getDescription() != null) part.setDescription(req.getDescription());
 
@@ -132,7 +131,7 @@ public class PartService {
                 part.getId(),
                 part.getPartCode(),
                 part.getName(),
-                part.getPrice(),
+                // part.getPrice(),
                 part.getSalePrice(),
                 part.getStock(),
                 part.getDescription(),
