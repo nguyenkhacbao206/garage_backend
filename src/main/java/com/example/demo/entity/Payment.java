@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document(collection = "payments")
 @Schema(description = "Thông tin thanh toán")
@@ -23,7 +25,7 @@ public class Payment {
 
     // @Schema(description = "ID của cashier/user thực hiện thu tiền", example = "67123abc9087bcff1234aa12")
     // private String cashierId;
-    private RepairOrderResponse repairOrderSnapshot;
+    // private RepairOrderResponse repairOrderSnapshot;
 
     @Schema(description = "Số tiền thanh toán", example = "150000.00")
     private BigDecimal amount;
@@ -34,6 +36,7 @@ public class Payment {
     @Schema(description = "Trạng thái thanh toán (PENDING, SUCCESS, FAILED)", example = "SUCCESS")
     private String status;
 
+    private List<PaymentHistoryItem> history = new ArrayList<>();
     @Schema(description = "Thời gian tạo")
     private LocalDateTime createdAt;
 
@@ -57,12 +60,12 @@ public class Payment {
         this.repairOrderId = repairOrderId; 
     }
 
-    public RepairOrderResponse getRepairOrderSnapshot() { 
-        return repairOrderSnapshot; 
-    }
-    public void setRepairOrderSnapshot(RepairOrderResponse repairOrderSnapshot) { 
-        this.repairOrderSnapshot = repairOrderSnapshot; 
-    }
+    // public RepairOrderResponse getRepairOrderSnapshot() { 
+    //     return repairOrderSnapshot; 
+    // }
+    // public void setRepairOrderSnapshot(RepairOrderResponse repairOrderSnapshot) { 
+    //     this.repairOrderSnapshot = repairOrderSnapshot; 
+    // }
 
     // public String getCashierId() { 
     //     return cashierId; 
@@ -92,9 +95,24 @@ public class Payment {
         this.status = status; 
     }
 
+    public List<PaymentHistoryItem> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<PaymentHistoryItem> history) {
+        this.history = history;
+    }
+
+    // Thêm phương thức để push history mới
+    public void addHistory(PaymentHistoryItem item) {
+        this.history.add(item);
+    }
+
     public LocalDateTime getCreatedAt() { 
         return createdAt; 
     }
+
+
     public void setCreatedAt(LocalDateTime createdAt) { 
         this.createdAt = createdAt; 
     }
