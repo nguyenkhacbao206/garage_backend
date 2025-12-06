@@ -78,6 +78,7 @@ public class PartService {
         Part part = new Part(
                 generatePartCode(),
                 req.getName(),
+                req.getPrice(),
                 req.getSalePrice(),
                 req.getStock(),
                 req.getDescription(),
@@ -131,7 +132,7 @@ public class PartService {
                 part.getId(),
                 part.getPartCode(),
                 part.getName(),
-                // part.getPrice(),
+                part.getPrice(),
                 part.getSalePrice(),
                 part.getStock(),
                 part.getDescription(),
