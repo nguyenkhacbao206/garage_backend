@@ -111,7 +111,7 @@ public class ImportInvoiceItemService {
                     // part.setPrice(p.getPrice());
                     part.setStock(p.getStock());
                     part.setDescription(p.getDescription());
-
+                    
                     // mapping quantity + unitPrice
                     res.setQuantity(pi.getQuantity());
                     res.setUnitPrice(pi.getUnitPrice());
