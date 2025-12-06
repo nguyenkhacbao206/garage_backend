@@ -61,6 +61,8 @@ public class SecurityConfig {
                         "/swagger-ui.html",
                         "/avatars/**",
                         "/api/services",
+                        "/api/parts",
+                        "/api/parts/search",
                         "/api/services/search",
                         "/api/chat/**",
                         "/api/bookings/**",
