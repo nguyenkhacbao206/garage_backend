@@ -6,9 +6,11 @@ import com.example.demo.entity.Payment;
 import com.example.demo.entity.PaymentHistoryItem;
 import com.example.demo.entity.RepairOrder;
 import com.example.demo.exception.ResourceNotFoundException;
+
 import com.example.demo.repository.PaymentRepository;
 import com.example.demo.repository.RepairOrderRepository;
 import com.example.demo.repository.UserRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,15 +30,20 @@ public class PaymentService {
                           RepairOrderRepository repairOrderRepository,
                           UserRepository userRepository,
                           RepairOrderService repairOrderService) {
+
         this.paymentRepository = paymentRepository;
         this.repairOrderRepository = repairOrderRepository;
         this.userRepository = userRepository;
         this.repairOrderService = repairOrderService;
     }
 
+    // Tạo payment
     public PaymentResponse createPayment(PaymentRequest request) {
+
         RepairOrder ro = repairOrderRepository.findById(request.getRepairOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("RepairOrder not found: " + request.getRepairOrderId()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "RepairOrder not found: " + request.getRepairOrderId()
+                ));
 
         BigDecimal total = ro.calculateEstimatedTotal();
 
@@ -45,30 +52,34 @@ public class PaymentService {
         p.setAmount(total);
         p.setMethod(request.getMethod() == null ? "CASH" : request.getMethod());
         p.setStatus("SUCCESS");
-        p.setCreatedAt(LocalDateTime.now());
-        p.setUpdatedAt(LocalDateTime.now());
 
-        // Lưu lịch sử lần tạo
-        p.addHistory(new PaymentHistoryItem(p.getStatus(), p.getMethod(), LocalDateTime.now()));
+        LocalDateTime now = LocalDateTime.now();
+        p.setCreatedAt(now);
+        p.setUpdatedAt(now);
+
+        p.addHistory(new PaymentHistoryItem(p.getStatus(), p.getMethod(), now));
 
         Payment saved = paymentRepository.save(p);
 
-        // Cập nhật RepairOrder
+        // update repair order
         ro.setStatus("PAID");
-        ro.setDateReturned(LocalDateTime.now());
+        ro.setDateReturned(now);
         repairOrderRepository.save(ro);
 
         return toResponse(saved);
     }
 
+    // Lấy payment
     public PaymentResponse getPayment(String id) {
         Payment p = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + id));
         return toResponse(p);
     }
 
+    // list all
     public List<PaymentResponse> listPayments() {
-        return paymentRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
+        return paymentRepository.findAll()
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     public List<PaymentResponse> findByRepairOrderId(String repairOrderId) {
@@ -81,22 +92,24 @@ public class PaymentService {
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    // update status
     public PaymentResponse updateStatus(String id, String status) {
+
         Payment p = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + id));
 
-        p.setStatus(status);
-        p.setUpdatedAt(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
 
-        // Lưu lịch sử khi update
-        p.addHistory(new PaymentHistoryItem(status, p.getMethod(), LocalDateTime.now()));
+        p.setStatus(status);
+        p.setUpdatedAt(now);
+        p.addHistory(new PaymentHistoryItem(status, p.getMethod(), now));
 
         Payment saved = paymentRepository.save(p);
 
         if ("SUCCESS".equalsIgnoreCase(status)) {
             repairOrderRepository.findById(p.getRepairOrderId()).ifPresent(ro -> {
                 ro.setStatus("PAID");
-                ro.setDateReturned(LocalDateTime.now());
+                ro.setDateReturned(now);
                 repairOrderRepository.save(ro);
             });
         }
@@ -111,29 +124,28 @@ public class PaymentService {
         paymentRepository.deleteById(id);
     }
 
-    // Lấy lịch sử thanh toán
     public List<PaymentHistoryItem> getPaymentHistory(String id) {
         Payment p = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + id));
         return p.getHistory();
     }
 
+    // Convert Entity -> Response
     private PaymentResponse toResponse(Payment p) {
+
         RepairOrder ro = repairOrderRepository.findById(p.getRepairOrderId())
                 .orElse(null);
 
-        var roResponse = ro != null ? repairOrderService.convertToResponse(ro) : null;
-
-        PaymentResponse resp = new PaymentResponse();
-        resp.setId(p.getId());
-        resp.setRepairOrderId(p.getRepairOrderId());
-        resp.setRepairOrder(roResponse);
-        resp.setAmount(p.getAmount());
-        resp.setMethod(p.getMethod());
-        resp.setStatus(p.getStatus());
-        resp.setCreatedAt(p.getCreatedAt());
-        resp.setUpdatedAt(p.getUpdatedAt());
-
-        return resp;
+        return new PaymentResponse(
+                p.getId(),
+                p.getRepairOrderId(),
+                ro != null ? repairOrderService.convertToResponse(ro) : null,
+                p.getAmount(),
+                p.getMethod(),
+                p.getStatus(),
+                p.getCreatedAt(),
+                p.getUpdatedAt(),
+                p.getHistory()
+        );
     }
 }

@@ -2,6 +2,9 @@ package com.example.demo.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.example.demo.entity.PaymentHistoryItem;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -18,13 +21,16 @@ public class PaymentResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private List<PaymentHistoryItem> history;
+
     public PaymentResponse() {}
 
     public PaymentResponse(String id, String repairOrderId, 
                            RepairOrderResponse repairOrder,
                            BigDecimal amount, String method,
                            String status, LocalDateTime createdAt,
-                           LocalDateTime updatedAt) {
+                           LocalDateTime updatedAt,
+                           List<PaymentHistoryItem> history) {
 
         this.id = id;
         this.repairOrderId = repairOrderId;
@@ -34,9 +40,10 @@ public class PaymentResponse {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.history = history; 
     }
 
-    // ---- GETTER / SETTER ----
+    // GETTER / SETTER 
 
     public String getId() {
         return id;
@@ -93,5 +100,13 @@ public class PaymentResponse {
     }
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<PaymentHistoryItem> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<PaymentHistoryItem> history) {
+        this.history = history;
     }
 }
