@@ -4,6 +4,8 @@ import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.PaymentRequest;
 import com.example.demo.dto.PaymentResponse;
 import com.example.demo.dto.UpdatePaymentStatusRequest;
+import com.example.demo.entity.PaymentHistoryItem;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,7 +22,9 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    public PaymentController(PaymentService paymentService) { this.paymentService = paymentService; }
+    public PaymentController(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
 
     @PostMapping
     @Operation(summary = "Tạo payment cho RepairOrder")
@@ -28,8 +32,10 @@ public class PaymentController {
         try {
             PaymentResponse resp = paymentService.createPayment(request);
             return ResponseEntity.ok(new ApiResponse<>("Tạo payment thành công", resp));
-        } catch (Exception e) {
-            throw e;
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(ex.getMessage(), null));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
         }
     }
 
@@ -38,9 +44,12 @@ public class PaymentController {
     public ResponseEntity<ApiResponse<PaymentResponse>> getPayment(
             @Parameter(description = "ID của Payment") @PathVariable String id) {
         try {
-            return ResponseEntity.ok(new ApiResponse<>("Thành công", paymentService.getPayment(id)));
-        } catch (Exception e) {
-            throw e;
+            PaymentResponse resp = paymentService.getPayment(id);
+            return ResponseEntity.ok(new ApiResponse<>("Thành công", resp));
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(ex.getMessage(), null));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
         }
     }
 
@@ -55,8 +64,8 @@ public class PaymentController {
             else if (status != null) result = paymentService.findByStatus(status);
             else result = paymentService.listPayments();
             return ResponseEntity.ok(new ApiResponse<>("Thành công", result));
-        } catch (Exception e) {
-            throw e;
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
         }
     }
 
@@ -66,9 +75,12 @@ public class PaymentController {
             @Parameter(description = "ID của Payment") @PathVariable String id,
             @RequestBody UpdatePaymentStatusRequest req) {
         try {
-            return ResponseEntity.ok(new ApiResponse<>("Cập nhật trạng thái thành công", paymentService.updateStatus(id, req.getStatus())));
-        } catch (Exception e) {
-            throw e;
+            PaymentResponse resp = paymentService.updateStatus(id, req.getStatus());
+            return ResponseEntity.ok(new ApiResponse<>("Cập nhật trạng thái thành công", resp));
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(ex.getMessage(), null));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
         }
     }
 
@@ -79,8 +91,24 @@ public class PaymentController {
         try {
             paymentService.deleteById(id);
             return ResponseEntity.ok(new ApiResponse<>("Xóa payment thành công", null));
-        } catch (Exception e) {
-            throw e;
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(ex.getMessage(), null));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/{id}/history")
+    @Operation(summary = "Lấy lịch sử thanh toán của Payment")
+    public ResponseEntity<ApiResponse<List<PaymentHistoryItem>>> getPaymentHistory(
+            @Parameter(description = "ID của Payment") @PathVariable String id) {
+        try {
+            List<PaymentHistoryItem> history = paymentService.getPaymentHistory(id);
+            return ResponseEntity.ok(new ApiResponse<>("Lịch sử thanh toán", history));
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(ex.getMessage(), null));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
         }
     }
 }

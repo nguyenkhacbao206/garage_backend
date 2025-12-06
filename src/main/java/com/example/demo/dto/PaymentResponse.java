@@ -52,7 +52,7 @@ public class PaymentResponse {
         this.repairOrderId = repairOrderId;
     }
 
-    // ✅ TRẢ VỀ DTO KHÔNG PHẢI ENTITY
+   
     public RepairOrderResponse getRepairOrder() {
         return repairOrder;
     }
