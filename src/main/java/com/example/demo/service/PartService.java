@@ -101,7 +101,7 @@ public class PartService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phụ tùng"));
 
         if (req.getName() != null) part.setName(req.getName());
-        // if (req.getPrice() != null) part.setPrice(req.getPrice());
+        if (req.getPrice() != null) part.setPrice(req.getPrice());
         if (req.getStock() != null) part.setStock(req.getStock());
         if (req.getDescription() != null) part.setDescription(req.getDescription());
 
