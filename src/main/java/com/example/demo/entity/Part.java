@@ -14,7 +14,7 @@ public class Part {
 
     private String name;
     // private String unit;
-    private Double price;
+    // private Double price;
     private Double salePrice;
     private Integer stock;
     private String description;
@@ -26,12 +26,12 @@ public class Part {
 
     public Part() {}
 
-    public Part(String partCode, String name, Double price, Double salePrice, Integer stock, String description, String supplierId, Supplier supplier) {
+    public Part(String partCode, String name, Double salePrice, Integer stock, String description, String supplierId, Supplier supplier) {
         this.partCode = partCode;
         this.name = name;
         // this.unit = unit;
         this.salePrice = salePrice;
-        this.price = price;
+        // this.price = price;
         this.stock = stock;
         this.description = description;
         this.supplierId = supplierId;
@@ -73,13 +73,13 @@ public class Part {
     //     this.unit = unit;
     // }
 
-    public Double getPrice() {
-        return price;
-    }
+    // public Double getPrice() {
+    //     return price;
+    // }
 
-    public void setPrice(Double price) {
-        this.price = price;
-    }
+    // public void setPrice(Double price) {
+    //     this.price = price;
+    // }
 
     public Double getSalePrice() { return salePrice; }
     public void setSalePrice(Double salePrice) { this.salePrice =salePrice ;}
