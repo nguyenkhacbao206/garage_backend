@@ -1,6 +1,5 @@
 package com.example.demo.config;
 
-import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtAuthFilter;
 import com.example.demo.security.RestAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +8,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -22,13 +20,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
@@ -36,7 +30,7 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // cấu hình cors
+    // CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -44,6 +38,7 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -52,32 +47,40 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors()
-            .and()
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .exceptionHandling(ex -> ex.authenticationEntryPoint(new RestAuthenticationEntryPoint()))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+
+                //  PUBLIC APIs 
                 .requestMatchers(
-                    "/api/auth/**",
-                    "/v3/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/avatars/**",
-                    "/api/services",
-                    "/api/services/search",
-                    "/api/bookings/**",
-                    "/api/chat/**",
-                    "/ws/**",
-                    "/app/**",
-                    "/topic/**",
-                    "/private/**"
+                        "/api/auth/**",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/avatars/**",
+                        "/api/services",
+                        "/api/services/search",
+                        "/api/chat/**",
+                        "/api/bookings/**",
+                        "/ws/**",
+                        "/app/**",
+                        "/topic/**",
+                        "/private/**"
                 ).permitAll()
+
+                //  ADMIN ONLY 
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                //  USER or ADMIN 
+                .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+
+                //  OTHER APIS must be authenticated 
                 .anyRequest().authenticated()
             )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 }

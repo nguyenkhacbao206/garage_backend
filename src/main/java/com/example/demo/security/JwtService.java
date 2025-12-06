@@ -24,7 +24,8 @@ public class JwtService {
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .claim("type", type) // thêm loại token: "access" hoặc "refresh"
+                .claim("type", type)
+                 // thêm loại token: "access" hoặc "refresh"
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
     }
