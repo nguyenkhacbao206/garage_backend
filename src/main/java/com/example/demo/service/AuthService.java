@@ -78,8 +78,13 @@ public class AuthService {
 
         User user = getByEmail(request.getEmail());
 
-        if (!user.getRole().equals("ROLE_USER")) {
-            throw new RuntimeException("Tài khoản này không phải User!");
+        String role = user.getRole();
+        if (role == null || role.trim().isEmpty()) {
+            throw new RuntimeException("Role người dùng bị thiếu!");
+        }
+
+        if (!role.equals("ROLE_USER") && !role.equals("ROLE_ADMIN")) {
+            throw new RuntimeException("Tài khoản không hợp lệ!");
         }
 
         return buildTokens(user);

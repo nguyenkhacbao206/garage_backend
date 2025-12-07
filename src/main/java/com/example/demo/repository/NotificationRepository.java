@@ -3,6 +3,7 @@ package com.example.demo.repository;
 import com.example.demo.entity.Notification;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+
 import java.util.List;
 
 public interface NotificationRepository extends MongoRepository<Notification, String> {
@@ -10,4 +11,5 @@ public interface NotificationRepository extends MongoRepository<Notification, St
     List<Notification> findAllByOrderByCreatedAtDesc();
 
     List<Notification> findByReadFalseOrderByCreatedAtDesc();
+
 }

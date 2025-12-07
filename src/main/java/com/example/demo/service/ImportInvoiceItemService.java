@@ -108,13 +108,13 @@ public class ImportInvoiceItemService {
                     part.setPartId(p.getId());
                     part.setPartName(p.getName());
                     part.setPartCode(p.getPartCode());
-                    part.setPrice(p.getPrice());
+                    // part.setPrice(p.getPrice());
                     part.setStock(p.getStock());
                     part.setDescription(p.getDescription());
-
+                    part.setSalePrice(p.getSalePrice());
                     // mapping quantity + unitPrice
-                    res.setQuantity(pi.getQuantity());
-                    res.setUnitPrice(pi.getUnitPrice());
+                    part.setQuantity(pi.getQuantity());
+                    part.setUnitPrice(pi.getUnitPrice());
 
                     partList.add(part);
                 });
@@ -148,6 +148,7 @@ public class ImportInvoiceItemService {
                             ImportInvoiceItem.PartInfo pi = new ImportInvoiceItem.PartInfo();
                             pi.setPartId(p.getPartId());
                             pi.setName(p.getName());
+                            pi.setSalePrice(p.getSalePrice());
                             pi.setQuantity(p.getQuantity());
                             pi.setUnitPrice(p.getUnitPrice());
                             return pi;

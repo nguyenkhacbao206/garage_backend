@@ -49,9 +49,19 @@ public class ImportInvoiceItemResponse {
         private String partId;
         private String partName;
         private String partCode;
-        private Double price;
+        // private Double price;
         private Integer stock;
         private String description;
+        private Double salePrice;
+        private Integer quantity;
+        private BigDecimal unitPrice;
+
+        public Double getSalePrice() { return salePrice; }
+        public void setSalePrice(Double salePrice) { this.salePrice = salePrice; }
+        public Integer getQuantity() { return quantity; }
+        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+        public BigDecimal getUnitPrice() { return unitPrice; }
+        public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
 
 
         public String getPartId() { return partId; }
@@ -60,8 +70,8 @@ public class ImportInvoiceItemResponse {
         public void setPartName(String partName) { this.partName = partName; }
         public String getPartCode() { return partCode; }
         public void setPartCode(String partCode) { this.partCode = partCode; }
-        public Double getPrice() { return price; }
-        public void setPrice(Double price) { this.price = price; }
+        // public Double getPrice() { return price; }
+        // public void setPrice(Double price) { this.price = price; }
         public Integer getStock() { return stock; }
         public void setStock(Integer stock) { this.stock = stock; }
         public String getDescription() { return description; }
@@ -72,8 +82,8 @@ public class ImportInvoiceItemResponse {
 
     // ITEM FIELDS
     private LocalDateTime date;
-    private Integer quantity;
-    private BigDecimal unitPrice;
+    // private Integer quantity;
+    // private BigDecimal unitPrice;
     private BigDecimal total;
     private BigDecimal invoiceTotal;
     private String note;
@@ -105,10 +115,10 @@ public class ImportInvoiceItemResponse {
 
     public LocalDateTime getDate() { return date; }
     public void setDate(LocalDateTime date) { this.date = date; }
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
-    public BigDecimal getUnitPrice() { return unitPrice; }
-    public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
+    // public Integer getQuantity() { return quantity; }
+    // public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    // public BigDecimal getUnitPrice() { return unitPrice; }
+    // public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
     public BigDecimal getInvoiceTotal() { return invoiceTotal; }

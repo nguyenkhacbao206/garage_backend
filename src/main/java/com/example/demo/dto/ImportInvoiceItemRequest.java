@@ -41,6 +41,10 @@ public class ImportInvoiceItemRequest {
         @DecimalMin("0.0")
         private BigDecimal unitPrice;
 
+        @NotNull(message = "Giá không được để trống")
+        @Min(value = 0, message = "Giá phải >= 0")
+        private Double salePrice;
+
         // GET/SET
         public String getPartId() { return partId; }
         public void setPartId(String partId) { this.partId = partId; }
@@ -50,6 +54,13 @@ public class ImportInvoiceItemRequest {
         public void setName(String name) {
             this.name = name;
         } 
+        public Double getSalePrice() {
+        return salePrice;
+        }
+
+        public void setSalePrice(Double salePrice) {
+            this.salePrice = salePrice;
+        }
         public Integer getQuantity() { return quantity; }
         public void setQuantity(Integer quantity) { this.quantity = quantity; }
         public BigDecimal getUnitPrice() { return unitPrice; }

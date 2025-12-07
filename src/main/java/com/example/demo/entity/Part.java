@@ -26,7 +26,7 @@ public class Part {
 
     public Part() {}
 
-    public Part(String partCode, String name, Double price, Double salePrice, Integer stock, String description, String supplierId, Supplier supplier) {
+    public Part(String partCode, String name, Double salePrice, Double price, Integer stock, String description, String supplierId, Supplier supplier) {
         this.partCode = partCode;
         this.name = name;
         // this.unit = unit;

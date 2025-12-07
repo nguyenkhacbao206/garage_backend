@@ -20,16 +20,19 @@ public class NotificationService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    // Gửi thông báo đơn giản
+
+    //  lưu DB , đẩy real-time WebSocket
+
     public Notification createNotification(String title, String message) {
         Notification n = new Notification(title, message);
         Notification saved = repo.save(n);
 
-        // Push real-time tới FE
+        // Gửi object notification cho FE
         messagingTemplate.convertAndSend("/topic/booking-notification", saved);
 
         return saved;
     }
+
 
     // Gửi thông báo đầy đủ
     public Notification createFull(String title, String message, String bookingId, String type) {
@@ -39,6 +42,10 @@ public class NotificationService {
         messagingTemplate.convertAndSend("/topic/booking-notification", saved);
 
         return saved;
+
+    public Notification create(Notification n) {
+        return repo.save(n);
+
     }
 
     public List<Notification> getAll() {
