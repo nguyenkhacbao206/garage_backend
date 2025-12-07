@@ -2,77 +2,61 @@ package com.example.demo.dto;
 
 import java.time.LocalDateTime;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-
 public class ServiceBookingResponse {
 
-    @Schema(description = "ID duy nhất của đơn đặt", example = "BOOK-123456")
     private String id;
 
-    @Schema(description = "ID khách hàng", example = "CUST-001")
-    private String customerId;
+    // Khách hàng
+    private String customerName;
+    private String customerPhone;
+    private String customerEmail;
 
-    @Schema(description = "ID dịch vụ", example = "SERV-999")
+    // Xe
+    private String licensePlate;
+    private String carBrand;
+    private String carModel;
+
+    // Dịch vụ
     private String serviceId;
-
-    @Schema(description = "Ghi chú", example = "Làm kỹ phần gầm xe")
     private String note;
-
-    @Schema(description = "Trạng thái đơn hàng", example = "PENDING")
     private String status;
 
-    @Schema(description = "Thời gian đặt hẹn")
     private LocalDateTime bookingTime;
-
-    @Schema(description = "Thời gian tạo đơn")
     private LocalDateTime createdAt;
 
-    public String getId() { 
-        return id; 
-    }
-    public void setId(String id) { 
-        this.id = id; 
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public String getCustomerId() { 
-        return customerId; 
-    }
-    public void setCustomerId(String customerId) { 
-        this.customerId = customerId; 
-    }
+    public String getCustomerName() { return customerName; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
 
-    public String getServiceId() { 
-        return serviceId; 
-    }
-    public void setServiceId(String serviceId) { 
-        this.serviceId = serviceId; 
-    }
+    public String getCustomerPhone() { return customerPhone; }
+    public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
 
-    public String getNote() { 
-        return note; 
-    }
-    public void setNote(String note) { 
-        this.note = note; 
-    }
+    public String getCustomerEmail() { return customerEmail; }
+    public void setCustomerEmail(String customerEmail) { this.customerEmail = customerEmail; }
 
-    public String getStatus() { 
-        return status; 
-    }
-    public void setStatus(String status) { 
-        this.status = status; 
-    }
+    public String getLicensePlate() { return licensePlate; }
+    public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
 
-    public LocalDateTime getBookingTime() { 
-        return bookingTime; 
-    }
-    public void setBookingTime(LocalDateTime bookingTime) { 
-        this.bookingTime = bookingTime; 
-    }
+    public String getCarBrand() { return carBrand; }
+    public void setCarBrand(String carBrand) { this.carBrand = carBrand; }
 
-    public LocalDateTime getCreatedAt() { 
-        return createdAt; 
-    }
-    public void setCreatedAt(LocalDateTime createdAt) { 
-        this.createdAt = createdAt; 
-    }
+    public String getCarModel() { return carModel; }
+    public void setCarModel(String carModel) { this.carModel = carModel; }
+
+    public String getServiceId() { return serviceId; }
+    public void setServiceId(String serviceId) { this.serviceId = serviceId; }
+
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getBookingTime() { return bookingTime; }
+    public void setBookingTime(LocalDateTime bookingTime) { this.bookingTime = bookingTime; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

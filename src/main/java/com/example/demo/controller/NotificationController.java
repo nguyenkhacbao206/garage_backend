@@ -12,35 +12,44 @@ import java.util.List;
 @CrossOrigin("*")
 public class NotificationController {
 
-    private final NotificationService notificationService;
+    private final NotificationService service;
 
-    public NotificationController(NotificationService notificationService) {
-        this.notificationService = notificationService;
+    public NotificationController(NotificationService service) {
+        this.service = service;
     }
 
-    // Lấy tất cả (có thể thêm paging nếu muốn)
+    // Lấy tất cả
     @GetMapping
     public ResponseEntity<List<Notification>> getAll() {
-        return ResponseEntity.ok(notificationService.getAll());
+        return ResponseEntity.ok(service.getAll());
     }
 
-    // Lấy chỉ chưa đọc
+    // Lấy chưa đọc
     @GetMapping("/unread")
     public ResponseEntity<List<Notification>> getUnread() {
-        return ResponseEntity.ok(notificationService.getUnread());
+        return ResponseEntity.ok(service.getUnread());
     }
 
     // Đánh dấu đã đọc
     @PutMapping("/{id}/read")
     public ResponseEntity<Notification> markRead(@PathVariable String id) {
-        Notification updated = notificationService.markAsRead(id);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(service.markAsRead(id));
     }
 
-    // Xóa thông báo
+    // Xóa
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
-        notificationService.delete(id);
+        service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Admin confirm booking 
+    @PostMapping("/confirm")
+    public ResponseEntity<Notification> confirm(
+            @RequestParam String bookingId,
+            @RequestParam String clientId,
+            @RequestParam String adminId
+    ) {
+        return ResponseEntity.ok(service.sendConfirmToClient(bookingId, clientId, adminId));
     }
 }

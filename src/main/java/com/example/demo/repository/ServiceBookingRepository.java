@@ -7,7 +7,9 @@ import java.util.List;
 
 public interface ServiceBookingRepository extends MongoRepository<ServiceBooking, String> {
 
-    List<ServiceBooking> findByCustomerId(String customerId);
+    // Tìm theo số điện thoại khách hàng
+    List<ServiceBooking> findByCustomerPhone(String customerPhone);
 
+    // Tìm theo id dịch vụ
     List<ServiceBooking> findByServiceId(String serviceId);
 }

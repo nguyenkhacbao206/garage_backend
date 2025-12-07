@@ -11,54 +11,121 @@ public class Notification {
     @Id
     private String id;
 
-    private String title;      
-    private String message;    
-    private String bookingId;  
-    private boolean read;      
-    private String type;       
+    private String title;
+    private String message;
+    private String bookingId;
+
+    private String senderId;     // gửi
+    private String receiverId;   // nhận
+    private String type;         // BOOKING, CONFIRM, SYSTEM
+    private String status;       // NEW, CONFIRMED, REJECTED
+
+    private boolean read;
     private LocalDateTime createdAt;
 
     public Notification() {}
 
-    // Constructor đầy đủ
-    public Notification(String title, String message, String bookingId, String type) {
+    // FULL constructor
+    public Notification(String title, String message, String bookingId,
+                        String senderId, String receiverId, String type) {
         this.title = title;
         this.message = message;
         this.bookingId = bookingId;
+        this.senderId = senderId;
+        this.receiverId = receiverId;
         this.type = type;
+        this.status = "NEW";
         this.read = false;
         this.createdAt = LocalDateTime.now();
     }
 
-    // constructor thêm vào để tạo nhanh thông báo 
+    // Quick constructor
     public Notification(String title, String message) {
         this.title = title;
         this.message = message;
-        this.bookingId = null;
-        this.type = null;
+        this.status = "NEW";
         this.read = false;
         this.createdAt = LocalDateTime.now();
     }
 
-    // GETTERS & SETTERS
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public String getId() {
+        return id;
+    }
 
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getBookingId() { return bookingId; }
-    public void setBookingId(String bookingId) { this.bookingId = bookingId; }
+    public String getTitle() {
+        return title;
+    }
 
-    public boolean isRead() { return read; }
-    public void setRead(boolean read) { this.read = read; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public String getMessage() {
+        return message;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(String bookingId) {
+        this.bookingId = bookingId;
+    }
+
+    public String getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(String senderId) {
+        this.senderId = senderId;
+    }
+
+    public String getReceiverId() {
+        return receiverId;
+    }
+
+    public void setReceiverId(String receiverId) {
+        this.receiverId = receiverId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public boolean isRead() {
+        return read;
+    }
+
+    public void setRead(boolean read) {
+        this.read = read;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }
