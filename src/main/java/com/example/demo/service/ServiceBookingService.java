@@ -6,6 +6,7 @@ import com.example.demo.entity.ServiceBooking;
 import com.example.demo.repository.ServiceBookingRepository;
 import com.example.demo.repository.ServiceRepository;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,10 +19,19 @@ public class ServiceBookingService {
 
     private final ServiceBookingRepository bookingRepo;
     private final ServiceRepository serviceRepo;
+    private final NotificationService notificationService;
 
-    public ServiceBookingService(ServiceBookingRepository bookingRepo, ServiceRepository serviceRepo) {
+    // WebSocket template
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public ServiceBookingService(ServiceBookingRepository bookingRepo,
+                                 ServiceRepository serviceRepo,
+                                 SimpMessagingTemplate messagingTemplate,
+                                NotificationService notificationService) {
         this.bookingRepo = bookingRepo;
         this.serviceRepo = serviceRepo;
+        this.messagingTemplate = messagingTemplate;
+        this.notificationService = notificationService; 
     }
 
     private ServiceBookingResponse convert(ServiceBooking booking) {
@@ -36,7 +46,7 @@ public class ServiceBookingService {
         return res;
     }
 
-    public ServiceBookingResponse create(ServiceBookingRequest req) {
+     public ServiceBookingResponse create(ServiceBookingRequest req) {
 
         if (!serviceRepo.existsById(req.getServiceId())) {
             throw new RuntimeException("Dịch vụ không tồn tại!");
@@ -52,6 +62,13 @@ public class ServiceBookingService {
         booking.setUpdatedAt(LocalDateTime.now());
 
         bookingRepo.save(booking);
+
+        // Lưu thông báo vào DB + đẩy WebSocket real-time
+        notificationService.createNotification(
+                "Đặt lịch mới",
+                "Khách hàng ID: " + req.getCustomerId() + " vừa đặt lịch mới!"
+        );
+
         return convert(booking);
     }
 
@@ -71,6 +88,7 @@ public class ServiceBookingService {
         booking.setUpdatedAt(LocalDateTime.now());
 
         bookingRepo.save(booking);
+
         return convert(booking);
     }
 
