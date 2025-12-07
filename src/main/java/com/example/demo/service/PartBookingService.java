@@ -94,6 +94,14 @@ public class PartBookingService {
         return toResponse(booking);
     }
 
+    // GET ALL
+    public List<PartBookingResponse> getAllBookings() {
+        return partBookingRepository.findAll()
+            .stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
     // DELETE BOOKING
     public PartBookingResponse deleteBooking(String id) {
 
