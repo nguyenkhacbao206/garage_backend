@@ -68,7 +68,7 @@ public class PartBookingService {
         booking.setSupplierCode(supplier.getSupplierCode());
         booking.setPartId(part.getId());
         booking.setPartName(part.getName());
-        booking.setPrice(part.getSalePrice());
+        booking.setPrice(part.getPrice());
         booking.setQuantity(req.getQuantity());
         booking.setRemainingStock(updatedPart.getStock());
         booking.setNote(req.getNote());

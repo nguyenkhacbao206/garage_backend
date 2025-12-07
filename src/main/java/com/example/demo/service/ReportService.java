@@ -25,14 +25,31 @@ public class ReportService {
 
         ReportResponse response = new ReportResponse();
 
-        // Thống kê dịch vụ
+        
+        // ============================
+        // LẤY TOP 2 DỊCH VỤ
+        // ============================
         List<ReportResponse.ImportServiceResponse> services =
                 reportRepo.revenueByService(start, end);
+
+        services.sort((a, b) -> b.getTotalRevenue().compareTo(a.getTotalRevenue()));
+
+        if (services.size() > 2) {
+            services = services.subList(0, 2);
+        }
         response.setServices(services);
 
-        // Thống kê phụ tùng
+        // ============================
+        // LẤY TOP 2 PHỤ TÙNG
+        // ============================
         List<ReportResponse.ImportPartResponse> parts =
                 reportRepo.revenueByPart(start, end);
+
+        parts.sort((a, b) -> b.getTotalRevenue().compareTo(a.getTotalRevenue()));
+
+        if (parts.size() > 2) {
+            parts = parts.subList(0, 2);
+        }
         response.setParts(parts);
 
         // Tổng doanh thu 12 tháng gần nhất
