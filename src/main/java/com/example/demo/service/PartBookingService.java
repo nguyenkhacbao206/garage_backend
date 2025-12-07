@@ -38,37 +38,33 @@ public class PartBookingService {
         this.mongoTemplate = mongoTemplate;
     }
 
-        // CREATE BOOKING
+    // CREATE BOOKING
     public PartBookingResponse createBooking(PartBookingRequest req) {
 
-        if (req == null)
-            throw new IllegalArgumentException("Request is null");
-
-        if (req.getQuantity() == null || req.getQuantity() <= 0)
-            throw new IllegalArgumentException("Quantity must be > 0");
-
         Part part = partRepository.findById(req.getPartId())
-                .orElseThrow(() -> new RuntimeException("Part not found: " + req.getPartId()));
+            .orElseThrow(() -> new RuntimeException("Part not found: " + req.getPartId()));
 
         Supplier supplier = supplierRepository.findById(req.getSupplierId())
                 .orElseThrow(() -> new RuntimeException("Supplier not found: " + req.getSupplierId()));
 
-        Query q = new Query(Criteria.where("_id").is(req.getPartId())
-                .and("stock").gte(req.getQuantity()));
+        Part updatedPart = part;
 
-        Update u = new Update()
-                .inc("stock", -req.getQuantity())
-                .set("updatedAt", LocalDateTime.now());
+        // Chỉ trừ hàng nếu isActive = true
+        if (req.isActive()) {
+            Query q = new Query(Criteria.where("_id").is(req.getPartId())
+                    .and("stock").gte(req.getQuantity()));
 
-        FindAndModifyOptions options = FindAndModifyOptions.options().returnNew(true);
+            Update u = new Update()
+                    .inc("stock", -req.getQuantity())
+                    .set("updatedAt", LocalDateTime.now());
 
-        Part updatedPart = mongoTemplate.findAndModify(q, u, options, Part.class);
+            updatedPart = mongoTemplate.findAndModify(q, u, FindAndModifyOptions.options().returnNew(true), Part.class);
 
-        if (updatedPart == null) {
-            throw new RuntimeException("Not enough stock. Available: " + part.getStock());
+            if (updatedPart == null) {
+                throw new RuntimeException("Not enough stock!");
+            }
         }
-
-        PartBooking booking = new PartBooking();
+    PartBooking booking = new PartBooking();
         booking.setBookingCode(generateBookingCode());
         booking.setSupplierId(supplier.getId());
         booking.setSupplierCode(supplier.getSupplierCode());
