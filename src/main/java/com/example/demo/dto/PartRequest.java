@@ -15,9 +15,7 @@ public class PartRequest {
     @NotNull(message = "Giá không được để trống")
     @Min(value = 0, message = "Giá phải >= 0")
     private Double price;
-
-    @NotNull(message = "Giá bán không được để trống")
-    @Min(value = 0, message = "Giá phải >= 0")
+    
     private Double salePrice;
 
 

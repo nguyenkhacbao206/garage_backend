@@ -31,6 +31,7 @@ public class ImportInvoiceItem {
     public static class PartInfo {
         private String partId;
         private String name;
+        private Double salePrice;
         private Integer quantity;
         private BigDecimal unitPrice;
 
@@ -42,6 +43,13 @@ public class ImportInvoiceItem {
         }
         public void setName(String name) {
             this.name = name;
+        }
+        public Double getSalePrice() {
+        return salePrice;
+        }
+
+        public void setSalePrice(Double salePrice) {
+            this.salePrice = salePrice;
         }
         public Integer getQuantity() { return quantity; }
         public void setQuantity(Integer quantity) { this.quantity = quantity; }
