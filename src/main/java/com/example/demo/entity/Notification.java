@@ -15,39 +15,42 @@ public class Notification {
     private String message;
     private String bookingId;
 
-    private String senderId;     // gửi
-    private String receiverId;   // nhận
-    private String type;         // BOOKING, CONFIRM, SYSTEM
-    private String status;       // NEW, CONFIRMED, REJECTED
+    private String senderId;
+    private String receiverId;
+
+    // BOOKING, CONFIRM, CANCEL
+    private String type;
+
+    // NEW, CONFIRMED, CANCELLED
+    private String status;
 
     private boolean read;
     private LocalDateTime createdAt;
 
-    public Notification() {}
+    public Notification() {
+        this.createdAt = LocalDateTime.now();
+        this.read = false;
+        this.status = "NEW";
+    }
 
-    // FULL constructor
     public Notification(String title, String message, String bookingId,
                         String senderId, String receiverId, String type) {
+        this();
         this.title = title;
         this.message = message;
         this.bookingId = bookingId;
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.type = type;
-        this.status = "NEW";
-        this.read = false;
-        this.createdAt = LocalDateTime.now();
     }
 
-    // Quick constructor
     public Notification(String title, String message) {
+        this();
         this.title = title;
         this.message = message;
-        this.status = "NEW";
-        this.read = false;
-        this.createdAt = LocalDateTime.now();
     }
 
+    // GETTER – SETTER
 
     public String getId() {
         return id;
