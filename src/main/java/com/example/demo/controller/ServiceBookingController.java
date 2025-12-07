@@ -26,7 +26,6 @@ public class ServiceBookingController {
         this.bookingService = bookingService;
     }
 
-    
     @PostMapping
     @Operation(summary = "Tạo đặt lịch", description = "Tạo một đặt lịch mới cho khách hàng")
     public ResponseEntity<ApiResponse<ServiceBookingResponse>> create(
@@ -39,7 +38,6 @@ public class ServiceBookingController {
         }
     }
 
-   
     @GetMapping
     @Operation(summary = "Lấy danh sách đặt lịch", description = "Trả về toàn bộ danh sách các đặt lịch dịch vụ")
     public ResponseEntity<ApiResponse<List<ServiceBookingResponse>>> getAll() {
@@ -51,39 +49,32 @@ public class ServiceBookingController {
         }
     }
 
-    
     @GetMapping("/{id}")
     @Operation(summary = "Lấy chi tiết đặt lịch theo ID", description = "Trả về thông tin chi tiết của một đặt lịch dựa theo ID")
     public ResponseEntity<ApiResponse<ServiceBookingResponse>> getById(
             @Parameter(description = "ID của đơn đặt lịch", required = true)
             @PathVariable String id) {
         try {
-            return bookingService.getById(id)
-                    .map(item -> ResponseEntity.ok(new ApiResponse<>("OK", item)))
-                    .orElseGet(() -> ResponseEntity.badRequest().body(new ApiResponse<>("Không tìm thấy!", null)));
+            ServiceBookingResponse item = bookingService.getOne(id);
+            return ResponseEntity.ok(new ApiResponse<>("OK", item));
         } catch (Exception e) {
             throw e;
         }
     }
 
-    
-    @PutMapping("/{id}/status/{status}")
-    @Operation(summary = "Cập nhật trạng thái đặt lịch", description = "Thay đổi trạng thái của một đặt lịch theo ID")
-    public ResponseEntity<ApiResponse<ServiceBookingResponse>> updateStatus(
-            @Parameter(description = "ID của đơn đặt lịch", required = true)
+    @PutMapping("/{id}")
+    @Operation(summary = "Cập nhật đặt lịch", description = "Cập nhật toàn bộ thông tin đặt lịch theo ID")
+    public ResponseEntity<ApiResponse<ServiceBookingResponse>> update(
             @PathVariable String id,
-            @Parameter(description = "Trạng thái mới của đơn đặt lịch", required = true)
-            @PathVariable String status) {
-
+            @RequestBody ServiceBookingRequest req) {
         try {
-            ServiceBookingResponse updated = bookingService.updateStatus(id, status);
-            return ResponseEntity.ok(new ApiResponse<>("Cập nhật trạng thái thành công", updated));
+            ServiceBookingResponse updated = bookingService.update(id, req);
+            return ResponseEntity.ok(new ApiResponse<>("Cập nhật thành công", updated));
         } catch (Exception e) {
             throw e;
         }
     }
 
-   
     @DeleteMapping("/{id}")
     @Operation(summary = "Xóa đặt lịch", description = "Xóa một đặt lịch theo ID")
     public ResponseEntity<ApiResponse<String>> delete(

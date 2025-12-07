@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(collection = "service_bookings")
 public class ServiceBooking {
@@ -11,26 +12,33 @@ public class ServiceBooking {
     @Id
     private String id;
 
+    // Thông tin khách hàng
     private String customerName;
     private String customerPhone;
     private String customerEmail;
 
+    // Thông tin xe
     private String licensePlate;
     private String carBrand;
     private String carModel;
 
-    private String serviceId;
+    // Danh sách dịch vụ
+    private List<String> serviceIds;
+
+    // Ghi chú , trạng thái
     private String note;
+    private String status; // PENDING, CONFIRMED, CANCELLED,...
 
-    private String status; // PENDING, CONFIRMED, CANCELED, DONE
-
+    // Thời gian đặt lịch
     private LocalDateTime bookingTime;
+
+    // Thời gian hệ thống
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public ServiceBooking() {}
 
-    // Getter & Setter
+
     public String getId() { 
         return id; 
     }
@@ -80,11 +88,11 @@ public class ServiceBooking {
         this.carModel = carModel; 
     }
 
-    public String getServiceId() { 
-        return serviceId; 
+    public List<String> getServiceIds() { 
+        return serviceIds; 
     }
-    public void setServiceId(String serviceId) { 
-        this.serviceId = serviceId; 
+    public void setServiceIds(List<String> serviceIds) { 
+        this.serviceIds = serviceIds; 
     }
 
     public String getNote() { 

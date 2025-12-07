@@ -10,6 +10,6 @@ public interface ServiceBookingRepository extends MongoRepository<ServiceBooking
     // Tìm theo số điện thoại khách hàng
     List<ServiceBooking> findByCustomerPhone(String customerPhone);
 
-    // Tìm theo id dịch vụ
-    List<ServiceBooking> findByServiceId(String serviceId);
+    // Tìm theo serviceId nằm trong list serviceIds
+    List<ServiceBooking> findByServiceIdsContaining(String serviceId);
 }

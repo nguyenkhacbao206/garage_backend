@@ -1,62 +1,122 @@
 package com.example.demo.dto;
 
+import com.example.demo.entity.GarageService;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ServiceBookingResponse {
 
     private String id;
 
-    // Khách hàng
     private String customerName;
     private String customerPhone;
     private String customerEmail;
 
-    // Xe
     private String licensePlate;
     private String carBrand;
     private String carModel;
 
-    // Dịch vụ
-    private String serviceId;
+    // đổi từ 1 ID → list ID
+    private List<String> serviceIds;
+
+    // trả về list service object
+    private List<GarageService> service;
+
     private String note;
     private String status;
 
     private LocalDateTime bookingTime;
     private LocalDateTime createdAt;
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    //  Getter/Setter 
+    public String getId() { 
+        return id; 
+    }
+    public void setId(String id) { 
+        this.id = id; 
+    }
 
-    public String getCustomerName() { return customerName; }
-    public void setCustomerName(String customerName) { this.customerName = customerName; }
+    public String getCustomerName() { 
+        return customerName; 
+    }
+    public void setCustomerName(String customerName) { 
+        this.customerName = customerName; 
+    }
 
-    public String getCustomerPhone() { return customerPhone; }
-    public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
+    public String getCustomerPhone() { 
+        return customerPhone; 
+    }
+    public void setCustomerPhone(String customerPhone) { 
+        this.customerPhone = customerPhone; 
+    }
 
-    public String getCustomerEmail() { return customerEmail; }
-    public void setCustomerEmail(String customerEmail) { this.customerEmail = customerEmail; }
+    public String getCustomerEmail() { 
+        return customerEmail; 
+    }
+    public void setCustomerEmail(String customerEmail) { 
+        this.customerEmail = customerEmail; 
+    }
 
-    public String getLicensePlate() { return licensePlate; }
-    public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
+    public String getLicensePlate() { 
+        return licensePlate; 
+    }
+    public void setLicensePlate(String licensePlate) { 
+        this.licensePlate = licensePlate; 
+    }
 
-    public String getCarBrand() { return carBrand; }
-    public void setCarBrand(String carBrand) { this.carBrand = carBrand; }
+    public String getCarBrand() { 
+        return carBrand; 
+    }
+    public void setCarBrand(String carBrand) { 
+        this.carBrand = carBrand; 
+    }
 
-    public String getCarModel() { return carModel; }
-    public void setCarModel(String carModel) { this.carModel = carModel; }
+    public String getCarModel() { 
+        return carModel; 
+    }
+    public void setCarModel(String carModel) { 
+        this.carModel = carModel; 
+    }
 
-    public String getServiceId() { return serviceId; }
-    public void setServiceId(String serviceId) { this.serviceId = serviceId; }
+    public List<String> getServiceIds() { 
+        return serviceIds; 
+    }
+    public void setServiceIds(List<String> serviceIds) { 
+        this.serviceIds = serviceIds; 
+    }
 
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
+    public List<GarageService> getService() { 
+        return service; 
+    }
+    public void setService(List<GarageService> service) { 
+        this.service = service; 
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getNote() { 
+        return note; 
+    }
+    public void setNote(String note) { 
+        this.note = note; 
+    }
 
-    public LocalDateTime getBookingTime() { return bookingTime; }
-    public void setBookingTime(LocalDateTime bookingTime) { this.bookingTime = bookingTime; }
+    public String getStatus() { 
+        return status; 
+    }
+    public void setStatus(String status) { 
+        this.status = status; 
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getBookingTime() { 
+        return bookingTime; 
+    }
+    public void setBookingTime(LocalDateTime bookingTime) { 
+        this.bookingTime = bookingTime; 
+    }
+
+    public LocalDateTime getCreatedAt() { 
+        return createdAt; 
+    }
+    public void setCreatedAt(LocalDateTime createdAt) { 
+        this.createdAt = createdAt; 
+    }
 }
