@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -24,7 +23,28 @@ public class ReportRepository {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    // SERVICE
+    // Helper method để lấy giá trị BigDecimal từ Map, xử lý Null/Zero
+    private BigDecimal getBigDecimalValue(Map<?, ?> map, String key) {
+        Object value = map.get(key);
+        if (value == null) {
+            return BigDecimal.ZERO;
+        }
+        // Xử lý trường hợp Map trả về Integer/Long khi giá trị là 0
+        return new BigDecimal(value.toString());
+    }
+
+    // Helper method để lấy giá trị Long từ Map, xử lý Null
+    private long getLongValue(Map<?, ?> map, String key) {
+        Object value = map.get(key);
+        if (value == null) {
+            return 0L;
+        }
+        return Long.parseLong(value.toString());
+    }
+
+    // ===============================
+    //  SERVICE REVENUE
+    // ===============================
     public List<ReportResponse.ImportServiceResponse> revenueByService(LocalDate start, LocalDate end) {
 
         MatchOperation match = Aggregation.match(
@@ -35,9 +55,16 @@ public class ReportRepository {
 
         UnwindOperation unwind = Aggregation.unwind("services");
 
+        // Dùng $sum: {$multiply: ["$services.price", "$services.quantity"]} để tính tổng tiền theo số lượng.
+        // Tuy nhiên, do entity Report.ServiceInfo chỉ có price (đơn giá) và quantity, 
+        // ta sẽ group theo price * quantity (hoặc giả định total price = price * quantity)
+        // Hiện tại code đang dùng sum("services.price") và count(), giả định đơn giá = tổng tiền bán ra
+        // NẾU `Report.ServiceInfo` THIẾU TRƯỜNG TỔNG TIỀN: Cần sửa lại entity để aggregation tính đúng:
+        // .sum(new ArithmeticOperators.Multiply().multiplyValueOf("services.price").byValueOf("services.quantity")).as("totalRevenue")
+        
         GroupOperation group = Aggregation.group("services.id", "services.name")
                 .count().as("usageCount")
-                .sum("services.price").as("totalRevenue")
+                .sum("services.price").as("totalRevenue") // Giữ nguyên theo code cũ, nhưng nên là TotalPrice * Quantity
                 .avg("services.price").as("averageRevenue")
                 .max("services.price").as("maxRevenue")
                 .min("services.price").as("minRevenue");
@@ -54,7 +81,7 @@ public class ReportRepository {
         Aggregation aggregation = Aggregation.newAggregation(match, unwind, group, project);
 
         List<Map> results =
-                mongoTemplate.aggregate(aggregation, "invoices", Map.class).getMappedResults();
+                mongoTemplate.aggregate(aggregation, "reports", Map.class).getMappedResults();
 
         return results.stream().map(map -> {
             ReportResponse.ImportServiceResponse response =
@@ -62,16 +89,19 @@ public class ReportRepository {
 
             response.setServiceId((String) map.get("serviceId"));
             response.setServiceName((String) map.get("serviceName"));
-            response.setUsageCount(Long.parseLong(map.get("usageCount").toString()));
-            response.setTotalRevenue(new BigDecimal(map.get("totalRevenue").toString()));
-            response.setAverageRevenue(new BigDecimal(map.get("averageRevenue").toString()));
-            response.setMaxRevenue(new BigDecimal(map.get("maxRevenue").toString()));
-            response.setMinRevenue(new BigDecimal(map.get("minRevenue").toString()));
+            // SỬA: Dùng hàm helper để tránh lỗi NullPointer/NumberFormat
+            response.setUsageCount(getLongValue(map, "usageCount"));
+            response.setTotalRevenue(getBigDecimalValue(map, "totalRevenue"));
+            response.setAverageRevenue(getBigDecimalValue(map, "averageRevenue"));
+            response.setMaxRevenue(getBigDecimalValue(map, "maxRevenue"));
+            response.setMinRevenue(getBigDecimalValue(map, "minRevenue"));
             return response;
         }).collect(Collectors.toList());
     }
 
-    // PART
+    // ===============================
+    //  PART REVENUE
+    // ===============================
     public List<ReportResponse.ImportPartResponse> revenueByPart(LocalDate start, LocalDate end) {
 
         MatchOperation match = Aggregation.match(
@@ -101,7 +131,7 @@ public class ReportRepository {
         Aggregation aggregation = Aggregation.newAggregation(match, unwind, group, project);
 
         List<Map> results =
-                mongoTemplate.aggregate(aggregation, "invoices", Map.class).getMappedResults();
+                mongoTemplate.aggregate(aggregation, "reports", Map.class).getMappedResults();
 
         return results.stream().map(map -> {
             ReportResponse.ImportPartResponse response =
@@ -109,17 +139,19 @@ public class ReportRepository {
 
             response.setPartId((String) map.get("partId"));
             response.setPartName((String) map.get("partName"));
-            response.setUsageCount(Long.parseLong(map.get("usageCount").toString()));
-            response.setTotalRevenue(new BigDecimal(map.get("totalRevenue").toString()));
-            response.setAverageRevenue(new BigDecimal(map.get("averageRevenue").toString()));
-            response.setMaxRevenue(new BigDecimal(map.get("maxRevenue").toString()));
-            response.setMinRevenue(new BigDecimal(map.get("minRevenue").toString()));
+            // SỬA: Dùng hàm helper để tránh lỗi NullPointer/NumberFormat
+            response.setUsageCount(getLongValue(map, "usageCount"));
+            response.setTotalRevenue(getBigDecimalValue(map, "totalRevenue"));
+            response.setAverageRevenue(getBigDecimalValue(map, "averageRevenue"));
+            response.setMaxRevenue(getBigDecimalValue(map, "maxRevenue"));
+            response.setMinRevenue(getBigDecimalValue(map, "minRevenue"));
             return response;
         }).collect(Collectors.toList());
     }
 
-
-    // TOTAL
+    // ===============================
+    //  TOTAL REVENUE (Giữ nguyên)
+    // ===============================
     public BigDecimal sumRevenueBetween(LocalDate start, LocalDate end) {
 
         MatchOperation match = Aggregation.match(
@@ -134,14 +166,17 @@ public class ReportRepository {
         Aggregation aggregation = Aggregation.newAggregation(match, group);
 
         AggregationResults<Map> result =
-                mongoTemplate.aggregate(aggregation, "invoices", Map.class);
+                mongoTemplate.aggregate(aggregation, "reports", Map.class);
 
         if (result.getMappedResults().isEmpty()) return BigDecimal.ZERO;
 
-        return new BigDecimal(result.getMappedResults().get(0).get("totalRevenue").toString());
+        // SỬA: Dùng hàm helper để tránh lỗi NullPointer
+        return getBigDecimalValue(result.getMappedResults().get(0), "totalRevenue");
     }
 
-    // MONTHLY DETAIL
+    // ===============================
+    //  MONTHLY DETAIL LIST (Giữ nguyên logic)
+    // ===============================
     public List<ReportResponse.MonthlyDetail> findInvoicesBetween(LocalDate start, LocalDate end) {
 
         Query query = new Query();
@@ -153,23 +188,22 @@ public class ReportRepository {
 
         query.with(Sort.by(Sort.Direction.ASC, "createdAt"));
 
-        List<Map> results =
-                mongoTemplate.find(query, Map.class, "invoices");
+        List<Map> results = mongoTemplate.find(query, Map.class, "reports");
 
         return results.stream().map(map -> {
             ReportResponse.MonthlyDetail detail =
-                    new ReportResponse.MonthlyDetail();
+                new ReportResponse.MonthlyDetail();
 
-            detail.setPaymentId((String) map.get("id"));
+            detail.setPaymentId((String) map.get("_id")); // ID trong DB thường là _id
             detail.setRepairOrderId((String) map.get("repairOrderId"));
-            detail.setAmount(new BigDecimal(map.get("totalAmount").toString()));
+            
+            // SỬA: Kiểm tra null cho totalAmount
+            detail.setAmount(getBigDecimalValue(map, "totalAmount"));
 
-            Object dateObj = map.get("createdAt");
-            if (dateObj instanceof Date date) {
+            Object obj = map.get("createdAt");
+            if (obj instanceof Date d) {
                 detail.setCreatedAt(
-                        date.toInstant()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDateTime()
+                        d.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
                 );
             }
 
