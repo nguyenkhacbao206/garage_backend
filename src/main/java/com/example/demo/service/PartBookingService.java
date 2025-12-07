@@ -1,13 +1,9 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
-import com.example.demo.dto.PartBookingRequest;
-import com.example.demo.dto.PartBookingResponse;
-import com.example.demo.entity.Part;
-import com.example.demo.entity.PartBooking;
-import com.example.demo.repository.PartBookingRepository;
-import com.example.demo.repository.PartRepository;
-import com.example.demo.repository.SupplierRepository;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -15,12 +11,15 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.PartBookingRequest;
+import com.example.demo.dto.PartBookingResponse;
+import com.example.demo.entity.Part;
+import com.example.demo.entity.PartBooking;
 import com.example.demo.entity.Supplier;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-import java.util.UUID;
+import com.example.demo.repository.PartBookingRepository;
+import com.example.demo.repository.PartRepository;
+import com.example.demo.repository.SupplierRepository;
 
 @Service
 public class PartBookingService {
@@ -31,14 +30,13 @@ public class PartBookingService {
     private final MongoTemplate mongoTemplate;
 
     @Autowired
-    public PartBookingService(PartRepository partRepository,PartBookingRepository partBookingRepository,SupplierRepository supplierRepository,MongoTemplate mongoTemplate) {
+    public PartBookingService(PartRepository partRepository, PartBookingRepository partBookingRepository, SupplierRepository supplierRepository, MongoTemplate mongoTemplate) {
         this.partRepository = partRepository;
         this.supplierRepository = supplierRepository;
         this.partBookingRepository = partBookingRepository;
         this.mongoTemplate = mongoTemplate;
     }
 
-    // CREATE BOOKING
     public PartBookingResponse createBooking(PartBookingRequest req) {
 
         Part part = partRepository.findById(req.getPartId())
@@ -49,7 +47,6 @@ public class PartBookingService {
 
         Part updatedPart = part;
 
-        // Chỉ trừ hàng nếu isActive = true
         if (req.isActive()) {
             Query q = new Query(Criteria.where("_id").is(req.getPartId())
                     .and("stock").gte(req.getQuantity()));
@@ -64,7 +61,8 @@ public class PartBookingService {
                 throw new RuntimeException("Not enough stock!");
             }
         }
-    PartBooking booking = new PartBooking();
+        
+        PartBooking booking = new PartBooking();
         booking.setBookingCode(generateBookingCode());
         booking.setSupplierId(supplier.getId());
         booking.setSupplierCode(supplier.getSupplierCode());
@@ -81,20 +79,45 @@ public class PartBookingService {
         booking.setCreatedAt(LocalDateTime.now());
         booking.setUpdatedAt(LocalDateTime.now());
 
-
-        // Save DB
         PartBooking saved = partBookingRepository.save(booking);
         return toResponse(saved);
     }
 
-    // GET BY ID
+    public PartBookingResponse confirmBooking(String id) {
+        PartBooking booking = partBookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("PartBooking not found: " + id));
+
+        if (Boolean.TRUE.equals(booking.getIsActive())) {
+            throw new RuntimeException("Booking is already confirmed");
+        }
+
+        Query q = new Query(Criteria.where("_id").is(booking.getPartId())
+                .and("stock").gte(booking.getQuantity()));
+
+        Update u = new Update()
+                .inc("stock", -booking.getQuantity())
+                .set("updatedAt", LocalDateTime.now());
+
+        Part updatedPart = mongoTemplate.findAndModify(q, u, FindAndModifyOptions.options().returnNew(true), Part.class);
+
+        if (updatedPart == null) {
+            throw new RuntimeException("Not enough stock to confirm");
+        }
+
+        booking.setIsActive(true);
+        booking.setRemainingStock(updatedPart.getStock());
+        booking.setUpdatedAt(LocalDateTime.now());
+
+        PartBooking saved = partBookingRepository.save(booking);
+        return toResponse(saved);
+    }
+
     public PartBookingResponse getById(String id) {
         PartBooking booking = partBookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("PartBooking not found: " + id));
         return toResponse(booking);
     }
 
-    // GET ALL
     public List<PartBookingResponse> getAllBookings() {
         return partBookingRepository.findAll()
             .stream()
@@ -102,58 +125,53 @@ public class PartBookingService {
             .toList();
     }
 
-    // DELETE BOOKING
     public PartBookingResponse deleteBooking(String id) {
 
         PartBooking booking = partBookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("PartBooking not found: " + id));
 
-        // Restore stock
-        Query q = new Query(Criteria.where("_id").is(booking.getPartId()));
-        Update u = new Update()
-                .inc("stock", booking.getQuantity())
-                .set("updatedAt", LocalDateTime.now());
+        if (Boolean.TRUE.equals(booking.getIsActive())) {
+            Query q = new Query(Criteria.where("_id").is(booking.getPartId()));
+            Update u = new Update()
+                    .inc("stock", booking.getQuantity())
+                    .set("updatedAt", LocalDateTime.now());
 
-        mongoTemplate.findAndModify(q, u, FindAndModifyOptions.options().returnNew(true), Part.class);
+            mongoTemplate.findAndModify(q, u, FindAndModifyOptions.options().returnNew(true), Part.class);
+        }
 
         partBookingRepository.deleteById(id);
 
         return toResponse(booking);
     }
 
-    // Tạo mã tự động MĐH-001
     private String generateBookingCode() {
-    PartBooking last = partBookingRepository.findFirstByOrderByCreatedAtDesc();
+        PartBooking last = partBookingRepository.findFirstByOrderByCreatedAtDesc();
 
-    if (last == null || last.getBookingCode() == null) {
-        return "MĐH-001";
+        if (last == null || last.getBookingCode() == null) {
+            return "MĐH-001";
+        }
+
+        String maxCode = last.getBookingCode();
+
+        try {
+            int number = Integer.parseInt(maxCode.replaceAll("\\D", "")); 
+            return "MĐH-" + String.format("%03d", number + 1);
+        } catch (NumberFormatException e) {
+            return "MĐH-001";
+        }
     }
-
-    String maxCode = last.getBookingCode();
-
-    try {
-        // Giả sử định dạng luôn là "MHD-XXX"
-        int number = Integer.parseInt(maxCode.replaceAll("\\D", "")); // chỉ lấy số
-        return "MĐH-" + String.format("%03d", number + 1);
-    } catch (NumberFormatException e) {
-        // Nếu parse lỗi, reset
-        return "MĐH-001";
-    }
-}
-
-
 
     private PartBookingResponse toResponse(PartBooking booking) {
         return new PartBookingResponse("OK", booking);
     }
+
     public List<PartBooking> getAll() {
         return partBookingRepository.findAll();
     }
-    // SORT
+
     public List<PartBookingResponse> sortByCreatedAt(List<PartBooking> items, boolean asc) {
 
-        Comparator<PartBooking> comp =
-                Comparator.comparing(
+        Comparator<PartBooking> comp = Comparator.comparing(
                         PartBooking::getCreatedAt,
                         Comparator.nullsLast(Comparator.naturalOrder())
                 );
@@ -167,5 +185,3 @@ public class PartBookingService {
                 .toList();
     }
 }
-
-
