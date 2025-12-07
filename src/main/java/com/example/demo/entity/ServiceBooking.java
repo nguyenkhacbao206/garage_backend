@@ -11,7 +11,14 @@ public class ServiceBooking {
     @Id
     private String id;
 
-    private String customerId;
+    private String customerName;
+    private String customerPhone;
+    private String customerEmail;
+
+    private String licensePlate;
+    private String carBrand;
+    private String carModel;
+
     private String serviceId;
     private String note;
 
@@ -25,58 +32,93 @@ public class ServiceBooking {
 
     // Getter & Setter
     public String getId() { 
-        return id;
+        return id; 
     }
     public void setId(String id) { 
-        this.id = id;
+        this.id = id; 
     }
 
-    public String getCustomerId() { 
-        return customerId;
+    public String getCustomerName() { 
+        return customerName; 
     }
-    public void setCustomerId(String customerId) { 
-        this.customerId = customerId;
+    public void setCustomerName(String customerName) { 
+        this.customerName = customerName; 
+    }
+
+    public String getCustomerPhone() { 
+        return customerPhone; 
+    }
+    public void setCustomerPhone(String customerPhone) { 
+        this.customerPhone = customerPhone; 
+    }
+
+    public String getCustomerEmail() { 
+        return customerEmail; 
+    }
+    public void setCustomerEmail(String customerEmail) { 
+        this.customerEmail = customerEmail; 
+    }
+
+    public String getLicensePlate() { 
+        return licensePlate; 
+    }
+    public void setLicensePlate(String licensePlate) { 
+        this.licensePlate = licensePlate; 
+    }
+
+    public String getCarBrand() { 
+        return carBrand; 
+    }
+    public void setCarBrand(String carBrand) { 
+        this.carBrand = carBrand; 
+    }
+
+    public String getCarModel() { 
+        return carModel; 
+    }
+    public void setCarModel(String carModel) { 
+        this.carModel = carModel; 
     }
 
     public String getServiceId() { 
-        return serviceId;
+        return serviceId; 
     }
     public void setServiceId(String serviceId) { 
-        this.serviceId = serviceId;
+        this.serviceId = serviceId; 
     }
 
     public String getNote() { 
-        return note;
+        return note; 
     }
     public void setNote(String note) { 
-        this.note = note;
+        this.note = note; 
     }
 
     public String getStatus() { 
-        return status;
+        return status; 
     }
     public void setStatus(String status) { 
-        this.status = status;
+        this.status = status; 
     }
 
     public LocalDateTime getBookingTime() { 
-        return bookingTime;
+        return bookingTime; 
     }
     public void setBookingTime(LocalDateTime bookingTime) { 
-        this.bookingTime = bookingTime;
+        this.bookingTime = bookingTime; 
     }
 
     public LocalDateTime getCreatedAt() { 
-        return createdAt;
+        return createdAt; 
     }
     public void setCreatedAt(LocalDateTime createdAt) { 
-        this.createdAt = createdAt;
+        this.createdAt = createdAt; 
     }
 
     public LocalDateTime getUpdatedAt() { 
-        return updatedAt;
+        return updatedAt; 
     }
     public void setUpdatedAt(LocalDateTime updatedAt) { 
-        this.updatedAt = updatedAt;
+        this.updatedAt = updatedAt; 
     }
 }

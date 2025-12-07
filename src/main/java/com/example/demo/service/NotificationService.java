@@ -6,33 +6,51 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class NotificationService {
 
     private final NotificationRepository repo;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate ws;
 
     public NotificationService(NotificationRepository repo,
-                               SimpMessagingTemplate messagingTemplate) {
+                               SimpMessagingTemplate ws) {
         this.repo = repo;
-        this.messagingTemplate = messagingTemplate;
+        this.ws = ws;
     }
 
-    //  lưu DB , đẩy real-time WebSocket
-    public Notification createNotification(String title, String message) {
-        Notification n = new Notification(title, message);
-        Notification saved = repo.save(n);
+    // Client đặt lịch , Admin nhận
+    public Notification sendBookingToAdmin(String bookingId, String clientId) {
+        Notification noti = new Notification(
+                "Có lịch mới",
+                "Khách hàng vừa đặt lịch #" + bookingId,
+                bookingId,
+                clientId,
+                "ADMIN",
+                "BOOKING"
+        );
 
-        // Gửi object notification cho FE
-        messagingTemplate.convertAndSend("/topic/booking-notification", saved);
-
+        Notification saved = repo.save(noti);
+        ws.convertAndSend("/topic/admin", saved);
         return saved;
     }
 
-    public Notification create(Notification n) {
-        return repo.save(n);
+    // Admin xác nhận , Client nhận
+    public Notification sendConfirmToClient(String bookingId, String clientId, String adminId) {
+        Notification noti = new Notification(
+                "Lịch đã được xác nhận",
+                "Admin đã xác nhận lịch #" + bookingId,
+                bookingId,
+                adminId,
+                clientId,
+                "CONFIRM"
+        );
+
+        noti.setStatus("CONFIRMED");
+
+        Notification saved = repo.save(noti);
+        ws.convertAndSend("/topic/user/" + clientId, saved);
+        return saved;
     }
 
     public List<Notification> getAll() {
@@ -41,10 +59,6 @@ public class NotificationService {
 
     public List<Notification> getUnread() {
         return repo.findByReadFalseOrderByCreatedAtDesc();
-    }
-
-    public Optional<Notification> findById(String id) {
-        return repo.findById(id);
     }
 
     public Notification markAsRead(String id) {
