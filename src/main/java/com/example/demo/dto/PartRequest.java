@@ -12,12 +12,11 @@ public class PartRequest {
     // @NotBlank(message = "Đơn vị tính không được để trống")
     // private String unit;
 
-    // @NotNull(message = "Giá không được để trống")
-    // @Min(value = 0, message = "Giá phải >= 0")
-    // private Double price;
-
-    @NotNull(message = "Giá bán không được để trống")
+    @NotNull(message = "Giá không được để trống")
     @Min(value = 0, message = "Giá phải >= 0")
+    private Double price;
+
+    
     private Double salePrice;
 
 
@@ -50,13 +49,13 @@ public class PartRequest {
     //     this.unit = unit;
     // }
 
-    // public Double getPrice() {
-    //     return price;
-    // }
+    public Double getPrice() {
+        return price;
+    }
 
-    // public void setPrice(Double price) {
-    //     this.price = price;
-    // }
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
     public Double getSalePrice() {
         return salePrice;
