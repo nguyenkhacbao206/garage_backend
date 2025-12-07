@@ -20,7 +20,9 @@ public class NotificationService {
         this.messagingTemplate = messagingTemplate;
     }
 
+
     //  lưu DB , đẩy real-time WebSocket
+
     public Notification createNotification(String title, String message) {
         Notification n = new Notification(title, message);
         Notification saved = repo.save(n);
@@ -31,8 +33,19 @@ public class NotificationService {
         return saved;
     }
 
+
+    // Gửi thông báo đầy đủ
+    public Notification createFull(String title, String message, String bookingId, String type) {
+        Notification n = new Notification(title, message, bookingId, type);
+        Notification saved = repo.save(n);
+
+        messagingTemplate.convertAndSend("/topic/booking-notification", saved);
+
+        return saved;
+
     public Notification create(Notification n) {
         return repo.save(n);
+
     }
 
     public List<Notification> getAll() {
@@ -50,6 +63,7 @@ public class NotificationService {
     public Notification markAsRead(String id) {
         Notification n = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
+
         n.setRead(true);
         return repo.save(n);
     }
