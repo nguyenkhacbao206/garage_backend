@@ -13,13 +13,12 @@ public class NotificationService {
     private final NotificationRepository repo;
     private final SimpMessagingTemplate ws;
 
-    public NotificationService(NotificationRepository repo,
-                               SimpMessagingTemplate ws) {
+    public NotificationService(NotificationRepository repo, SimpMessagingTemplate ws) {
         this.repo = repo;
         this.ws = ws;
     }
 
-    // Client đặt lịch , Admin nhận
+    // CLIENT gửi thông báo ADMIN
     public Notification sendBookingToAdmin(String bookingId, String clientId) {
         Notification noti = new Notification(
                 "Có lịch mới",
@@ -35,8 +34,9 @@ public class NotificationService {
         return saved;
     }
 
-    // Admin xác nhận , Client nhận
+    // ADMIN gửi thông báo confirm CLIENT
     public Notification sendConfirmToClient(String bookingId, String clientId, String adminId) {
+
         Notification noti = new Notification(
                 "Lịch đã được xác nhận",
                 "Admin đã xác nhận lịch #" + bookingId,
@@ -53,12 +53,34 @@ public class NotificationService {
         return saved;
     }
 
+    // ADMIN gửi thông báo hủy CLIENT 
+    public Notification sendCancelToClient(String bookingId, String clientId, String adminId) {
+        Notification noti = new Notification(
+                "Lịch đã bị hủy",
+                "Admin đã hủy lịch #" + bookingId,
+                bookingId,
+                adminId,
+                clientId,
+                "CANCEL"
+        );
+
+        noti.setStatus("CANCELLED");
+
+        Notification saved = repo.save(noti);
+        ws.convertAndSend("/topic/user/" + clientId, saved);
+        return saved;
+    }
+
     public List<Notification> getAll() {
         return repo.findAllByOrderByCreatedAtDesc();
     }
 
     public List<Notification> getUnread() {
         return repo.findByReadFalseOrderByCreatedAtDesc();
+    }
+
+    public List<Notification> getByStatus(String status) {
+        return repo.findByStatusOrderByCreatedAtDesc(status);
     }
 
     public Notification markAsRead(String id) {
