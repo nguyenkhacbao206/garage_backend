@@ -81,14 +81,16 @@ public class NotificationService {
         Notification bookingNoti = repo.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
+        if ("CONFIRMED".equals(bookingNoti.getStatus())) {
+            throw new RuntimeException("Notification already confirmed");
+        }
+
         ServiceBooking booking = bookingRepo.findById(bookingNoti.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        // cập nhật thông báo booking
         bookingNoti.setStatus("CONFIRMED");
         repo.save(bookingNoti);
 
-        // tạo thông báo confirm gửi client
         Notification confirm = new Notification(
                 "Lịch đã được xác nhận",
                 "Lịch hẹn cho xe " + booking.getLicensePlate() + " đã được admin xác nhận",
@@ -104,8 +106,10 @@ public class NotificationService {
         NotificationResponse resp = toResponse(saved);
 
         ws.convertAndSend("/topic/user/" + bookingNoti.getSenderId(), resp);
+        
         return resp;
     }
+
 
 
     // ADMIN gửi cancel thông báo sang CLIENT
@@ -113,6 +117,10 @@ public class NotificationService {
 
         Notification bookingNoti = repo.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
+
+        if ("CANCELLED".equals(bookingNoti.getStatus())) {
+            throw new RuntimeException("Notification already cancelled");
+        }
 
         ServiceBooking booking = bookingRepo.findById(bookingNoti.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
@@ -123,7 +131,7 @@ public class NotificationService {
         Notification cancel = new Notification(
                 "Lịch đã bị hủy",
                 "Lịch hẹn cho xe " + booking.getLicensePlate()
-                        + " đã bị hủy. Vui lòng liên hệ garage để biết thêm chi tiết",
+                 + " đã bị hủy. Vui lòng liên hệ garage để biết thêm chi tiết",
                 booking.getId(),
                 "ADMIN",
                 bookingNoti.getSenderId(),
@@ -136,8 +144,10 @@ public class NotificationService {
         NotificationResponse resp = toResponse(saved);
 
         ws.convertAndSend("/topic/user/" + bookingNoti.getSenderId(), resp);
+
         return resp;
     }
+
 
 
     // trả NotificationResponse
