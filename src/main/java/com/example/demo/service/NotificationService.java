@@ -53,9 +53,16 @@ public class NotificationService {
 
     // CLIENT gửi thông báo ADMIN
     public NotificationResponse sendBookingToAdmin(String bookingId, String clientId) {
+
+        ServiceBooking booking = bookingRepo.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        String message = "Khách hàng " + booking.getCustomerName()
+                + " vừa đặt lịch cho xe " + booking.getLicensePlate();
+
         Notification noti = new Notification(
                 "Có lịch mới",
-                "Khách hàng vừa đặt lịch #" + bookingId,
+                message,
                 bookingId,
                 clientId,
                 "ADMIN",
@@ -64,19 +71,23 @@ public class NotificationService {
 
         Notification saved = repo.save(noti);
 
-        // gửi DTO qua WS để FE dễ dùng
         NotificationResponse resp = toResponse(saved);
         ws.convertAndSend("/topic/admin", resp);
 
         return resp;
     }
 
+
     // ADMIN gửi confirm thông báo sang CLIENT
     public NotificationResponse sendConfirmToClient(String bookingId, String clientId, String adminId) {
 
+        ServiceBooking booking = bookingRepo.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
         Notification noti = new Notification(
                 "Lịch đã được xác nhận",
-                "Admin đã xác nhận lịch #" + bookingId,
+                "Lịch hẹn cho xe " + booking.getLicensePlate()
+                + " đã được admin xác nhận",
                 bookingId,
                 adminId,
                 clientId,
@@ -90,6 +101,7 @@ public class NotificationService {
         ws.convertAndSend("/topic/user/" + clientId, resp);
         return resp;
     }
+
 
     // ADMIN gửi cancel thông báo sang CLIENT
     public NotificationResponse sendCancelToClient(String bookingId, String clientId, String adminId) {
