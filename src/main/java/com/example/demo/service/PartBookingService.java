@@ -61,6 +61,13 @@ public class PartBookingService {
                 throw new RuntimeException("Not enough stock!");
             }
         }
+        String phone = req.getPhone();
+        if (phone == null || !phone.matches("0\\d{9}")) {
+            throw new RuntimeException("Số điện thoại phải gồm đúng 10 chữ số và số 0  phải ở đầu!");
+        }
+        if (supplierRepository.existsByPhone(req.getPhone())) {
+            throw new RuntimeException("Số điện thoại đã tồn tại!");
+        }
         
         PartBooking booking = new PartBooking();
         booking.setBookingCode(generateBookingCode());
@@ -74,7 +81,7 @@ public class PartBookingService {
         booking.setNote(req.getNote());
         booking.setCustomerName(req.getCustomerName());
         booking.setIsActive(req.isActive());
-        booking.setPhone(req.getPhone());
+        // booking.setPhone(req.getPhone());
         booking.setAddress(req.getAddress());
         booking.setCreatedAt(LocalDateTime.now());
         booking.setUpdatedAt(LocalDateTime.now());
