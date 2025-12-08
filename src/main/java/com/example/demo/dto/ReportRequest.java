@@ -16,6 +16,7 @@ public class ReportRequest {
     @Schema(description = "Ngày kết thúc", example = "2025-11-30")
     private LocalDate endDate;
 
+    // Getter & Setter
     public LocalDate getStartDate() { return startDate; }
     public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
 
