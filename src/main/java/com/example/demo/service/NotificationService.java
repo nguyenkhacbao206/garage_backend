@@ -105,9 +105,14 @@ public class NotificationService {
 
     // ADMIN gửi cancel thông báo sang CLIENT
     public NotificationResponse sendCancelToClient(String bookingId, String clientId, String adminId) {
+
+        ServiceBooking booking = bookingRepo.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
         Notification noti = new Notification(
                 "Lịch đã bị hủy",
-                "Admin đã hủy lịch #" + bookingId,
+                "Lịch hẹn cho xe " + booking.getLicensePlate()
+                + " đã bị hủy. Vui lòng liên hệ garage để biết thêm chi tiết",
                 bookingId,
                 adminId,
                 clientId,
@@ -121,6 +126,7 @@ public class NotificationService {
         ws.convertAndSend("/topic/user/" + clientId, resp);
         return resp;
     }
+
 
     // trả NotificationResponse 
     public List<NotificationResponse> getAll() {
