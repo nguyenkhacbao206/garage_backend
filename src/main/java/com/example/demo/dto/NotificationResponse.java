@@ -1,9 +1,11 @@
 package com.example.demo.dto;
 
+import com.example.demo.entity.GarageService;
 import com.example.demo.entity.Notification;
 import com.example.demo.entity.ServiceBooking;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class NotificationResponse {
 
@@ -16,8 +18,9 @@ public class NotificationResponse {
     private LocalDateTime createdAt;
 
     private ServiceBooking booking; 
+    private List<GarageService> services;
 
-    public NotificationResponse(Notification n, ServiceBooking booking) {
+    public NotificationResponse(Notification n, ServiceBooking booking, List<GarageService> services) {
         this.id = n.getId();
         this.title = n.getTitle();
         this.message = n.getMessage();
@@ -26,6 +29,7 @@ public class NotificationResponse {
         this.read = n.isRead();
         this.createdAt = n.getCreatedAt();
         this.booking = booking;
+        this.services = services;
     }
 
     // getter
@@ -52,5 +56,8 @@ public class NotificationResponse {
     }
     public ServiceBooking getBooking() { 
         return booking; 
+    }
+    public List<GarageService> getServices() {
+        return services;
     }
 }
