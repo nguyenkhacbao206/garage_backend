@@ -106,7 +106,7 @@ public class NotificationController {
     }
 
     // CONFIRM
-    @PostMapping("/{id}/confirm")
+    @PutMapping("/{id}/confirm")
     public ResponseEntity<ApiResponse<NotificationResponse>> confirm(
             @PathVariable String id
     ) {
@@ -119,7 +119,7 @@ public class NotificationController {
     }
 
     // CANCEL
-    @PostMapping("/{id}/cancel")
+    @PutMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<NotificationResponse>> cancel(
             @PathVariable String id
     ) {
@@ -130,6 +130,7 @@ public class NotificationController {
             )
         );
     }
+
 
 
     // BOOKING NOTIFY
