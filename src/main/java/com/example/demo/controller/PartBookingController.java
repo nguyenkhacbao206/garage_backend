@@ -123,19 +123,6 @@ public class PartBookingController {
     }
 
     
-    @GetMapping("/{id}")
-    @Operation(summary = "Lấy chi tiết đặt lịch theo ID", description = "Trả về thông tin chi tiết của một đặt lịch dựa theo ID")
-    public ResponseEntity<ApiResponse<PartBookingResponse>> getOne(
-            @Parameter(description = "ID của đơn đặt lịch", required = true)
-            @PathVariable String id) {
-        try {
-            PartBookingResponse item = partBookingService.getOne(id);
-            return ResponseEntity.ok(new ApiResponse<>("OK", item));
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
 
     @PutMapping("/{id}")
     @Operation(summary = "Cập nhật đặt lịch", description = "Cập nhật toàn bộ thông tin đặt lịch theo ID")
