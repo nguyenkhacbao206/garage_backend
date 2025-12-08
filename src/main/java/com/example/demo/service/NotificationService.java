@@ -76,66 +76,69 @@ public class NotificationService {
     }
 
     // ADMIN gửi confirm thông báo sang CLIENT
-    public NotificationResponse confirmByNotificationId(String notificationId, String adminId) {
+    public NotificationResponse confirmByNotification(String notificationId) {
 
-        Notification origin = repo.findById(notificationId)
+        Notification bookingNoti = repo.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
-        ServiceBooking booking = bookingRepo.findById(origin.getBookingId())
+        ServiceBooking booking = bookingRepo.findById(bookingNoti.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        Notification noti = new Notification(
+        // cập nhật thông báo booking
+        bookingNoti.setStatus("CONFIRMED");
+        repo.save(bookingNoti);
+
+        // tạo thông báo confirm gửi client
+        Notification confirm = new Notification(
                 "Lịch đã được xác nhận",
-                "Lịch hẹn cho xe " + booking.getLicensePlate()
-                        + " đã được admin xác nhận",
-                origin.getBookingId(),
-                adminId,
-                origin.getSenderId(),
+                "Lịch hẹn cho xe " + booking.getLicensePlate() + " đã được admin xác nhận",
+                booking.getId(),
+                "ADMIN",
+                bookingNoti.getSenderId(),
                 "CONFIRM"
         );
 
-        noti.setStatus("CONFIRMED");
+        confirm.setStatus("CONFIRMED");
 
-        origin.setStatus("CONFIRMED");
-        repo.save(origin);
-
-        Notification saved = repo.save(noti);
+        Notification saved = repo.save(confirm);
         NotificationResponse resp = toResponse(saved);
 
-        ws.convertAndSend("/topic/user/" + origin.getSenderId(), resp);
+        ws.convertAndSend("/topic/user/" + bookingNoti.getSenderId(), resp);
         return resp;
     }
 
-    // ADMIN gửi cancel thông báo sang CLIENT
-    public NotificationResponse cancelByNotificationId(String notificationId, String adminId) {
 
-        Notification origin = repo.findById(notificationId)
+    // ADMIN gửi cancel thông báo sang CLIENT
+    public NotificationResponse cancelByNotification(String notificationId) {
+
+        Notification bookingNoti = repo.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
-        ServiceBooking booking = bookingRepo.findById(origin.getBookingId())
+        ServiceBooking booking = bookingRepo.findById(bookingNoti.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        Notification noti = new Notification(
+        bookingNoti.setStatus("CANCELLED");
+        repo.save(bookingNoti);
+
+        Notification cancel = new Notification(
                 "Lịch đã bị hủy",
                 "Lịch hẹn cho xe " + booking.getLicensePlate()
                         + " đã bị hủy. Vui lòng liên hệ garage để biết thêm chi tiết",
-                origin.getBookingId(),
-                adminId,
-                origin.getSenderId(),
+                booking.getId(),
+                "ADMIN",
+                bookingNoti.getSenderId(),
                 "CANCEL"
         );
 
-        noti.setStatus("CANCELLED");
+        cancel.setStatus("CANCELLED");
 
-        origin.setStatus("CANCELLED");
-        repo.save(origin);
-
-        Notification saved = repo.save(noti);
+        Notification saved = repo.save(cancel);
         NotificationResponse resp = toResponse(saved);
 
-        ws.convertAndSend("/topic/user/" + origin.getSenderId(), resp);
+        ws.convertAndSend("/topic/user/" + bookingNoti.getSenderId(), resp);
         return resp;
     }
+
 
     // trả NotificationResponse
     public List<NotificationResponse> getAll() {
