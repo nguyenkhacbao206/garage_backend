@@ -30,7 +30,7 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-    // ================= CREATE PAYMENT =================
+    
     @PostMapping
     @Operation(summary = "Tạo mới Payment cho RepairOrder",
                description = "Tự động tính tổng tiền từ Repair Order và tạo Payment kèm lịch sử ban đầu")
@@ -62,7 +62,7 @@ public class PaymentController {
         }
     }
 
-    // ================= GET PAYMENT BY ID =================
+    
     @GetMapping("/{id}")
     @Operation(summary = "Lấy Payment theo ID",
                description = "Bao gồm thông tin Repair Order + lịch sử thanh toán")
@@ -94,7 +94,7 @@ public class PaymentController {
         }
     }
 
-    // ================= LIST PAYMENTS =================
+   
     @GetMapping
     @Operation(summary = "Lấy danh sách Payment",
                description = "Có thể lọc theo orderId hoặc status")
@@ -129,7 +129,7 @@ public class PaymentController {
         }
     }
 
-    // ================= UPDATE STATUS =================
+   
     @PutMapping("/{id}/status")
     @Operation(summary = "Cập nhật trạng thái Payment",
                description = "Tự động thêm lịch sử vào PaymentHistory và cập nhật RepairOrder nếu SUCCESS")
@@ -162,7 +162,7 @@ public class PaymentController {
         }
     }
 
-    // ================= DELETE PAYMENT =================
+   
     @DeleteMapping("/{id}")
     @Operation(summary = "Xóa Payment theo ID")
     @ApiResponses({
@@ -190,7 +190,7 @@ public class PaymentController {
         }
     }
 
-    // ================= PAYMENT HISTORY =================
+   
     @GetMapping("/{id}/history")
     @Operation(summary = "Lấy lịch sử thanh toán của Payment")
     @ApiResponses({
