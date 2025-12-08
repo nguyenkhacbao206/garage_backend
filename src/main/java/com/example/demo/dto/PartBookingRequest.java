@@ -43,6 +43,9 @@ public class PartBookingRequest {
     @Schema(description = "Email", example = "tr1223@")
     private String customerEmail;
 
+    @Schema(description = "ID", example = "673589902")
+    private String customerId;
+
     //GETTER / SETTER
     public String getSupplierId() { return supplierId; }
     public void setSupplierId(String supplierId) { this.supplierId = supplierId; }
@@ -64,6 +67,9 @@ public class PartBookingRequest {
 
     public String getCustomerName() { return customerName; }
     public void setCustomerName(String customerName) { this.customerName = customerName; }
+
+    public String getCustomerId() { return customerId; }
+    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }

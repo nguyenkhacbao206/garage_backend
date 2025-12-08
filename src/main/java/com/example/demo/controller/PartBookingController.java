@@ -19,9 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.PartBookingRequest;
 import com.example.demo.dto.PartBookingResponse;
+import com.example.demo.dto.ServiceBookingRequest;
 import com.example.demo.entity.PartBooking;
 import com.example.demo.service.PartBookingService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 
 @RestController
@@ -51,6 +54,22 @@ public class PartBookingController {
             throw new RuntimeException("Lỗi khi sắp xếp item nhập", ex);
         }
     }
+
+    @GetMapping("/search")
+    @Operation(summary = "Tìm kiếm đơn đặt hàng", description = "Tìm kiếm theo tên khách hàng, SĐT hoặc mã đơn")
+    public ResponseEntity<ApiResponse<List<PartBookingResponse>>> search(
+            @RequestParam(required = false) String keyword
+    ) {
+        try {
+            List<PartBookingResponse> data = partBookingService.searchBookings(keyword);
+            return ResponseEntity.ok(new ApiResponse<>("Tìm kiếm thành công", data));
+        } catch (Exception ex) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
+        }
+    }
+
 
     @PostMapping("/create")
     public ResponseEntity<PartBookingResponse> create(@Valid @RequestBody PartBookingRequest request) {
@@ -100,6 +119,34 @@ public class PartBookingController {
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>("Lỗi: " + ex.getMessage(), null));
+        }
+    }
+
+    
+    @GetMapping("/{id}")
+    @Operation(summary = "Lấy chi tiết đặt lịch theo ID", description = "Trả về thông tin chi tiết của một đặt lịch dựa theo ID")
+    public ResponseEntity<ApiResponse<PartBookingResponse>> getOne(
+            @Parameter(description = "ID của đơn đặt lịch", required = true)
+            @PathVariable String id) {
+        try {
+            PartBookingResponse item = partBookingService.getOne(id);
+            return ResponseEntity.ok(new ApiResponse<>("OK", item));
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Cập nhật đặt lịch", description = "Cập nhật toàn bộ thông tin đặt lịch theo ID")
+    public ResponseEntity<ApiResponse<PartBookingResponse>> update(
+            @PathVariable String id,
+            @RequestBody PartBookingRequest req) {
+        try {
+            PartBookingResponse updated = partBookingService.update(id, req);
+            return ResponseEntity.ok(new ApiResponse<>("Cập nhật thành công", updated));
+        } catch (Exception e) {
+            throw e;
         }
     }
 

@@ -77,6 +77,7 @@ public class PartBookingService {
         booking.setBookingCode(generateBookingCode());
         booking.setSupplierId(supplier.getId());
         booking.setCustomerEmail(req.getCustomerEmail());
+        booking.setCustomerId(req.getCustomerId());
         booking.setSupplierCode(supplier.getSupplierCode());
         booking.setPartId(part.getId());
         booking.setPartName(part.getName());
@@ -145,23 +146,58 @@ public class PartBookingService {
             .toList();
     }
 
-    public PartBookingResponse deleteBooking(String id) {
-
+    public PartBookingResponse getOne(String id) {
         PartBooking booking = partBookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("PartBooking not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy booking"));
+        return toResponse(booking);
+    }
 
-        if (Boolean.TRUE.equals(booking.getIsActive())) {
-            Query q = new Query(Criteria.where("_id").is(booking.getPartId()));
-            Update u = new Update()
-                    .inc("stock", booking.getQuantity())
-                    .set("updatedAt", LocalDateTime.now());
+    public PartBookingResponse update(String id, PartBookingRequest req) {
+        PartBooking booking = partBookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy booking"));
 
-            mongoTemplate.findAndModify(q, u, FindAndModifyOptions.options().returnNew(true), Part.class);
+        // Kiểm tra part mới có tồn tại không
+        if (!partRepository.existsById(req.getPartId())) {
+            throw new ResourceNotFoundException("Part không tồn tại: " + req.getPartId());
         }
 
-        partBookingRepository.deleteById(id);
+        // Kiểm tra supplier mới có tồn tại không
+        if (!supplierRepository.existsById(req.getSupplierId())) {
+            throw new ResourceNotFoundException("Supplier không tồn tại: " + req.getSupplierId());
+        }
 
-        return toResponse(booking);
+        // Cập nhật thông tin booking
+        booking.setCustomerId(req.getCustomerId());
+        booking.setCustomerName(req.getCustomerName());
+        booking.setCustomerEmail(req.getCustomerEmail());
+        booking.setPhone(req.getPhone());
+        booking.setAddress(req.getAddress());
+        booking.setNote(req.getNote());
+
+        booking.setPartId(req.getPartId());
+        Part part = partRepository.findById(req.getPartId()).get();
+        booking.setPartName(part.getName());
+        booking.setPrice(part.getPrice());
+
+        booking.setSupplierId(req.getSupplierId());
+        Supplier supplier = supplierRepository.findById(req.getSupplierId()).get();
+        booking.setSupplierCode(supplier.getSupplierCode());
+
+        booking.setQuantity(req.getQuantity());
+        booking.setIsActive(req.isActive());
+
+        booking.setUpdatedAt(LocalDateTime.now());
+
+        PartBooking saved = partBookingRepository.save(booking);
+        return toResponse(saved);
+    }
+
+    public PartBookingResponse deleteBooking(String id) {
+    PartBooking booking = partBookingRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PartBooking not found: " + id));
+    partBookingRepository.deleteById(id);
+
+    return toResponse(booking);
     }
 
     private String generateBookingCode() {
@@ -216,4 +252,20 @@ public class PartBookingService {
                 .map(this::toResponse)
                 .toList();
     }
+
+    public List<PartBookingResponse> searchBookings(String keyword) {
+    if (keyword == null || keyword.isEmpty()) {
+        return getAllBookings();
+    }
+
+    List<PartBooking> results = partBookingRepository.findAll().stream()
+            .filter(b -> (b.getCustomerName() != null && b.getCustomerName().toLowerCase().contains(keyword.toLowerCase()))
+                    || (b.getPhone() != null && b.getPhone().contains(keyword))
+                    || (b.getBookingCode() != null && b.getBookingCode().toLowerCase().contains(keyword.toLowerCase()))
+            )
+            .toList();
+
+    return results.stream().map(this::toResponse).toList();
+}
+
 }

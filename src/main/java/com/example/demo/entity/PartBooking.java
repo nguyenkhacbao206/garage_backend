@@ -11,6 +11,7 @@ public class PartBooking {
     @Id
     private String id;
 
+    private String customerId;
     private String customerEmail;
     private String supplierId;
     private String supplierCode;
@@ -38,6 +39,8 @@ public class PartBooking {
         this.id = id;
     }
 
+    public String getCustomerId() { return customerId;}
+    public void setCustomerId(String customerId) {this.customerId =customerId;}
     public String getCustomerEmail() { return customerEmail;}
     public void setCustomerEmail(String customerEmail) {this.customerEmail =customerEmail;}
     public String getSupplierId() { return supplierId;}
