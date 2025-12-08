@@ -1,26 +1,16 @@
-
 package com.example.demo.controller;
 
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import com.example.demo.entity.PartBooking;
+
 
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.PartBookingRequest;
 import com.example.demo.dto.PartBookingResponse;
-import com.example.demo.dto.ServiceBookingRequest;
-import com.example.demo.entity.PartBooking;
 import com.example.demo.service.PartBookingService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +28,7 @@ public class PartBookingController {
         this.partBookingService = partBookingService;
     }
 
+    // SORT
     @GetMapping("/sort")
     public ResponseEntity<ApiResponse<List<PartBookingResponse>>> sort(
             @RequestParam(defaultValue = "false") boolean asc
@@ -55,8 +46,9 @@ public class PartBookingController {
         }
     }
 
+    // SEARCH
     @GetMapping("/search")
-    @Operation(summary = "Tìm kiếm đơn đặt hàng", description = "Tìm kiếm theo tên khách hàng, SĐT hoặc mã đơn")
+    @Operation(summary = "Tìm kiếm đơn đặt hàng", description = "Tìm theo tên khách hàng, SĐT hoặc mã đơn")
     public ResponseEntity<ApiResponse<List<PartBookingResponse>>> search(
             @RequestParam(required = false) String keyword
     ) {
@@ -64,102 +56,102 @@ public class PartBookingController {
             List<PartBookingResponse> data = partBookingService.searchBookings(keyword);
             return ResponseEntity.ok(new ApiResponse<>("Tìm kiếm thành công", data));
         } catch (Exception ex) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
         }
     }
 
-
+    // CREATE
     @PostMapping("/create")
-    public ResponseEntity<PartBookingResponse> create(@Valid @RequestBody PartBookingRequest request) {
+    @Operation(summary = "Tạo đơn đặt hàng")
+    public ResponseEntity<ApiResponse<PartBookingResponse>> create(
+            @Valid @RequestBody PartBookingRequest request) {
         try {
             PartBookingResponse resp = partBookingService.createBooking(request);
-            return ResponseEntity.ok(
-                    new PartBookingResponse("Đặt phụ tùng thành công", resp)
-            );
+            return ResponseEntity.ok(new ApiResponse<>("Đặt phụ tùng thành công", resp));
+
         } catch (Exception ex) {
-            throw new RuntimeException(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(ex.getMessage(), null));
         }
     }
 
+    // GET ONE
     @GetMapping("/{id}")
-    public ResponseEntity<PartBookingResponse> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PartBookingResponse>> getById(@PathVariable String id) {
         try {
             PartBookingResponse resp = partBookingService.getById(id);
-            return ResponseEntity.ok(
-                    new PartBookingResponse("Lấy thông tin booking thành công", resp)
-            );
+            return ResponseEntity.ok(new ApiResponse<>("Lấy thông tin thành công", resp));
         } catch (Exception ex) {
-            throw new RuntimeException(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(ex.getMessage(), null));
         }
     }
 
+    // GET ALL
     @GetMapping
     public ResponseEntity<ApiResponse<List<PartBookingResponse>>> getAll() {
         try {
             List<PartBookingResponse> data = partBookingService.getAllBookings();
             return ResponseEntity.ok(new ApiResponse<>("OK", data));
-        } catch (RuntimeException ex) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(ex.getMessage(), null));
+
         } catch (Exception ex) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
         }
     }
 
+    // CONFIRM
     @PutMapping("/{id}/confirm")
     public ResponseEntity<ApiResponse<PartBookingResponse>> confirmBooking(@PathVariable String id) {
         try {
             PartBookingResponse resp = partBookingService.confirmBooking(id);
             return ResponseEntity.ok(new ApiResponse<>("Xác nhận đơn hàng thành công", resp));
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>("Lỗi: " + ex.getMessage(), null));
         }
     }
 
-    
-
+    // UPDATE
     @PutMapping("/{id}")
-    @Operation(summary = "Cập nhật đặt lịch", description = "Cập nhật toàn bộ thông tin đặt lịch theo ID")
+    @Operation(summary = "Cập nhật booking")
     public ResponseEntity<ApiResponse<PartBookingResponse>> update(
             @PathVariable String id,
             @RequestBody PartBookingRequest req) {
         try {
             PartBookingResponse updated = partBookingService.update(id, req);
             return ResponseEntity.ok(new ApiResponse<>("Cập nhật thành công", updated));
+
         } catch (Exception e) {
-            throw e;
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(e.getMessage(), null));
         }
     }
 
+    // DELETE ONE
     @DeleteMapping("/{id}")
-    public ResponseEntity<PartBookingResponse> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PartBookingResponse>> delete(@PathVariable String id) {
         try {
             PartBookingResponse resp = partBookingService.deleteBooking(id);
             return ResponseEntity.ok(
-                    new PartBookingResponse("Xóa booking thành công. Tồn kho đã được hoàn trả (nếu part tồn tại)", resp)
+                    new ApiResponse<>("Xóa booking thành công (không hoàn kho)", resp)
             );
         } catch (Exception ex) {
-            throw new RuntimeException(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(ex.getMessage(), null));
         }
     }
+
+    // DELETE ALL
     @DeleteMapping
     public ResponseEntity<ApiResponse<List<PartBookingResponse>>> deleteAllBookings() {
         try {
-            List<PartBookingResponse> deletedBookings = partBookingService.deleteAllBookingsWithoutRestoringStock();
-            return ResponseEntity.ok(new ApiResponse<>("Xóa tất cả booking thành công", deletedBookings));
-        } catch (RuntimeException ex) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(ex.getMessage(), null));
+            List<PartBookingResponse> deleted = partBookingService.deleteAllBookingsWithoutRestoringStock();
+            return ResponseEntity.ok(new ApiResponse<>("Đã xoá toàn bộ booking (KHÔNG hoàn kho)", deleted));
+
         } catch (Exception ex) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
         }
     }
