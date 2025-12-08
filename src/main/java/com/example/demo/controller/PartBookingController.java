@@ -114,4 +114,20 @@ public class PartBookingController {
             throw new RuntimeException(ex.getMessage());
         }
     }
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<List<PartBookingResponse>>> deleteAllBookings() {
+        try {
+            List<PartBookingResponse> deletedBookings = partBookingService.deleteAllBookingsWithoutRestoringStock();
+            return ResponseEntity.ok(new ApiResponse<>("Xóa tất cả booking thành công", deletedBookings));
+        } catch (RuntimeException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(ex.getMessage(), null));
+        } catch (Exception ex) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
+        }
+    }
+
 }
