@@ -1,9 +1,12 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.PartBookingRequest;
+import com.example.demo.dto.PartBookingResponse;
 import com.example.demo.dto.ServiceBookingRequest;
 import com.example.demo.dto.ServiceBookingResponse;
 import com.example.demo.entity.ServiceBooking;
 import com.example.demo.entity.GarageService;
+import com.example.demo.entity.PartBooking;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.ServiceBookingRepository;
 import com.example.demo.repository.ServiceRepository;
@@ -110,36 +113,35 @@ public class ServiceBookingService {
         return convert(booking);
     }
 
-    public ServiceBookingResponse update(String id, ServiceBookingRequest req) {
+public ServiceBookingResponse update(String id, ServiceBookingRequest req) {
+    ServiceBooking booking = bookingRepo.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy booking"));
 
-        ServiceBooking booking = bookingRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy booking"));
-
-        // validate serviceIds mới
-        for (String sid : req.getServiceIds()) {
-            if (!serviceRepo.existsById(sid)) {
-                throw new ResourceNotFoundException("Dịch vụ không tồn tại: " + sid);
-            }
+    // validate serviceIds mới
+    for (String sid : req.getServiceIds()) {
+        if (!serviceRepo.existsById(sid)) {
+            throw new ResourceNotFoundException("Dịch vụ không tồn tại: " + sid);
         }
-
-        booking.setCustomerName(req.getCustomerName());
-        booking.setCustomerPhone(req.getCustomerPhone());
-        booking.setCustomerEmail(req.getCustomerEmail());
-
-        booking.setLicensePlate(req.getLicensePlate());
-        booking.setCarBrand(req.getCarBrand());
-        booking.setCarModel(req.getCarModel());
-
-        booking.setServiceIds(req.getServiceIds());
-        booking.setNote(req.getNote());
-        booking.setBookingTime(req.getBookingTime());
-
-        booking.setUpdatedAt(LocalDateTime.now());
-
-        bookingRepo.save(booking);
-
-        return convert(booking);
     }
+
+    booking.setCustomerName(req.getCustomerName());
+    booking.setCustomerPhone(req.getCustomerPhone());
+    booking.setCustomerEmail(req.getCustomerEmail());
+
+    booking.setLicensePlate(req.getLicensePlate());
+    booking.setCarBrand(req.getCarBrand());
+    booking.setCarModel(req.getCarModel());
+
+    booking.setServiceIds(req.getServiceIds());
+    booking.setNote(req.getNote());
+    booking.setBookingTime(req.getBookingTime());
+
+    booking.setUpdatedAt(LocalDateTime.now());
+
+    bookingRepo.save(booking);
+
+    return convert(booking);
+}
 
 
     public void delete(String id) {
