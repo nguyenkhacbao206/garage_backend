@@ -61,6 +61,12 @@ public class NotificationController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/clear")
+    public ResponseEntity<Void> deleteAll() {
+        service.deleteAll();
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/confirm")
     public ResponseEntity<Notification> confirm(
             @RequestParam String bookingId,
