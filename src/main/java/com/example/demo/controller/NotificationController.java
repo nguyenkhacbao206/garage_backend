@@ -108,13 +108,12 @@ public class NotificationController {
     // CONFIRM
     @PostMapping("/{id}/confirm")
     public ResponseEntity<ApiResponse<NotificationResponse>> confirm(
-            @PathVariable String id,
-            @RequestParam String adminId
+            @PathVariable String id
     ) {
         return ResponseEntity.ok(
             new ApiResponse<>(
                 "Xác nhận lịch thành công",
-                service.confirmByNotificationId(id, adminId)
+                service.confirmByNotification(id)
             )
         );
     }
@@ -122,16 +121,16 @@ public class NotificationController {
     // CANCEL
     @PostMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<NotificationResponse>> cancel(
-            @PathVariable String id,
-            @RequestParam String adminId
+            @PathVariable String id
     ) {
         return ResponseEntity.ok(
             new ApiResponse<>(
                 "Hủy lịch thành công",
-                service.cancelByNotificationId(id, adminId)
+                service.cancelByNotification(id)
             )
         );
     }
+
 
     // BOOKING NOTIFY
     @PostMapping("/booking")
