@@ -1,132 +1,103 @@
 package com.example.demo.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class ReportResponse {
 
-    private List<ImportPartResponse> parts;
-    private List<ImportServiceResponse> services;
-    private List<MonthlySummary> monthlyRevenueSummary;
-    private List<MonthlyDetail> monthlyRevenueDetail;
+    private String status = "success";
+    private Object data;
 
-    private ImportServiceResponse mostUsedService;
-    private ImportPartResponse mostUsedPart;
-    // PART RESPONSE
-    public static class ImportPartResponse {
-        private String partId;
-        private String partName;
-        private BigDecimal totalRevenue;
-        private BigDecimal averageRevenue;
-        private BigDecimal maxRevenue;
-        private BigDecimal minRevenue;
-        private long usageCount;
-
-        // Getter & Setter
-        public String getPartId() { return partId; }
-        public void setPartId(String partId) { this.partId = partId; }
-
-        public String getPartName() { return partName; }
-        public void setPartName(String partName) { this.partName = partName; }
-
-        public BigDecimal getTotalRevenue() { return totalRevenue; }
-        public void setTotalRevenue(BigDecimal totalRevenue) { this.totalRevenue = totalRevenue; }
-
-        public BigDecimal getAverageRevenue() { return averageRevenue; }
-        public void setAverageRevenue(BigDecimal averageRevenue) { this.averageRevenue = averageRevenue; }
-
-        public BigDecimal getMaxRevenue() { return maxRevenue; }
-        public void setMaxRevenue(BigDecimal maxRevenue) { this.maxRevenue = maxRevenue; }
-
-        public BigDecimal getMinRevenue() { return minRevenue; }
-        public void setMinRevenue(BigDecimal minRevenue) { this.minRevenue = minRevenue; }
-
-        public long getUsageCount() { return usageCount; }
-        public void setUsageCount(long usageCount) { this.usageCount = usageCount; }
+    public ReportResponse() {}
+    public ReportResponse(Object data) {
+        this.data = data;
     }
 
-    // SERVICE RESPONSE
-    public static class ImportServiceResponse {
-        private String serviceId;
-        private String serviceName;
-        private BigDecimal totalRevenue;
-        private BigDecimal averageRevenue;
-        private BigDecimal maxRevenue;
-        private BigDecimal minRevenue;
-        private long usageCount;
-
-        // Getter & Setter
-        public String getServiceId() { return serviceId; }
-        public void setServiceId(String serviceId) { this.serviceId = serviceId; }
-
-        public String getServiceName() { return serviceName; }
-        public void setServiceName(String serviceName) { this.serviceName = serviceName; }
-
-        public BigDecimal getTotalRevenue() { return totalRevenue; }
-        public void setTotalRevenue(BigDecimal totalRevenue) { this.totalRevenue = totalRevenue; }
-
-        public BigDecimal getAverageRevenue() { return averageRevenue; }
-        public void setAverageRevenue(BigDecimal averageRevenue) { this.averageRevenue = averageRevenue; }
-
-        public BigDecimal getMaxRevenue() { return maxRevenue; }
-        public void setMaxRevenue(BigDecimal maxRevenue) { this.maxRevenue = maxRevenue; }
-
-        public BigDecimal getMinRevenue() { return minRevenue; }
-        public void setMinRevenue(BigDecimal minRevenue) { this.minRevenue = minRevenue; }
-
-        public long getUsageCount() { return usageCount; }
-        public void setUsageCount(long usageCount) { this.usageCount = usageCount; }
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    // MONTHLY SUMMARY
-    public static class MonthlySummary {
-        private String month; // yyyy-MM
+    public Object getData() {
+        return data;
+    }
+    public void setData(Object data) {
+        this.data = data;
+    }
+
+    // ===== Nested DTOs =====
+
+    public static class DashboardKPI {
+        private Integer id;
+        private String type;
+        private String title;
+        private String value;
+        private String subText;
+        private Boolean isGrowth;
+
+        // getters/setters
+        public Integer getId() { return id; }
+        public void setId(Integer id) { this.id = id; }
+        public String getType() { return type; }
+        public void setType(String type) { this.type = type; }
+        public String getTitle() { return title; }
+        public void setTitle(String title) { this.title = title; }
+        public String getValue() { return value; }
+        public void setValue(String value) { this.value = value; }
+        public String getSubText() { return subText; }
+        public void setSubText(String subText) { this.subText = subText; }
+        public Boolean getIsGrowth() { return isGrowth; }
+        public void setIsGrowth(Boolean isGrowth) { this.isGrowth = isGrowth; }
+    }
+
+    public static class ServicePartStatistic {
+        private String id;
+        private Integer rank;
+        private String code;
+        private String name;
+        private Integer quantity;
         private BigDecimal totalRevenue;
+
+        // getters/setters
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
+        public Integer getRank() { return rank; }
+        public void setRank(Integer rank) { this.rank = rank; }
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public Integer getQuantity() { return quantity; }
+        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+        public BigDecimal getTotalRevenue() { return totalRevenue; }
+        public void setTotalRevenue(BigDecimal totalRevenue) { this.totalRevenue = totalRevenue; }
+    }
+
+    public static class RevenueChartData {
+        private String month;
+        private BigDecimal value;
 
         public String getMonth() { return month; }
         public void setMonth(String month) { this.month = month; }
-
-        public BigDecimal getTotalRevenue() { return totalRevenue; }
-        public void setTotalRevenue(BigDecimal totalRevenue) { this.totalRevenue = totalRevenue; }
+        public BigDecimal getValue() { return value; }
+        public void setValue(BigDecimal value) { this.value = value; }
     }
 
-    // MONTHLY DETAIL
-    public static class MonthlyDetail {
-        private String paymentId;
-        private String repairOrderId;
-        private BigDecimal amount;
-        private LocalDateTime createdAt;
+    public static class RevenueChart {
+        private String title;
+        private String subTitle;
+        private String currencyUnit;
+        private List<RevenueChartData> chartData;
 
-        public String getPaymentId() { return paymentId; }
-        public void setPaymentId(String paymentId) { this.paymentId = paymentId; }
-
-        public String getRepairOrderId() { return repairOrderId; }
-        public void setRepairOrderId(String repairOrderId) { this.repairOrderId = repairOrderId; }
-
-        public BigDecimal getAmount() { return amount; }
-        public void setAmount(BigDecimal amount) { this.amount = amount; }
-
-        public LocalDateTime getCreatedAt() { return createdAt; }
-        public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+        public String getTitle() { return title; }
+        public void setTitle(String title) { this.title = title; }
+        public String getSubTitle() { return subTitle; }
+        public void setSubTitle(String subTitle) { this.subTitle = subTitle; }
+        public String getCurrencyUnit() { return currencyUnit; }
+        public void setCurrencyUnit(String currencyUnit) { this.currencyUnit = currencyUnit; }
+        public List<RevenueChartData> getChartData() { return chartData; }
+        public void setChartData(List<RevenueChartData> chartData) { this.chartData = chartData; }
     }
-
-    // GETTER & SETTER
-    public List<ImportPartResponse> getParts() { return parts; }
-    public void setParts(List<ImportPartResponse> parts) { this.parts = parts; }
-
-    public List<ImportServiceResponse> getServices() { return services; }
-    public void setServices(List<ImportServiceResponse> services) { this.services = services; }
-
-    public List<MonthlySummary> getMonthlyRevenueSummary() { return monthlyRevenueSummary; }
-    public void setMonthlyRevenueSummary(List<MonthlySummary> monthlyRevenueSummary) { this.monthlyRevenueSummary = monthlyRevenueSummary; }
-
-    public List<MonthlyDetail> getMonthlyRevenueDetail() { return monthlyRevenueDetail; }
-    public void setMonthlyRevenueDetail(List<MonthlyDetail> monthlyRevenueDetail) { this.monthlyRevenueDetail = monthlyRevenueDetail; }
-
-    public ImportServiceResponse getMostUsedService() { return mostUsedService; }
-    public void setMostUsedService(ImportServiceResponse mostUsedService) { this.mostUsedService = mostUsedService; }
-
-    public ImportPartResponse getMostUsedPart() { return mostUsedPart; }
-    public void setMostUsedPart(ImportPartResponse mostUsedPart) { this.mostUsedPart = mostUsedPart; }
 }
