@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.NotificationResponse;
 import com.example.demo.service.NotificationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,75 +21,131 @@ public class NotificationController {
         this.service = service;
     }
 
+    // ALL
     @GetMapping
-    public ResponseEntity<List<NotificationResponse>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getAll() {
+        return ResponseEntity.ok(
+            new ApiResponse<>(
+                "Danh sách tất cả thông báo",
+                service.getAll()
+            )
+        );
     }
 
+    // UNREAD
     @GetMapping("/unread")
-    public ResponseEntity<List<NotificationResponse>> getUnread() {
-        return ResponseEntity.ok(service.getUnread());
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getUnread() {
+        return ResponseEntity.ok(
+            new ApiResponse<>(
+                "Danh sách thông báo chưa đọc",
+                service.getUnread()
+            )
+        );
     }
 
-    // tất cả xác nhận
+    // CONFIRMED
     @GetMapping("/confirmed")
-    public ResponseEntity<List<NotificationResponse>> getConfirmed() {
-        return ResponseEntity.ok(service.getByStatus("CONFIRMED"));
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getConfirmed() {
+        return ResponseEntity.ok(
+            new ApiResponse<>(
+                "Danh sách thông báo đã xác nhận",
+                service.getByStatus("CONFIRMED")
+            )
+        );
     }
 
-    // tất cả hủy
+    // CANCELLED
     @GetMapping("/cancelled")
-    public ResponseEntity<List<NotificationResponse>> getCancelled() {
-        return ResponseEntity.ok(service.getByStatus("CANCELLED"));
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getCancelled() {
+        return ResponseEntity.ok(
+            new ApiResponse<>(
+                "Danh sách thông báo đã hủy",
+                service.getByStatus("CANCELLED")
+            )
+        );
     }
 
-    // tất cả chưa xác nhận (NEW)
+    // PENDING (NEW)
     @GetMapping("/pending")
-    public ResponseEntity<List<NotificationResponse>> getPending() {
-        return ResponseEntity.ok(service.getByStatus("NEW"));
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getPending() {
+        return ResponseEntity.ok(
+            new ApiResponse<>(
+                "Danh sách thông báo chưa xác nhận",
+                service.getByStatus("NEW")
+            )
+        );
     }
 
+    // MARK READ
     @PutMapping("/{id}/read")
-    public ResponseEntity<NotificationResponse> markRead(@PathVariable String id) {
-        return ResponseEntity.ok(service.markAsRead(id));
+    public ResponseEntity<ApiResponse<NotificationResponse>> markRead(@PathVariable String id) {
+        return ResponseEntity.ok(
+            new ApiResponse<>(
+                "Đánh dấu đã đọc",
+                service.markAsRead(id)
+            )
+        );
     }
 
+    // DELETE ONE
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(
+            new ApiResponse<>("Xóa thông báo thành công", null)
+        );
     }
 
+    // DELETE ALL
     @DeleteMapping("/clear")
-    public ResponseEntity<Void> deleteAll() {
+    public ResponseEntity<ApiResponse<Void>> deleteAll() {
         service.deleteAll();
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(
+            new ApiResponse<>("Xóa toàn bộ thông báo", null)
+        );
     }
 
+    // CONFIRM
     @PostMapping("/confirm")
-    public ResponseEntity<NotificationResponse> confirm(
+    public ResponseEntity<ApiResponse<NotificationResponse>> confirm(
             @RequestParam String bookingId,
             @RequestParam String clientId,
             @RequestParam String adminId
     ) {
-        return ResponseEntity.ok(service.sendConfirmToClient(bookingId, clientId, adminId));
+        return ResponseEntity.ok(
+            new ApiResponse<>(
+                "Xác nhận lịch thành công",
+                service.sendConfirmToClient(bookingId, clientId, adminId)
+            )
+        );
     }
 
+    // CANCEL
     @PostMapping("/cancel")
-    public ResponseEntity<NotificationResponse> cancel(
+    public ResponseEntity<ApiResponse<NotificationResponse>> cancel(
             @RequestParam String bookingId,
             @RequestParam String clientId,
             @RequestParam String adminId
     ) {
-        return ResponseEntity.ok(service.sendCancelToClient(bookingId, clientId, adminId));
+        return ResponseEntity.ok(
+            new ApiResponse<>(
+                "Hủy lịch thành công",
+                service.sendCancelToClient(bookingId, clientId, adminId)
+            )
+        );
     }
 
-    // Optional endpoint so client can create booking notification via API:
+    // BOOKING NOTIFY
     @PostMapping("/booking")
-    public ResponseEntity<NotificationResponse> bookingNotify(
+    public ResponseEntity<ApiResponse<NotificationResponse>> bookingNotify(
             @RequestParam String bookingId,
             @RequestParam String clientId
     ) {
-        return ResponseEntity.ok(service.sendBookingToAdmin(bookingId, clientId));
+        return ResponseEntity.ok(
+            new ApiResponse<>(
+                "Gửi thông báo đặt lịch thành công",
+                service.sendBookingToAdmin(bookingId, clientId)
+            )
+        );
     }
 }
