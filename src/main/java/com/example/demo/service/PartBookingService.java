@@ -20,6 +20,7 @@ import com.example.demo.entity.Supplier;
 import com.example.demo.repository.PartBookingRepository;
 import com.example.demo.repository.PartRepository;
 import com.example.demo.repository.SupplierRepository;
+import com.example.demo.exception.ResourceNotFoundException;
 
 @Service
 public class PartBookingService {
@@ -27,14 +28,17 @@ public class PartBookingService {
     private final PartRepository partRepository;
     private final SupplierRepository supplierRepository;
     private final PartBookingRepository partBookingRepository;
+    private final NotificationService notificationService;
+
     private final MongoTemplate mongoTemplate;
 
     @Autowired
-    public PartBookingService(PartRepository partRepository, PartBookingRepository partBookingRepository, SupplierRepository supplierRepository, MongoTemplate mongoTemplate) {
+    public PartBookingService(PartRepository partRepository, PartBookingRepository partBookingRepository, SupplierRepository supplierRepository, NotificationService notificationService, MongoTemplate mongoTemplate) {
         this.partRepository = partRepository;
         this.supplierRepository = supplierRepository;
         this.partBookingRepository = partBookingRepository;
         this.mongoTemplate = mongoTemplate;
+        this.notificationService = notificationService;
     }
 
     public PartBookingResponse createBooking(PartBookingRequest req) {
@@ -72,6 +76,7 @@ public class PartBookingService {
         PartBooking booking = new PartBooking();
         booking.setBookingCode(generateBookingCode());
         booking.setSupplierId(supplier.getId());
+        booking.setCustomerEmail(req.getCustomerEmail());
         booking.setSupplierCode(supplier.getSupplierCode());
         booking.setPartId(part.getId());
         booking.setPartName(part.getName());
@@ -87,6 +92,14 @@ public class PartBookingService {
         booking.setUpdatedAt(LocalDateTime.now());
 
         PartBooking saved = partBookingRepository.save(booking);
+
+        // Gửi thông báo
+        notificationService.sendBookingToAdmin(
+                booking.getId(),
+                req.getCustomerEmail()
+        );
+
+
         return toResponse(saved);
     }
 
@@ -175,6 +188,18 @@ public class PartBookingService {
     public List<PartBooking> getAll() {
         return partBookingRepository.findAll();
     }
+    public List<PartBookingResponse> deleteAllBookingsWithoutRestoringStock() {
+    List<PartBooking> bookings = partBookingRepository.findAll();
+
+    // Xóa tất cả booking
+    partBookingRepository.deleteAll();
+
+    // Trả về danh sách booking đã xóa (nếu cần)
+    return bookings.stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
 
     public List<PartBookingResponse> sortByCreatedAt(List<PartBooking> items, boolean asc) {
 

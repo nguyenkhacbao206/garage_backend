@@ -39,7 +39,9 @@ public class PartBookingRequest {
 
     @Schema(description = "Trạng đặt hàng", example = "true")
     private Boolean isActive;
-
+    
+    @Schema(description = "Email", example = "tr1223@")
+    private String customerEmail;
 
     //GETTER / SETTER
     public String getSupplierId() { return supplierId; }
@@ -72,4 +74,6 @@ public class PartBookingRequest {
     public Boolean isActive() { return isActive; }
     public void setIsActive(Boolean isActive ) { this.isActive = isActive; }
 
+    public String getCustomerEmail() { return customerEmail;}
+    public void setCustomerEmail(String customerEmail) {this.customerEmail =customerEmail;}
 }
