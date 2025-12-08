@@ -1,10 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.Notification;
+import com.example.demo.dto.NotificationResponse;
 import com.example.demo.service.NotificationService;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/notifications")
 @CrossOrigin("*")
-@Tag(name = "Notifications", description = "API quản lý khách hàng")
+@Tag(name = "Notifications", description = "API quản lý thông báo")
 public class NotificationController {
 
     private final NotificationService service;
@@ -23,35 +21,35 @@ public class NotificationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Notification>> getAll() {
+    public ResponseEntity<List<NotificationResponse>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/unread")
-    public ResponseEntity<List<Notification>> getUnread() {
+    public ResponseEntity<List<NotificationResponse>> getUnread() {
         return ResponseEntity.ok(service.getUnread());
     }
 
     // tất cả xác nhận
     @GetMapping("/confirmed")
-    public ResponseEntity<List<Notification>> getConfirmed() {
+    public ResponseEntity<List<NotificationResponse>> getConfirmed() {
         return ResponseEntity.ok(service.getByStatus("CONFIRMED"));
     }
 
     // tất cả hủy
     @GetMapping("/cancelled")
-    public ResponseEntity<List<Notification>> getCancelled() {
+    public ResponseEntity<List<NotificationResponse>> getCancelled() {
         return ResponseEntity.ok(service.getByStatus("CANCELLED"));
     }
 
-    // tất cả chưa xác nhận
+    // tất cả chưa xác nhận (NEW)
     @GetMapping("/pending")
-    public ResponseEntity<List<Notification>> getPending() {
+    public ResponseEntity<List<NotificationResponse>> getPending() {
         return ResponseEntity.ok(service.getByStatus("NEW"));
     }
 
     @PutMapping("/{id}/read")
-    public ResponseEntity<Notification> markRead(@PathVariable String id) {
+    public ResponseEntity<NotificationResponse> markRead(@PathVariable String id) {
         return ResponseEntity.ok(service.markAsRead(id));
     }
 
@@ -68,7 +66,7 @@ public class NotificationController {
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<Notification> confirm(
+    public ResponseEntity<NotificationResponse> confirm(
             @RequestParam String bookingId,
             @RequestParam String clientId,
             @RequestParam String adminId
@@ -77,11 +75,20 @@ public class NotificationController {
     }
 
     @PostMapping("/cancel")
-    public ResponseEntity<Notification> cancel(
+    public ResponseEntity<NotificationResponse> cancel(
             @RequestParam String bookingId,
             @RequestParam String clientId,
             @RequestParam String adminId
     ) {
         return ResponseEntity.ok(service.sendCancelToClient(bookingId, clientId, adminId));
+    }
+
+    // Optional endpoint so client can create booking notification via API:
+    @PostMapping("/booking")
+    public ResponseEntity<NotificationResponse> bookingNotify(
+            @RequestParam String bookingId,
+            @RequestParam String clientId
+    ) {
+        return ResponseEntity.ok(service.sendBookingToAdmin(bookingId, clientId));
     }
 }
