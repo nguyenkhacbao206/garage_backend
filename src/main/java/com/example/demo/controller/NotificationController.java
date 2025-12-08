@@ -106,31 +106,29 @@ public class NotificationController {
     }
 
     // CONFIRM
-    @PostMapping("/confirm")
+    @PostMapping("/{id}/confirm")
     public ResponseEntity<ApiResponse<NotificationResponse>> confirm(
-            @RequestParam String bookingId,
-            @RequestParam String clientId,
+            @PathVariable String id,
             @RequestParam String adminId
     ) {
         return ResponseEntity.ok(
             new ApiResponse<>(
                 "Xác nhận lịch thành công",
-                service.sendConfirmToClient(bookingId, clientId, adminId)
+                service.confirmByNotificationId(id, adminId)
             )
         );
     }
 
     // CANCEL
-    @PostMapping("/cancel")
+    @PostMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<NotificationResponse>> cancel(
-            @RequestParam String bookingId,
-            @RequestParam String clientId,
+            @PathVariable String id,
             @RequestParam String adminId
     ) {
         return ResponseEntity.ok(
             new ApiResponse<>(
                 "Hủy lịch thành công",
-                service.sendCancelToClient(bookingId, clientId, adminId)
+                service.cancelByNotificationId(id, adminId)
             )
         );
     }
