@@ -8,11 +8,12 @@ import com.example.demo.entity.PaymentHistoryItem;
 import com.example.demo.entity.RepairOrder;
 import com.example.demo.entity.RepairOrderItem;
 import com.example.demo.exception.ResourceNotFoundException;
-
+import com.example.demo.repository.CarRepository;
 import com.example.demo.repository.PartRepository;
 import com.example.demo.repository.PaymentRepository;
 import com.example.demo.repository.RepairOrderRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.CarRepository;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -30,18 +31,21 @@ public class PaymentService {
     private final UserRepository userRepository;
     private final RepairOrderService repairOrderService;
     private final PartRepository partRepository;  
+    private final CarRepository carRepository;
 
     public PaymentService(PaymentRepository paymentRepository,
                           RepairOrderRepository repairOrderRepository,
                           UserRepository userRepository,
                           RepairOrderService repairOrderService,
-                          PartRepository partRepository) {        
+                          PartRepository partRepository,
+                          CarRepository carRepository) {        
 
         this.paymentRepository = paymentRepository;
         this.repairOrderRepository = repairOrderRepository;
         this.userRepository = userRepository;
         this.repairOrderService = repairOrderService;
         this.partRepository = partRepository;
+        this.carRepository = carRepository;
     }
 
     private Sort buildSort(String direction) {
@@ -164,6 +168,16 @@ public class PaymentService {
 
             ro.setStatus("PAID");
             ro.setDateReturned(now);
+
+            // set Car active = false
+            if (ro.getCarId() != null) {
+                carRepository.findById(ro.getCarId()).ifPresent(car -> {
+                    car.setActive(false);
+                    car.setUpdatedAt(LocalDateTime.now());
+                    carRepository.save(car);
+                });
+            }
+
             repairOrderRepository.save(ro);
         }
 
