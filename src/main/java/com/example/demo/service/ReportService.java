@@ -1,17 +1,25 @@
 package com.example.demo.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.example.demo.dto.ReportResponse;
 import com.example.demo.entity.RepairOrder;
 import com.example.demo.entity.RepairOrderItem;
-import com.example.demo.repository.RepairOrderRepository;
 import com.example.demo.repository.RepairOrderItemRepository;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.example.demo.repository.RepairOrderRepository;
 
 @Service
 public class ReportService {
@@ -20,7 +28,7 @@ public class ReportService {
     private final RepairOrderItemRepository repairOrderItemRepository;
 
     public ReportService(RepairOrderRepository repairOrderRepository,
-                         RepairOrderItemRepository repairOrderItemRepository) {
+                        RepairOrderItemRepository repairOrderItemRepository) {
         this.repairOrderRepository = repairOrderRepository;
         this.repairOrderItemRepository = repairOrderItemRepository;
     }
@@ -45,7 +53,7 @@ public class ReportService {
         revenue.setType("total_revenue");
         revenue.setTitle("Tổng doanh thu năm");
         revenue.setValue(formatMoney(totalRevenue));
-        revenue.setSubText("+18.2% so với năm trước"); // demo
+        revenue.setSubText("+18.2% so với năm trước");
         revenue.setIsGrowth(true);
         list.add(revenue);
 
@@ -54,7 +62,7 @@ public class ReportService {
         orders.setType("total_orders");
         orders.setTitle("Tổng đơn hàng");
         orders.setValue(String.valueOf(totalOrders));
-        orders.setSubText("+156 đơn so với năm trước"); // demo
+        orders.setSubText("+156 đơn so với năm trước");
         orders.setIsGrowth(true);
         list.add(orders);
 
@@ -79,48 +87,127 @@ public class ReportService {
         return list;
     }
 
-    // Thống kê doanh thu dịch vụ và phụ tùng
+    // Thống kê dịch vụ & phụ tùng
     public Map<String, List<ReportResponse.ServicePartStatistic>> getServicePartStatistics() {
-        List<RepairOrderItem> allItems = repairOrderItemRepository.findAll();
 
-        // serviceItems: filter dựa theo repairOrder.service
-        List<ReportResponse.ServicePartStatistic> services = new ArrayList<>();
-        List<ReportResponse.ServicePartStatistic> parts = new ArrayList<>();
+        List<RepairOrder> orders = repairOrderRepository.findAll();
+
+        List<RepairOrderItem> allItems = orders.stream()
+                .filter(o -> o.getParts() != null)
+                .flatMap(o -> o.getParts().stream())
+                .collect(Collectors.toList());
 
         Map<String, List<RepairOrderItem>> groupedByName = allItems.stream()
                 .collect(Collectors.groupingBy(RepairOrderItem::getName));
 
-        int rank = 1;
-        for (Map.Entry<String, List<RepairOrderItem>> entry : groupedByName.entrySet()) {
-            String name = entry.getKey();
-            List<RepairOrderItem> items = entry.getValue();
-            int quantity = items.stream().mapToInt(i -> i.getQuantity() != null ? i.getQuantity() : 0).sum();
-            BigDecimal totalRevenue = items.stream().map(i -> i.getTotal() != null ? i.getTotal() : BigDecimal.ZERO)
+        List<ReportResponse.ServicePartStatistic> serviceStats = new ArrayList<>();
+        List<ReportResponse.ServicePartStatistic> partStats = new ArrayList<>();
+
+        int idCounter = 1;
+
+        for (String name : groupedByName.keySet()) {
+
+            List<RepairOrderItem> items = groupedByName.get(name);
+
+            int quantity = items.stream()
+                    .mapToInt(i -> Optional.ofNullable(i.getQuantity()).orElse(0))
+                    .sum();
+
+            BigDecimal totalRevenue = items.stream()
+                    .map(i -> Optional.ofNullable(i.getTotal()).orElse(BigDecimal.ZERO))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             ReportResponse.ServicePartStatistic stat = new ReportResponse.ServicePartStatistic();
-            stat.setId(String.valueOf(rank));
-            stat.setRank(rank);
-            stat.setCode("CODE-" + rank);
+            stat.setId(String.valueOf(idCounter));
+            stat.setCode("CODE-" + idCounter);
             stat.setName(name);
             stat.setQuantity(quantity);
             stat.setTotalRevenue(totalRevenue);
 
-            // demo: tách dựa trên đơn giản (giả sử quantity <= 1 là dịch vụ)
-            if (items.get(0).getQuantity() <= 1) services.add(stat);
-            else parts.add(stat);
+            if (quantity <= 1) {
+                serviceStats.add(stat);
+            } else {
+                partStats.add(stat);
+            }
 
-            rank++;
+            idCounter++;
+        }
+
+        Comparator<ReportResponse.ServicePartStatistic> sortByQty =
+                Comparator.comparing(ReportResponse.ServicePartStatistic::getQuantity).reversed();
+
+        serviceStats.sort(sortByQty);
+        partStats.sort(sortByQty);
+
+        int rank = 1;
+        for (ReportResponse.ServicePartStatistic s : serviceStats) {
+            s.setRank(rank++);
+        }
+
+        rank = 1;
+        for (ReportResponse.ServicePartStatistic p : partStats) {
+            p.setRank(rank++);
         }
 
         Map<String, List<ReportResponse.ServicePartStatistic>> result = new HashMap<>();
-        result.put("serviceStatistics", services);
-        result.put("partStatistics", parts);
+        result.put("serviceStatistics", serviceStats);
+        result.put("partStatistics", partStats);
+
         return result;
     }
 
-    // Thống kê doanh thu theo tháng
+
+    // SỬA CHÍNH HÀM NÀY: LẤY ĐÚNG DỮ LIỆU TRONG NGÀY
+    public Map<String, Object> getDailyReport(LocalDate date) {
+
+    LocalDateTime start = date.atStartOfDay();
+    LocalDateTime end = date.plusDays(1).atStartOfDay();
+
+    List<RepairOrder> orders = repairOrderRepository
+            .findByDateReceivedBetween(start, end);
+
+    int totalServiceCount = 0;
+    int totalPartCount = 0;
+    BigDecimal totalRevenue = BigDecimal.ZERO;
+
+    for (RepairOrder order : orders) {
+
+        // LẤY DỊCH VỤ
+        List<RepairOrderItem> services = order.getService();
+        if (services != null) {
+            for (RepairOrderItem s : services) {
+                totalServiceCount++;  // mỗi dịch vụ là 1 item
+                BigDecimal total = Optional.ofNullable(s.getTotal()).orElse(BigDecimal.ZERO);
+                totalRevenue = totalRevenue.add(total);
+            }
+        }
+
+        // LẤY PHỤ TÙNG
+        List<RepairOrderItem> parts = order.getParts();
+        if (parts != null) {
+            for (RepairOrderItem p : parts) {
+                int qty = Optional.ofNullable(p.getQuantity()).orElse(0);
+                totalPartCount += qty;
+                BigDecimal total = Optional.ofNullable(p.getTotal()).orElse(BigDecimal.ZERO);
+                totalRevenue = totalRevenue.add(total);
+            }
+        }
+    }
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("date", date.toString());
+    result.put("totalServicesInDay", totalServiceCount);
+    result.put("totalPartsInDay", totalPartCount);
+    result.put("totalRevenueInDay", totalRevenue);
+
+    return result;
+}
+
+
+
+    // Thống kê doanh thu 12 tháng
     public ReportResponse.RevenueChart getMonthlyRevenueChart() {
+
         List<RepairOrder> allOrders = repairOrderRepository.findAll();
         Map<YearMonth, BigDecimal> revenueMap = new HashMap<>();
 
@@ -132,7 +219,9 @@ public class ReportService {
         for (RepairOrder order : allOrders) {
             if (order.getDateReceived() != null && order.getEstimatedTotal() != null) {
                 YearMonth ym = YearMonth.from(order.getDateReceived());
-                revenueMap.put(ym, revenueMap.getOrDefault(ym, BigDecimal.ZERO).add(order.getEstimatedTotal()));
+                revenueMap.put(ym,
+                        revenueMap.getOrDefault(ym, BigDecimal.ZERO)
+                                .add(order.getEstimatedTotal()));
             }
         }
 
