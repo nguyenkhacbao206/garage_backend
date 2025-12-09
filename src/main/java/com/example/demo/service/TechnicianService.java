@@ -111,7 +111,7 @@ public class TechnicianService {
         t.setSalaryBase(req.getBaseSalary());
         t.setPosition(req.getPosition());
         t.setUserId(req.getUserId());
-        t.setActive(true);
+        t.setActive(false);
         t.setCreatedAt(LocalDateTime.now());
         t.setUpdatedAt(LocalDateTime.now());
 
