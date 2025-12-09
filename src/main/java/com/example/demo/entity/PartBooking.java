@@ -25,6 +25,7 @@ public class PartBooking {
     private String phone;
     private String address;
     private Boolean isActive;
+    private String status;
     private String customerName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -122,5 +123,14 @@ public class PartBooking {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
 
 }

@@ -129,6 +129,18 @@ public class PartBookingController {
         }
     }
 
+    @PutMapping("/{id}/cancel")
+    @Operation(summary = "Hủy đơn hàng (Admin)")
+    public ResponseEntity<ApiResponse<PartBookingResponse>> cancelBooking(@PathVariable String id) {
+        try {
+            PartBookingResponse resp = partBookingService.cancelBooking(id);
+            return ResponseEntity.ok(new ApiResponse<>("Đã hủy đơn hàng thành công", resp));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>("Lỗi: " + ex.getMessage(), null));
+        }
+    }
+
     // DELETE ONE
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<PartBookingResponse>> delete(@PathVariable String id) {
@@ -157,4 +169,3 @@ public class PartBookingController {
     }
 
 }
-
