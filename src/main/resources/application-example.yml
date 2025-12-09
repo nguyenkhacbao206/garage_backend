@@ -1,9 +1,0 @@
-spring:
-  data:
-    mongodb:
-      uri: mongodb+srv://<USERNAME>:<PASSWORD>@cluster.mongodb.net/<DB_NAME>
-server:
-  port: 8080
-jwt:
-  secret: <SECRET_KEY>
-  
