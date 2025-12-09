@@ -9,6 +9,7 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.service.PaymentService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -66,11 +67,11 @@ public class PaymentController {
     @GetMapping("/{id}")
     @Operation(summary = "Lấy Payment theo ID",
                description = "Bao gồm thông tin Repair Order + lịch sử thanh toán")
-    @ApiResponses({ // Thêm ApiResponses để Swagger hiển thị mẫu rõ ràng hơn
+    @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "Thành công",
-            content = @Content(schema = @Schema(implementation = PaymentResponse.class)) // Trả về PaymentResponse
+            content = @Content(schema = @Schema(implementation = PaymentResponse.class))
         ),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400",
@@ -96,30 +97,45 @@ public class PaymentController {
 
    
     @GetMapping
-    @Operation(summary = "Lấy danh sách Payment",
-               description = "Có thể lọc theo orderId hoặc status")
-    @ApiResponses({ // Thêm ApiResponses để Swagger hiển thị mẫu rõ ràng hơn
+    @Operation(
+            summary = "Lấy danh sách Payment",
+            description = "Lọc theo orderId, status và sắp xếp theo thời gian tạo"
+    )
+    @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "Thành công",
-            // Dùng PaymentResponse.class. Swagger sẽ tự động hiểu nó là List<PaymentResponse> 
-            // vì phương thức trả về ResponseEntity<ApiResponse<List<PaymentResponse>>>
-            content = @Content(schema = @Schema(implementation = PaymentResponse.class)) 
+                responseCode = "200",
+                description = "Thành công",
+                content = @Content(
+                        schema = @Schema(implementation = PaymentResponse.class)
+                )
         )
     })
-    public ResponseEntity<ApiResponse<List<PaymentResponse>>> listPayments(
-            @RequestParam(required = false) String orderId,
-            @RequestParam(required = false) String status
+        public ResponseEntity<ApiResponse<List<PaymentResponse>>> listPayments(
+
+            @Parameter(description = "ID của Repair Order")
+            @RequestParam(required = false)
+            String orderId,
+
+            @Parameter(description = "Trạng thái Payment (SUCCESS, PENDING, FAILED)")
+            @RequestParam(required = false)
+            String status,
+
+            @Parameter(
+                    description = "Hướng sắp xếp theo thời gian tạo (createdAt)",
+                    example = "asc | desc"
+            )
+            @RequestParam(defaultValue = "desc")
+            String sort
     ) {
         try {
             List<PaymentResponse> result;
 
             if (orderId != null)
-                result = paymentService.findByRepairOrderId(orderId);
+                result = paymentService.findByRepairOrderId(orderId, sort);
             else if (status != null)
-                result = paymentService.findByStatus(status);
+                result = paymentService.findByStatus(status, sort);
             else
-                result = paymentService.listPayments();
+                result = paymentService.listPayments(sort);
 
             return ResponseEntity.ok(new ApiResponse<>("Thành công", result));
 
@@ -128,6 +144,31 @@ public class PaymentController {
                     .body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
         }
     }
+
+    @GetMapping("/sort")
+    @Operation(
+            summary = "Sort Payment theo createdAt",
+            description = "API sort RIÊNG, không ảnh hưởng API list hiện tại"
+    )
+    public ResponseEntity<ApiResponse<List<PaymentResponse>>> sortPayments(
+            @RequestParam(defaultValue = "desc") String sort
+    ) {
+        try {
+            List<PaymentResponse> result =
+                    paymentService.sortPaymentsByCreatedAt(sort);
+
+            return ResponseEntity.ok(
+                    new ApiResponse<>("Sort payment thành công", result)
+            );
+
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>("Lỗi hệ thống: " + ex.getMessage(), null));
+        }
+    }
+
+
+
 
    
     @PutMapping("/{id}/status")
@@ -197,7 +238,6 @@ public class PaymentController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "Lịch sử thanh toán",
-            // Quan trọng: Phải sử dụng PaymentHistoryItem.class ở đây
             content = @Content(schema = @Schema(implementation = PaymentHistoryItem.class)) 
         ),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(

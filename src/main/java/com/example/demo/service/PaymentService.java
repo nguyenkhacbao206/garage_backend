@@ -14,6 +14,7 @@ import com.example.demo.repository.PaymentRepository;
 import com.example.demo.repository.RepairOrderRepository;
 import com.example.demo.repository.UserRepository;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -43,6 +44,12 @@ public class PaymentService {
         this.partRepository = partRepository;
     }
 
+    private Sort buildSort(String direction) {
+        return "asc".equalsIgnoreCase(direction)
+                ? Sort.by("createdAt").ascending()
+                : Sort.by("createdAt").descending();
+    }
+
     // Tạo payment
     public PaymentResponse createPayment(PaymentRequest request) {
 
@@ -66,7 +73,6 @@ public class PaymentService {
 
         Payment saved = paymentRepository.save(p);
 
-    // check apart from stock part when payment
         if (ro.getParts() != null) {
             for (RepairOrderItem item : ro.getParts()) {
 
@@ -84,7 +90,6 @@ public class PaymentService {
             }
         }
 
-        // update repair order
         ro.setStatus("PAID");
         ro.setDateReturned(now);
         repairOrderRepository.save(ro);
@@ -92,7 +97,6 @@ public class PaymentService {
         return toResponse(saved);
     }
 
-   
     // Lấy payment theo ID
     public PaymentResponse getPayment(String id) {
         Payment p = paymentRepository.findById(id)
@@ -100,24 +104,28 @@ public class PaymentService {
         return toResponse(p);
     }
 
-   
     // List all
-    public List<PaymentResponse> listPayments() {
-        return paymentRepository.findAll()
-                .stream().map(this::toResponse).collect(Collectors.toList());
+    public List<PaymentResponse> listPayments(String sort) {
+        return paymentRepository.findAll(buildSort(sort))
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
-    public List<PaymentResponse> findByRepairOrderId(String repairOrderId) {
-        return paymentRepository.findByRepairOrderId(repairOrderId)
-                .stream().map(this::toResponse).collect(Collectors.toList());
+    public List<PaymentResponse> findByRepairOrderId(String repairOrderId, String sort) {
+        return paymentRepository.findByRepairOrderId(repairOrderId, buildSort(sort))
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
-    public List<PaymentResponse> findByStatus(String status) {
-        return paymentRepository.findByStatus(status)
-                .stream().map(this::toResponse).collect(Collectors.toList());
+    public List<PaymentResponse> findByStatus(String status, String sort) {
+        return paymentRepository.findByStatus(status, buildSort(sort))
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
-   
     // Update Status
     public PaymentResponse updateStatus(String id, String status) {
 
@@ -132,8 +140,6 @@ public class PaymentService {
 
         Payment saved = paymentRepository.save(p);
 
-      
-        // Khi chuyển sang SUCCESS thì trừ kho
         if ("SUCCESS".equalsIgnoreCase(status)) {
 
             RepairOrder ro = repairOrderRepository.findById(p.getRepairOrderId())
@@ -177,7 +183,16 @@ public class PaymentService {
         return p.getHistory();
     }
 
-   
+    public List<PaymentResponse> sortPaymentsByCreatedAt(String direction) {
+
+        Sort sort = buildSort(direction);
+
+        return paymentRepository.findAll(sort)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     // Convert Entity -> Response 
     private PaymentResponse toResponse(Payment p) {
 

@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(ex.getMessage(), null));
     }
 
-    // Lỗi hệ thống (Mongo, NullPointer,...)
+    // Lỗi hệ thống (Mongo, NullPointer)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleGeneral(Exception ex) {
         return ResponseEntity
