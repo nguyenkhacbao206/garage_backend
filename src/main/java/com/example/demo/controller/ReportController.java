@@ -8,8 +8,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.demo.entity.Report;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +45,21 @@ public class ReportController {
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
         ) {
         return ResponseEntity.ok(reportService.getDailyReport(date));
+    }
+
+    // Top Users Report
+    @GetMapping("/top-users")
+    public ResponseEntity<?> getTopUsersReport() {
+
+        List<Report.TopUserStatistic> topUsers = reportService.getTopUsersReport();
+        Map<String, Object> data = new HashMap<>();
+        data.put("user", topUsers);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("data", data);
+
+        return ResponseEntity.ok(response);
     }
 
 
