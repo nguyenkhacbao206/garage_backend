@@ -36,6 +36,29 @@ public class RepairOrderService {
         this.technicianRepository = technicianRepository;
     }
 
+
+    private void setTechniciansActive(List<String> technicianIds) {
+        if (technicianIds == null || technicianIds.isEmpty()) return;
+
+        List<Technician> techs = technicianRepository.findAllById(technicianIds);
+        for (Technician t : techs) {
+            t.setActive(true);
+            t.setUpdatedAt(LocalDateTime.now());
+        }
+        technicianRepository.saveAll(techs);
+    }
+
+    private void setTechniciansInactive(List<String> technicianIds) {
+        if (technicianIds == null || technicianIds.isEmpty()) return;
+
+        List<Technician> techs = technicianRepository.findAllById(technicianIds);
+        for (Technician t : techs) {
+            t.setActive(false);
+            t.setUpdatedAt(LocalDateTime.now());
+        }
+        technicianRepository.saveAll(techs);
+    }
+
     // Load service info để convert serviceId → RepairOrderItem
     private RepairOrderItem buildServiceItemFromServiceId(String serviceId) {
         GarageService sv = serviceRepository.findById(serviceId)
@@ -109,6 +132,9 @@ public class RepairOrderService {
         // Lưu vào database
         RepairOrder savedOrder = repository.save(order);
 
+        // đổi trang thái làm việc cho technician
+        setTechniciansActive(order.getTechnicianIds());
+
         // Trả về response
         return convertToResponse(savedOrder);
     }
@@ -137,7 +163,11 @@ public class RepairOrderService {
                 });
             }
 
-            if (patch.getTechnicianIds() != null) order.setTechnicianIds(patch.getTechnicianIds());
+            if (patch.getTechnicianIds() != null) {
+                setTechniciansInactive(order.getTechnicianIds());
+                order.setTechnicianIds(patch.getTechnicianIds());
+                setTechniciansActive(patch.getTechnicianIds());
+            }
 
             if (patch.getServiceFee() != null) order.setServiceFee(patch.getServiceFee());
 
@@ -335,16 +365,24 @@ public class RepairOrderService {
         RepairOrder order = getOrderById(id);
         order.setStatus("COMPLETED");
         order.setDateReturned(LocalDateTime.now());
+
+        // trả technician về rảnh
+        setTechniciansInactive(order.getTechnicianIds());
+
         return repository.save(order);
     }
 
-    // MARK PAID
     public RepairOrder payOrder(String id) {
         RepairOrder order = getOrderById(id);
         order.setStatus("PAID");
         order.setDateReturned(LocalDateTime.now());
+
+        // trả technician về rảnh
+        setTechniciansInactive(order.getTechnicianIds());
+
         return repository.save(order);
     }
+
 
     // ADD ITEM
     public RepairOrderItem addItem(String repairOrderId, RepairOrderItem item, boolean isPart) {
