@@ -51,29 +51,30 @@ public class NotificationService {
     }
 
     // CLIENT gửi thông báo ADMIN
-    public NotificationResponse sendBookingToAdmin(String bookingId, String clientId) {
+    public NotificationResponse sendBookingToAdmin(String bookingId, String userId) {
 
         ServiceBooking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        String message = "Khách hàng " + booking.getCustomerName()
-                + " vừa đặt lịch cho xe " + booking.getLicensePlate();
-
         Notification noti = new Notification(
                 "Có lịch mới",
-                message,
+                "Khách hàng " + booking.getCustomerName()
+                        + " vừa đặt lịch xe " + booking.getLicensePlate(),
                 bookingId,
-                clientId,
-                "ADMIN",
+                userId,     // senderId = user đặt lịch
+                "ADMIN",    // receiver = admin
                 "BOOKING"
         );
 
         Notification saved = repo.save(noti);
         NotificationResponse resp = toResponse(saved);
+
         ws.convertAndSend("/topic/admin", resp);
 
         return resp;
     }
+
+
 
     // ADMIN gửi confirm thông báo sang CLIENT
     public NotificationResponse confirmByNotification(String notificationId) {
@@ -81,28 +82,24 @@ public class NotificationService {
         Notification noti = repo.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
-        if ("CONFIRMED".equals(noti.getStatus())) {
-            throw new RuntimeException("Notification already confirmed");
-        }
-
         ServiceBooking booking = bookingRepo.findById(noti.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-     
+        String userId = booking.getUserId();  // lấy đúng userId
+
         noti.setStatus("CONFIRMED");
         noti.setTitle("Lịch đã được xác nhận");
-        noti.setMessage(
-            "Lịch hẹn cho xe " + booking.getLicensePlate() + " đã được admin xác nhận"
-        );
+        noti.setMessage("Lịch hẹn xe " + booking.getLicensePlate() + " đã được xác nhận");
 
         Notification saved = repo.save(noti);
         NotificationResponse resp = toResponse(saved);
 
-        
-        ws.convertAndSend("/topic/user/" + noti.getSenderId(), resp);
+        //  gửi về đúng client theo userId
+        ws.convertAndSend("/topic/user/" + userId, resp);
 
         return resp;
     }
+
 
 
 
@@ -113,27 +110,27 @@ public class NotificationService {
         Notification noti = repo.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
-        if ("CANCELLED".equals(noti.getStatus())) {
-            throw new RuntimeException("Notification already cancelled");
-        }
-
         ServiceBooking booking = bookingRepo.findById(noti.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        String userId = booking.getUserId();  //  đúng user đặt lịch
 
         noti.setStatus("CANCELLED");
         noti.setTitle("Lịch đã bị hủy");
         noti.setMessage(
-            "Lịch hẹn cho xe " + booking.getLicensePlate()
+            "Lịch hẹn xe " + booking.getLicensePlate()
             + " đã bị hủy. Vui lòng liên hệ garage để biết thêm chi tiết"
         );
 
         Notification saved = repo.save(noti);
         NotificationResponse resp = toResponse(saved);
 
-        ws.convertAndSend("/topic/user/" + noti.getSenderId(), resp);
+        // gửi trả về client đúng userId
+        ws.convertAndSend("/topic/user/" + userId, resp);
 
         return resp;
     }
+
 
 
 
