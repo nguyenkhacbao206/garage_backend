@@ -28,7 +28,7 @@ public class PartBookingService {
     private final PartRepository partRepository;
     private final SupplierRepository supplierRepository;
     private final PartBookingRepository partBookingRepository;
-    private final NotificationService notificationService;
+    // private final NotificationService notificationService;
     private final MongoTemplate mongoTemplate;
 
     @Autowired
@@ -36,13 +36,13 @@ public class PartBookingService {
             PartRepository partRepository,
             PartBookingRepository partBookingRepository,
             SupplierRepository supplierRepository,
-            NotificationService notificationService,
+            // NotificationService notificationService,
             MongoTemplate mongoTemplate
     ) {
         this.partRepository = partRepository;
         this.supplierRepository = supplierRepository;
         this.partBookingRepository = partBookingRepository;
-        this.notificationService = notificationService;
+        // this.notificationService = notificationService;
         this.mongoTemplate = mongoTemplate;
     }
 
@@ -108,7 +108,7 @@ public class PartBookingService {
 
         PartBooking saved = partBookingRepository.save(booking);
 
-        notificationService.sendBookingToAdmin(saved.getId(), req.getCustomerEmail());
+        // notificationService.sendBookingToAdmin(saved.getId(), req.getCustomerEmail());
 
         return toResponse(saved);
     }
