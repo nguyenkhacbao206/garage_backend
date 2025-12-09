@@ -88,73 +88,82 @@ public class ReportService {
     }
 
     // Thống kê dịch vụ & phụ tùng
-    public Map<String, List<ReportResponse.ServicePartStatistic>> getServicePartStatistics() {
+public Map<String, List<ReportResponse.ServicePartStatistic>> getServicePartStatistics() {
 
-        List<RepairOrder> orders = repairOrderRepository.findAll();
+    List<RepairOrder> orders = repairOrderRepository.findAll();
 
-        List<RepairOrderItem> allItems = orders.stream()
-                .filter(o -> o.getParts() != null)
-                .flatMap(o -> o.getParts().stream())
-                .collect(Collectors.toList());
+    // Lấy tất cả item từ parts
+    List<RepairOrderItem> allItems = orders.stream()
+            .filter(o -> o.getParts() != null)
+            .flatMap(o -> o.getParts().stream())
+            .collect(Collectors.toList());
 
-        Map<String, List<RepairOrderItem>> groupedByName = allItems.stream()
-                .collect(Collectors.groupingBy(RepairOrderItem::getName));
+    // Gom nhóm theo itemId của part (KHÔNG gom theo name nữa)
+    Map<String, List<RepairOrderItem>> groupedByItemId = allItems.stream()
+            .collect(Collectors.groupingBy(RepairOrderItem::getId));
 
-        List<ReportResponse.ServicePartStatistic> serviceStats = new ArrayList<>();
-        List<ReportResponse.ServicePartStatistic> partStats = new ArrayList<>();
+    List<ReportResponse.ServicePartStatistic> serviceStats = new ArrayList<>();
+    List<ReportResponse.ServicePartStatistic> partStats = new ArrayList<>();
 
-        int idCounter = 1;
+    for (String itemId : groupedByItemId.keySet()) {
 
-        for (String name : groupedByName.keySet()) {
+        List<RepairOrderItem> items = groupedByItemId.get(itemId);
 
-            List<RepairOrderItem> items = groupedByName.get(name);
+        // LẤY ĐÚNG DỮ LIỆU PART
+        RepairOrderItem sample = items.get(0);
 
-            int quantity = items.stream()
-                    .mapToInt(i -> Optional.ofNullable(i.getQuantity()).orElse(0))
-                    .sum();
+        int quantity = items.stream()
+                .mapToInt(i -> Optional.ofNullable(i.getQuantity()).orElse(0))
+                .sum();
 
-            BigDecimal totalRevenue = items.stream()
-                    .map(i -> Optional.ofNullable(i.getTotal()).orElse(BigDecimal.ZERO))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalRevenue = items.stream()
+                .map(i -> Optional.ofNullable(i.getTotal()).orElse(BigDecimal.ZERO))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            ReportResponse.ServicePartStatistic stat = new ReportResponse.ServicePartStatistic();
-            stat.setId(String.valueOf(idCounter));
-            stat.setCode("CODE-" + idCounter);
-            stat.setName(name);
-            stat.setQuantity(quantity);
-            stat.setTotalRevenue(totalRevenue);
+        ReportResponse.ServicePartStatistic stat = new ReportResponse.ServicePartStatistic();
+        stat.setId(sample.getId());        // LẤY ID TỪ PART
+        // stat.setCode(sample.getId());
+        stat.setName(sample.getName());    // LẤY TÊN TỪ PART
+        stat.setQuantity(quantity);
+        stat.setTotalRevenue(totalRevenue);
 
-            if (quantity <= 1) {
-                serviceStats.add(stat);
-            } else {
-                partStats.add(stat);
-            }
+        // Check xem item thuộc SERVICE hay PART
+        boolean isService = orders.stream()
+                .anyMatch(o -> o.getServiceIds() != null && o.getServiceIds().contains(sample.getId()));
 
-            idCounter++;
+        if (isService) {
+            serviceStats.add(stat);
+        } else {
+            partStats.add(stat);
         }
-
-        Comparator<ReportResponse.ServicePartStatistic> sortByQty =
-                Comparator.comparing(ReportResponse.ServicePartStatistic::getQuantity).reversed();
-
-        serviceStats.sort(sortByQty);
-        partStats.sort(sortByQty);
-
-        int rank = 1;
-        for (ReportResponse.ServicePartStatistic s : serviceStats) {
-            s.setRank(rank++);
-        }
-
-        rank = 1;
-        for (ReportResponse.ServicePartStatistic p : partStats) {
-            p.setRank(rank++);
-        }
-
-        Map<String, List<ReportResponse.ServicePartStatistic>> result = new HashMap<>();
-        result.put("serviceStatistics", serviceStats);
-        result.put("partStatistics", partStats);
-
-        return result;
     }
+
+    // Sắp xếp
+    Comparator<ReportResponse.ServicePartStatistic> sortByQty =
+            Comparator.comparing(ReportResponse.ServicePartStatistic::getQuantity).reversed();
+
+    serviceStats.sort(sortByQty);
+    partStats.sort(sortByQty);
+
+    // Gán rank
+    int rank = 1;
+    for (ReportResponse.ServicePartStatistic s : serviceStats) {
+        s.setRank(rank++);
+    }
+
+    rank = 1;
+    for (ReportResponse.ServicePartStatistic p : partStats) {
+        p.setRank(rank++);
+    }
+
+    // Trả kết quả
+    Map<String, List<ReportResponse.ServicePartStatistic>> result = new HashMap<>();
+    result.put("serviceStatistics", serviceStats);
+    result.put("partStatistics", partStats);
+
+    return result;
+}
+
 
 
     // SỬA CHÍNH HÀM NÀY: LẤY ĐÚNG DỮ LIỆU TRONG NGÀY

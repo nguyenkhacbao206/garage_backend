@@ -27,7 +27,7 @@ public class ReportResponse {
         this.data = data;
     }
 
-    // ===== Nested DTOs =====
+    // Nested DTOs
 
     public static class DashboardKPI {
         private Integer id;
@@ -55,7 +55,7 @@ public class ReportResponse {
     public static class ServicePartStatistic {
         private String id;
         private Integer rank;
-        private String code;
+        // private String code;
         private String name;
         private Integer quantity;
         private BigDecimal totalRevenue;
@@ -65,8 +65,8 @@ public class ReportResponse {
         public void setId(String id) { this.id = id; }
         public Integer getRank() { return rank; }
         public void setRank(Integer rank) { this.rank = rank; }
-        public String getCode() { return code; }
-        public void setCode(String code) { this.code = code; }
+        // public String getCode() { return code; }
+        // public void setCode(String code) { this.code = code; }
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         public Integer getQuantity() { return quantity; }
