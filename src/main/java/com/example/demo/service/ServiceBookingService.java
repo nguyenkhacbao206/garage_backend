@@ -10,8 +10,6 @@ import com.example.demo.entity.PartBooking;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.ServiceBookingRepository;
 import com.example.demo.repository.ServiceRepository;
-import com.example.demo.security.SecurityUtils;
-
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -70,24 +68,22 @@ public class ServiceBookingService {
             }
         }
 
-        // lấy userId từ JWT, không lấy từ request.body nữa
-        String userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
-            throw new RuntimeException("Không lấy được userId từ token");
-        }
-
         ServiceBooking booking = new ServiceBooking();
 
-        booking.setUserId(userId);
+        // userId người đặt lịch
+        booking.setUserId(req.getUserId());
 
+        // thông tin khách
         booking.setCustomerName(req.getCustomerName());
         booking.setCustomerPhone(req.getCustomerPhone());
         booking.setCustomerEmail(req.getCustomerEmail());
 
+        // thông tin xe
         booking.setLicensePlate(req.getLicensePlate());
         booking.setCarBrand(req.getCarBrand());
         booking.setCarModel(req.getCarModel());
 
+        // dịch vụ đã chọn
         booking.setServiceIds(req.getServiceIds());
         booking.setNote(req.getNote());
         booking.setBookingTime(req.getBookingTime());
@@ -98,10 +94,10 @@ public class ServiceBookingService {
 
         bookingRepo.save(booking);
 
-        // gửi thông báo cho admin kèm userId từ token
+        // Gửi thông báo đến ADMIN, đồng thời gắn userId để sau xác nhận trả về đúng USER
         notificationService.sendBookingToAdmin(
-                booking.getId(),
-                userId
+            booking.getId(),
+            req.getUserId()
         );
 
         return convert(booking);
@@ -125,38 +121,36 @@ public class ServiceBookingService {
     }
 
 public ServiceBookingResponse update(String id, ServiceBookingRequest req) {
-        ServiceBooking booking = bookingRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy booking"));
+    ServiceBooking booking = bookingRepo.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy booking"));
 
-        // validate serviceIds mới
-        for (String sid : req.getServiceIds()) {
-            if (!serviceRepo.existsById(sid)) {
-                throw new ResourceNotFoundException("Dịch vụ không tồn tại: " + sid);
-            }
+    // validate serviceIds mới
+    for (String sid : req.getServiceIds()) {
+        if (!serviceRepo.existsById(sid)) {
+            throw new ResourceNotFoundException("Dịch vụ không tồn tại: " + sid);
         }
-
-        // userId của người đang thao tác
-        String userId = SecurityUtils.getCurrentUserId();
-        booking.setUserId(userId);
-
-        booking.setCustomerName(req.getCustomerName());
-        booking.setCustomerPhone(req.getCustomerPhone());
-        booking.setCustomerEmail(req.getCustomerEmail());
-
-        booking.setLicensePlate(req.getLicensePlate());
-        booking.setCarBrand(req.getCarBrand());
-        booking.setCarModel(req.getCarModel());
-
-        booking.setServiceIds(req.getServiceIds());
-        booking.setNote(req.getNote());
-        booking.setBookingTime(req.getBookingTime());
-
-        booking.setUpdatedAt(LocalDateTime.now());
-
-        bookingRepo.save(booking);
-
-        return convert(booking);
     }
+
+    booking.setUserId(req.getUserId());
+
+    booking.setCustomerName(req.getCustomerName());
+    booking.setCustomerPhone(req.getCustomerPhone());
+    booking.setCustomerEmail(req.getCustomerEmail());
+
+    booking.setLicensePlate(req.getLicensePlate());
+    booking.setCarBrand(req.getCarBrand());
+    booking.setCarModel(req.getCarModel());
+
+    booking.setServiceIds(req.getServiceIds());
+    booking.setNote(req.getNote());
+    booking.setBookingTime(req.getBookingTime());
+
+    booking.setUpdatedAt(LocalDateTime.now());
+
+    bookingRepo.save(booking);
+
+    return convert(booking);
+}
 
 
     public void delete(String id) {
