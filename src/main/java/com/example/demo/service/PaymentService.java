@@ -13,8 +13,8 @@ import com.example.demo.repository.PartRepository;
 import com.example.demo.repository.PaymentRepository;
 import com.example.demo.repository.RepairOrderRepository;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.repository.CarRepository;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +30,7 @@ public class PaymentService {
     private final RepairOrderRepository repairOrderRepository;
     private final UserRepository userRepository;
     private final RepairOrderService repairOrderService;
-    private final PartRepository partRepository;  
+    private final PartRepository partRepository;
     private final CarRepository carRepository;
 
     public PaymentService(PaymentRepository paymentRepository,
@@ -38,7 +38,7 @@ public class PaymentService {
                           UserRepository userRepository,
                           RepairOrderService repairOrderService,
                           PartRepository partRepository,
-                          CarRepository carRepository) {        
+                          CarRepository carRepository) {
 
         this.paymentRepository = paymentRepository;
         this.repairOrderRepository = repairOrderRepository;
@@ -54,13 +54,10 @@ public class PaymentService {
                 : Sort.by("createdAt").descending();
     }
 
-    // Tạo payment
     public PaymentResponse createPayment(PaymentRequest request) {
 
         RepairOrder ro = repairOrderRepository.findById(request.getRepairOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "RepairOrder not found: " + request.getRepairOrderId()
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("RepairOrder not found: " + request.getRepairOrderId()));
 
         BigDecimal total = ro.calculateEstimatedTotal();
 
@@ -79,16 +76,10 @@ public class PaymentService {
 
         if (ro.getParts() != null) {
             for (RepairOrderItem item : ro.getParts()) {
-
                 Part part = partRepository.findById(item.getId())
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy Part: " + item.getId()));
-
+                        .orElseThrow(() -> new RuntimeException("Part not found: " + item.getId()));
                 int newStock = part.getStock() - item.getQuantity();
-
-                if (newStock < 0) {
-                    throw new RuntimeException("Part " + part.getName() + " không đủ số lượng tồn kho!");
-                }
-
+                if (newStock < 0) throw new RuntimeException("Not enough stock");
                 part.setStock(newStock);
                 partRepository.save(part);
             }
@@ -98,17 +89,23 @@ public class PaymentService {
         ro.setDateReturned(now);
         repairOrderRepository.save(ro);
 
+        if (ro.getCarId() != null) {
+            carRepository.findById(ro.getCarId()).ifPresent(car -> {
+                car.setActive(false);
+                car.setUpdatedAt(LocalDateTime.now());
+                carRepository.save(car);
+            });
+        }
+
         return toResponse(saved);
     }
 
-    // Lấy payment theo ID
     public PaymentResponse getPayment(String id) {
         Payment p = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + id));
         return toResponse(p);
     }
 
-    // List all
     public List<PaymentResponse> listPayments(String sort) {
         return paymentRepository.findAll(buildSort(sort))
                 .stream()
@@ -130,37 +127,30 @@ public class PaymentService {
                 .collect(Collectors.toList());
     }
 
-    // Update Status
+    @Transactional
     public PaymentResponse updateStatus(String id, String status) {
 
-        Payment p = paymentRepository.findById(id)
+        Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + id));
 
         LocalDateTime now = LocalDateTime.now();
 
-        p.setStatus(status);
-        p.setUpdatedAt(now);
-        p.addHistory(new PaymentHistoryItem(status, p.getMethod(), now));
-
-        Payment saved = paymentRepository.save(p);
+        payment.setStatus(status);
+        payment.setUpdatedAt(now);
+        payment.addHistory(new PaymentHistoryItem(status, payment.getMethod(), now));
+        paymentRepository.save(payment);
 
         if ("SUCCESS".equalsIgnoreCase(status)) {
 
-            RepairOrder ro = repairOrderRepository.findById(p.getRepairOrderId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Repair Order"));
+            RepairOrder ro = repairOrderRepository.findById(payment.getRepairOrderId())
+                    .orElseThrow(() -> new RuntimeException("RepairOrder not found: " + payment.getRepairOrderId()));
 
             if (ro.getParts() != null) {
                 for (RepairOrderItem item : ro.getParts()) {
-
                     Part part = partRepository.findById(item.getId())
-                            .orElseThrow(() -> new RuntimeException("Không tìm thấy Part: " + item.getId()));
-
+                            .orElseThrow(() -> new RuntimeException("Part not found: " + item.getId()));
                     int newStock = part.getStock() - item.getQuantity();
-
-                    if (newStock < 0) {
-                        throw new RuntimeException("Part " + part.getName() + " không đủ số lượng tồn kho!");
-                    }
-
+                    if (newStock < 0) throw new RuntimeException("Not enough stock");
                     part.setStock(newStock);
                     partRepository.save(part);
                 }
@@ -168,8 +158,8 @@ public class PaymentService {
 
             ro.setStatus("PAID");
             ro.setDateReturned(now);
+            repairOrderRepository.save(ro);
 
-            // set Car active = false
             if (ro.getCarId() != null) {
                 carRepository.findById(ro.getCarId()).ifPresent(car -> {
                     car.setActive(false);
@@ -177,11 +167,9 @@ public class PaymentService {
                     carRepository.save(car);
                 });
             }
-
-            repairOrderRepository.save(ro);
         }
 
-        return toResponse(saved);
+        return toResponse(payment);
     }
 
     public void deleteById(String id) {
@@ -198,21 +186,14 @@ public class PaymentService {
     }
 
     public List<PaymentResponse> sortPaymentsByCreatedAt(String direction) {
-
-        Sort sort = buildSort(direction);
-
-        return paymentRepository.findAll(sort)
+        return paymentRepository.findAll(buildSort(direction))
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
-    // Convert Entity -> Response 
     private PaymentResponse toResponse(Payment p) {
-
-        RepairOrder ro = repairOrderRepository.findById(p.getRepairOrderId())
-                .orElse(null);
-
+        RepairOrder ro = repairOrderRepository.findById(p.getRepairOrderId()).orElse(null);
         return new PaymentResponse(
                 p.getId(),
                 p.getRepairOrderId(),
