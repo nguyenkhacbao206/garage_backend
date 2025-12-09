@@ -101,7 +101,7 @@ public Map<String, List<ReportResponse.ServicePartStatistic>> getServicePartStat
             .flatMap(o -> o.getParts().stream())
             .collect(Collectors.toList());
 
-    // Gom nhóm theo itemId của part (KHÔNG gom theo name nữa)
+    // Gom nhóm theo itemId của part
     Map<String, List<RepairOrderItem>> groupedByItemId = allItems.stream()
             .collect(Collectors.groupingBy(RepairOrderItem::getId));
 
