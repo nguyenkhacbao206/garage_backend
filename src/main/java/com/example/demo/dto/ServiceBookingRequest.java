@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ServiceBookingRequest {
 
-    private String userId;
+    // private String userId;
 
     private String customerName;
     private String customerPhone;
@@ -22,8 +22,8 @@ public class ServiceBookingRequest {
 
     public ServiceBookingRequest() {}
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    // public String getUserId() { return userId; }
+    // public void setUserId(String userId) { this.userId = userId; }
 
     public String getCustomerName() { return customerName; }
     public void setCustomerName(String customerName) { this.customerName = customerName; }

@@ -58,23 +58,24 @@ public class AuthController {
 
     @PostMapping("/refresh")
     @Operation(summary = "Làm mới Access Token")
-    public ResponseEntity<?> refresh(@RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshTokenRequest request) {
 
         String refreshToken = request.getRefreshToken();
 
         if (refreshToken == null || !jwtService.isRefreshToken(refreshToken)) {
             return ResponseEntity.status(401)
-                    .body("Refresh token không hợp lệ hoặc hết hạn");
+                    .body(null);
         }
 
         String email = jwtService.extractUsername(refreshToken);
-        String newAccessToken = jwtService.generateAccessToken(email);
+        User user = authService.getByEmail(email);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("accessToken", newAccessToken);
+        // Tạo token mới từ AuthService
+        AuthResponse newTokens = authService.generateNewToken(user);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(newTokens);
     }
+
 
     @GetMapping("/me")
     @Operation(summary = "Lấy thông tin tài khoản hiện tại")

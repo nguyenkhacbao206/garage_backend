@@ -98,6 +98,9 @@ public class RepairOrderService {
                     car.getManufacturer(),
                     car.getCustomerId()
                 ));
+                car.setActive(true);
+                car.setUpdatedAt(LocalDateTime.now());
+                carRepository.save(car);
             });
         }
 

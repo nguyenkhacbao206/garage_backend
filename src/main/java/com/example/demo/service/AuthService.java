@@ -27,10 +27,8 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
-    
     // REGISTER USER
     public User register(RegisterRequest request) {
-
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
@@ -46,10 +44,8 @@ public class AuthService {
         return userRepository.save(user);
     }
 
-    
     // REGISTER ADMIN
     public User registerAdmin(RegisterRequest request) {
-
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
@@ -65,10 +61,8 @@ public class AuthService {
         return userRepository.save(admin);
     }
 
-    
     // LOGIN USER
     public AuthResponse login(LoginRequest request) {
-
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -90,10 +84,8 @@ public class AuthService {
         return buildTokens(user);
     }
 
-    
     // LOGIN ADMIN
     public AuthResponse adminLogin(LoginRequest request) {
-
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -110,28 +102,26 @@ public class AuthService {
         return buildTokens(admin);
     }
 
-    
     // LẤY USER TỪ EMAIL
     public User getByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
     }
 
-    
     // TẠO TOKEN MỚI (CHANGEPASSWORD)
-    
     public AuthResponse generateNewToken(User user) {
         return buildTokens(user);
     }
 
-    
-    // TOKEN BUILDER
-    
+    // TOKEN BUILDER - **Gọi đúng JwtService (truyền User)**
     private AuthResponse buildTokens(User user) {
-        String accessToken = jwtService.generateAccessToken(user.getEmail());
-        String refreshToken = jwtService.generateRefreshToken(user.getEmail());
+        // IMPORTANT: JwtService phải có signature: generateAccessToken(User) / generateRefreshToken(User)
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
 
+        // AuthResponse constructor: (String userId, String username, String email, String phonenumber, String accessToken, String refreshToken)
         return new AuthResponse(
+                user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getPhonenumber(),
