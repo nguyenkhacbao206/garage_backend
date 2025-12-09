@@ -14,23 +14,26 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import com.example.demo.entity.Report;
 
 import com.example.demo.dto.ReportResponse;
 import com.example.demo.entity.RepairOrder;
 import com.example.demo.entity.RepairOrderItem;
 import com.example.demo.repository.RepairOrderItemRepository;
 import com.example.demo.repository.RepairOrderRepository;
+import com.example.demo.repository.CustomerRepository;
 
 @Service
 public class ReportService {
 
     private final RepairOrderRepository repairOrderRepository;
     private final RepairOrderItemRepository repairOrderItemRepository;
+    private final CustomerRepository customerRepository;
 
-    public ReportService(RepairOrderRepository repairOrderRepository,
-                        RepairOrderItemRepository repairOrderItemRepository) {
+    public ReportService(RepairOrderRepository repairOrderRepository,RepairOrderItemRepository repairOrderItemRepository,CustomerRepository customerRepository) {
         this.repairOrderRepository = repairOrderRepository;
         this.repairOrderItemRepository = repairOrderItemRepository;
+        this.customerRepository = customerRepository;
     }
 
     // Dashboard KPI
@@ -166,7 +169,7 @@ public Map<String, List<ReportResponse.ServicePartStatistic>> getServicePartStat
 
 
 
-    // SỬA CHÍNH HÀM NÀY: LẤY ĐÚNG DỮ LIỆU TRONG NGÀY
+    //LẤY ĐÚNG DỮ LIỆU TRONG NGÀY
     public Map<String, Object> getDailyReport(LocalDate date) {
 
     LocalDateTime start = date.atStartOfDay();
@@ -185,7 +188,7 @@ public Map<String, List<ReportResponse.ServicePartStatistic>> getServicePartStat
         List<RepairOrderItem> services = order.getService();
         if (services != null) {
             for (RepairOrderItem s : services) {
-                totalServiceCount++;  // mỗi dịch vụ là 1 item
+                totalServiceCount++;
                 BigDecimal total = Optional.ofNullable(s.getTotal()).orElse(BigDecimal.ZERO);
                 totalRevenue = totalRevenue.add(total);
             }
@@ -211,6 +214,78 @@ public Map<String, List<ReportResponse.ServicePartStatistic>> getServicePartStat
 
     return result;
 }
+public List<Report.TopUserStatistic> getTopUsersReport() {
+
+    List<RepairOrder> allOrders = repairOrderRepository.findAll();
+
+    // Nhóm orders theo customerId
+    Map<String, List<RepairOrder>> ordersByCustomer = allOrders.stream()
+            .filter(o -> o.getCustomerId() != null)
+            .collect(Collectors.groupingBy(RepairOrder::getCustomerId));
+
+    List<Report.TopUserStatistic> result = new ArrayList<>();
+
+    for (String customerId : ordersByCustomer.keySet()) {
+        List<RepairOrder> customerOrders = ordersByCustomer.get(customerId);
+
+        int totalServices = 0;
+        int totalParts = 0;
+        BigDecimal totalSpent = BigDecimal.ZERO;
+
+        String userName = "";
+        String userCode = "";
+
+        // Lấy thông tin khách hàng từ repository
+        com.example.demo.entity.Customer cust = customerRepository.findById(customerId).orElse(null);
+        if (cust != null) {
+            userName = cust.getName();
+            userCode = cust.getCustomerCode();
+        }
+
+        // Tính tổng dịch vụ, phụ tùng và chi phí
+        for (RepairOrder order : customerOrders) {
+
+            // Dịch vụ
+            if (order.getService() != null) {
+                totalServices += order.getService().size();
+                totalSpent = totalSpent.add(
+                        order.getService().stream()
+                                .map(i -> Optional.ofNullable(i.getTotal()).orElse(BigDecimal.ZERO))
+                                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                );
+            }
+
+            // Phụ tùng
+            if (order.getParts() != null) {
+                totalParts += order.getParts().stream()
+                        .mapToInt(i -> Optional.ofNullable(i.getQuantity()).orElse(0))
+                        .sum();
+                totalSpent = totalSpent.add(
+                        order.getParts().stream()
+                                .map(i -> Optional.ofNullable(i.getTotal()).orElse(BigDecimal.ZERO))
+                                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                );
+            }
+        }
+
+        // Tạo đối tượng thống kê
+        Report.TopUserStatistic stat = new Report.TopUserStatistic();
+        stat.setUserId(customerId);
+        stat.setUserName(userName);
+        stat.setUserCode(userCode);
+        stat.setTotalServices(totalServices);
+        stat.setTotalParts(totalParts);
+        stat.setTotalSpent(totalSpent);
+
+        result.add(stat);
+    }
+
+    // Sắp xếp theo tổng chi tiêu giảm dần
+    result.sort(Comparator.comparing(Report.TopUserStatistic::getTotalSpent).reversed());
+
+    return result;
+}
+
 
 
 

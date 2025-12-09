@@ -75,6 +75,35 @@ public class ReportResponse {
         public void setTotalRevenue(BigDecimal totalRevenue) { this.totalRevenue = totalRevenue; }
     }
 
+    public static class TopUserStatistic {
+    private String userId;
+    private String userName;
+    // private String userCode;
+    private int totalServices;
+    private int totalParts;
+    private BigDecimal totalSpent;
+
+    // getters & setters
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
+
+    // public String getUserCode() { return userCode; }
+    // public void setUserCode(String userCode) { this.userCode = userCode; }
+
+    public int getTotalServices() { return totalServices; }
+    public void setTotalServices(int totalServices) { this.totalServices = totalServices; }
+
+    public int getTotalParts() { return totalParts; }
+    public void setTotalParts(int totalParts) { this.totalParts = totalParts; }
+
+    public BigDecimal getTotalSpent() { return totalSpent; }
+    public void setTotalSpent(BigDecimal totalSpent) { this.totalSpent = totalSpent; }
+}
+
+
     public static class RevenueChartData {
         private String month;
         private BigDecimal value;

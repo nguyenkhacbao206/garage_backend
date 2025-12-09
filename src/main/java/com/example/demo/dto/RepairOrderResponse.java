@@ -10,9 +10,9 @@ public class RepairOrderResponse {
     private String id;
     private String orderCode;
     private String customerId;
-    private CustomerResponse customer;  
+    private CustomerResponse customer;
     private String carId;
-    private CarResponse car;           
+    private CarResponse car;
     private List<String> technicianIds;
     private List<TechnicianResponse> technician;
     private String note;
