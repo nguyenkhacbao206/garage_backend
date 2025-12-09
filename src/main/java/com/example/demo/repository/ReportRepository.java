@@ -11,6 +11,4 @@ import java.util.List;
 public interface ReportRepository extends MongoRepository<RepairOrder, String> {
 
     List<RepairOrder> findByDateReceivedBetween(LocalDateTime start, LocalDateTime end);
-
-    List<RepairOrder> findByStatus(String status);
 }

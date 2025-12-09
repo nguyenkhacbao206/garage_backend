@@ -4,9 +4,12 @@ import com.example.demo.dto.ReportResponse;
 import com.example.demo.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +37,14 @@ public class ReportController {
         Map<String, List<ReportResponse.ServicePartStatistic>> stats = reportService.getServicePartStatistics();
         return ResponseEntity.ok(new ReportResponse(stats));
     }
+    
+    @GetMapping("/daily")
+    public ResponseEntity<?> getDailyReport(
+        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+        ) {
+        return ResponseEntity.ok(reportService.getDailyReport(date));
+    }
+
 
     @GetMapping("/monthly-revenue")
     @Operation(summary = "Doanh thu 12 tháng gần nhất")
