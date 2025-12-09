@@ -8,11 +8,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -54,17 +55,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
             var appUser = userRepository.findByEmail(username).orElse(null);
+
             if (appUser != null && jwtService.validateToken(token)) {
-                UserDetails userDetails = org.springframework.security.core.userdetails.User
-                        .withUsername(appUser.getEmail())
-                        .password(appUser.getPassword())
-                        .authorities(new SimpleGrantedAuthority(appUser.getRole()))
-                        .build();
+
+                // Thêm principal chứa userId, email, role
+                HashMap<String, Object> principal = new HashMap<>();
+                principal.put("userId", appUser.getId());
+                principal.put("email", appUser.getEmail());
+                principal.put("role", appUser.getRole());
+
+                var authority = new SimpleGrantedAuthority(appUser.getRole());
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities()
+                                principal,
+                                null,
+                                List.of(authority)
                         );
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
