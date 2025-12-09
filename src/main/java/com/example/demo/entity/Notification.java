@@ -60,6 +60,8 @@ public class Notification {
         this.id = id;
     }
 
+   
+
     public String getTitle() {
         return title;
     }

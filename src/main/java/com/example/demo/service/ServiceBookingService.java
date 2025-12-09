@@ -36,6 +36,7 @@ public class ServiceBookingService {
         ServiceBookingResponse res = new ServiceBookingResponse();
 
         res.setId(booking.getId());
+        res.setUserId(booking.getUserId());
         res.setCustomerName(booking.getCustomerName());
         res.setCustomerPhone(booking.getCustomerPhone());
         res.setCustomerEmail(booking.getCustomerEmail());
@@ -60,42 +61,48 @@ public class ServiceBookingService {
 
     public ServiceBookingResponse create(ServiceBookingRequest req) {
 
-        // validate tất cả serviceIds
-        for (String sid : req.getServiceIds()) {
-            if (!serviceRepo.existsById(sid)) {
-                throw new ResourceNotFoundException("Dịch vụ không tồn tại: " + sid);
-            }
+    // validate tất cả serviceIds
+    for (String sid : req.getServiceIds()) {
+        if (!serviceRepo.existsById(sid)) {
+            throw new ResourceNotFoundException("Dịch vụ không tồn tại: " + sid);
         }
+    }
 
-        ServiceBooking booking = new ServiceBooking();
+    ServiceBooking booking = new ServiceBooking();
 
+        // userId người đặt lịch
+        booking.setUserId(req.getUserId());
+
+        // thông tin khách
         booking.setCustomerName(req.getCustomerName());
         booking.setCustomerPhone(req.getCustomerPhone());
         booking.setCustomerEmail(req.getCustomerEmail());
 
+        // thông tin xe
         booking.setLicensePlate(req.getLicensePlate());
         booking.setCarBrand(req.getCarBrand());
         booking.setCarModel(req.getCarModel());
 
+        // dịch vụ đã chọn
         booking.setServiceIds(req.getServiceIds());
         booking.setNote(req.getNote());
         booking.setBookingTime(req.getBookingTime());
 
         booking.setStatus("PENDING");
-
         booking.setCreatedAt(LocalDateTime.now());
         booking.setUpdatedAt(LocalDateTime.now());
 
         bookingRepo.save(booking);
 
-        // Gửi thông báo
+        // Gửi thông báo đến ADMIN, đồng thời gắn userId để sau xác nhận trả về đúng USER
         notificationService.sendBookingToAdmin(
-                booking.getId(),
-                req.getCustomerEmail()
+            booking.getId(),
+            req.getUserId()
         );
 
         return convert(booking);
     }
+
 
 
     public List<ServiceBookingResponse> getAll() {
@@ -123,6 +130,8 @@ public ServiceBookingResponse update(String id, ServiceBookingRequest req) {
             throw new ResourceNotFoundException("Dịch vụ không tồn tại: " + sid);
         }
     }
+
+    booking.setUserId(req.getUserId());
 
     booking.setCustomerName(req.getCustomerName());
     booking.setCustomerPhone(req.getCustomerPhone());

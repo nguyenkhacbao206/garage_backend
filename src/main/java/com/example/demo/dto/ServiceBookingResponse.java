@@ -8,6 +8,9 @@ public class ServiceBookingResponse {
 
     private String id;
 
+
+    private String userId;
+
     private String customerName;
     private String customerPhone;
     private String customerEmail;
@@ -34,6 +37,13 @@ public class ServiceBookingResponse {
     }
     public void setId(String id) { 
         this.id = id; 
+    }
+
+    public String getUserId() { 
+        return userId; 
+    }
+    public void setUserId(String userId) { 
+        this.userId = userId; 
     }
 
     public String getCustomerName() { 
