@@ -12,7 +12,7 @@ public class ServiceBooking {
     @Id
     private String id;
 
-    private String userId;
+    // private String userId;
 
     // Thông tin khách hàng
     private String customerName;
@@ -47,13 +47,13 @@ public class ServiceBooking {
     public void setId(String id) { 
         this.id = id; 
     }
-    public String getUserId() {
-        return userId;
-    }
+    // public String getUserId() {
+    //     return userId;
+    // }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    // public void setUserId(String userId) {
+    //     this.userId = userId;
+    // }
 
     public String getCustomerName() { 
         return customerName; 

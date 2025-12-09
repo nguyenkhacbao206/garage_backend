@@ -1,15 +1,13 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.PartBookingRequest;
-import com.example.demo.dto.PartBookingResponse;
 import com.example.demo.dto.ServiceBookingRequest;
 import com.example.demo.dto.ServiceBookingResponse;
 import com.example.demo.entity.ServiceBooking;
 import com.example.demo.entity.GarageService;
-import com.example.demo.entity.PartBooking;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.ServiceBookingRepository;
 import com.example.demo.repository.ServiceRepository;
+import com.example.demo.security.SecurityUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,11 +20,9 @@ public class ServiceBookingService {
     private final ServiceRepository serviceRepo;
     private final NotificationService notificationService;
 
-    public ServiceBookingService(
-            ServiceBookingRepository bookingRepo,
-            ServiceRepository serviceRepo,
-            NotificationService notificationService
-    ) {
+    public ServiceBookingService(ServiceBookingRepository bookingRepo,
+                                 ServiceRepository serviceRepo,
+                                 NotificationService notificationService) {
         this.bookingRepo = bookingRepo;
         this.serviceRepo = serviceRepo;
         this.notificationService = notificationService;
@@ -36,7 +32,6 @@ public class ServiceBookingService {
         ServiceBookingResponse res = new ServiceBookingResponse();
 
         res.setId(booking.getId());
-        res.setUserId(booking.getUserId());
         res.setCustomerName(booking.getCustomerName());
         res.setCustomerPhone(booking.getCustomerPhone());
         res.setCustomerEmail(booking.getCustomerEmail());
@@ -46,8 +41,6 @@ public class ServiceBookingService {
         res.setCarModel(booking.getCarModel());
 
         res.setServiceIds(booking.getServiceIds());
-
-        // lấy thông tin đầy đủ của từng service
         List<GarageService> services = serviceRepo.findAllById(booking.getServiceIds());
         res.setService(services);
 
@@ -60,8 +53,13 @@ public class ServiceBookingService {
     }
 
     public ServiceBookingResponse create(ServiceBookingRequest req) {
+        // Lấy userId từ token JWT
+        String userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new RuntimeException("Bạn chưa đăng nhập!");
+        }
 
-        // validate tất cả serviceIds
+        // Validate serviceIds
         for (String sid : req.getServiceIds()) {
             if (!serviceRepo.existsById(sid)) {
                 throw new ResourceNotFoundException("Dịch vụ không tồn tại: " + sid);
@@ -69,89 +67,62 @@ public class ServiceBookingService {
         }
 
         ServiceBooking booking = new ServiceBooking();
-
-        // userId người đặt lịch
-        booking.setUserId(req.getUserId());
-
-        // thông tin khách
         booking.setCustomerName(req.getCustomerName());
         booking.setCustomerPhone(req.getCustomerPhone());
         booking.setCustomerEmail(req.getCustomerEmail());
-
-        // thông tin xe
         booking.setLicensePlate(req.getLicensePlate());
         booking.setCarBrand(req.getCarBrand());
         booking.setCarModel(req.getCarModel());
-
-        // dịch vụ đã chọn
         booking.setServiceIds(req.getServiceIds());
         booking.setNote(req.getNote());
         booking.setBookingTime(req.getBookingTime());
-
         booking.setStatus("PENDING");
         booking.setCreatedAt(LocalDateTime.now());
         booking.setUpdatedAt(LocalDateTime.now());
 
         bookingRepo.save(booking);
 
-        // Gửi thông báo đến ADMIN, đồng thời gắn userId để sau xác nhận trả về đúng USER
-        notificationService.sendBookingToAdmin(
-            booking.getId(),
-            req.getUserId()
-        );
+        // Gửi notification tới admin, dùng userId từ JWT
+        notificationService.sendBookingToAdmin(booking.getId(), userId);
 
         return convert(booking);
     }
 
-
-
     public List<ServiceBookingResponse> getAll() {
-        return bookingRepo.findAll()
-                .stream()
-                .map(this::convert)
-                .toList();
+        return bookingRepo.findAll().stream().map(this::convert).toList();
     }
-
 
     public ServiceBookingResponse getOne(String id) {
         ServiceBooking booking = bookingRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy booking"));
-
         return convert(booking);
     }
 
-public ServiceBookingResponse update(String id, ServiceBookingRequest req) {
-    ServiceBooking booking = bookingRepo.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy booking"));
+    public ServiceBookingResponse update(String id, ServiceBookingRequest req) {
+        ServiceBooking booking = bookingRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy booking"));
 
-    // validate serviceIds mới
-    for (String sid : req.getServiceIds()) {
-        if (!serviceRepo.existsById(sid)) {
-            throw new ResourceNotFoundException("Dịch vụ không tồn tại: " + sid);
+        for (String sid : req.getServiceIds()) {
+            if (!serviceRepo.existsById(sid)) {
+                throw new ResourceNotFoundException("Dịch vụ không tồn tại: " + sid);
+            }
         }
+
+        booking.setCustomerName(req.getCustomerName());
+        booking.setCustomerPhone(req.getCustomerPhone());
+        booking.setCustomerEmail(req.getCustomerEmail());
+        booking.setLicensePlate(req.getLicensePlate());
+        booking.setCarBrand(req.getCarBrand());
+        booking.setCarModel(req.getCarModel());
+        booking.setServiceIds(req.getServiceIds());
+        booking.setNote(req.getNote());
+        booking.setBookingTime(req.getBookingTime());
+        booking.setUpdatedAt(LocalDateTime.now());
+
+        bookingRepo.save(booking);
+
+        return convert(booking);
     }
-
-    booking.setUserId(req.getUserId());
-
-    booking.setCustomerName(req.getCustomerName());
-    booking.setCustomerPhone(req.getCustomerPhone());
-    booking.setCustomerEmail(req.getCustomerEmail());
-
-    booking.setLicensePlate(req.getLicensePlate());
-    booking.setCarBrand(req.getCarBrand());
-    booking.setCarModel(req.getCarModel());
-
-    booking.setServiceIds(req.getServiceIds());
-    booking.setNote(req.getNote());
-    booking.setBookingTime(req.getBookingTime());
-
-    booking.setUpdatedAt(LocalDateTime.now());
-
-    bookingRepo.save(booking);
-
-    return convert(booking);
-}
-
 
     public void delete(String id) {
         if (!bookingRepo.existsById(id)) {

@@ -5,6 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "Dữ liệu phản hồi sau khi đăng nhập / refresh token")
 public class AuthResponse {
 
+    @Schema(description = "ID người dùng", example = "64b1f7e7d0a1b23c4f567890")
+    private String id;
+
     @Schema(description = "Tên người dùng", example = "baokhac")
     private String username;
 
@@ -22,7 +25,8 @@ public class AuthResponse {
 
     public AuthResponse() {}
 
-    public AuthResponse(String username, String email, String phonenumber, String accessToken, String refreshToken) {
+    public AuthResponse(String id, String username, String email, String phonenumber, String accessToken, String refreshToken) {
+        this.id = id;
         this.username = username;
         this.email = email;
         this.phonenumber = phonenumber;
@@ -31,6 +35,13 @@ public class AuthResponse {
     }
 
     // getters & setters
+
+    public String getId() { 
+        return id; 
+    }
+    public void setId(String id) { 
+        this.id = id; 
+    }
     public String getUsername() { 
         return username; 
     }

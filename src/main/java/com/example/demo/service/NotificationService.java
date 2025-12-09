@@ -6,9 +6,9 @@ import com.example.demo.entity.Notification;
 import com.example.demo.entity.ServiceBooking;
 import com.example.demo.repository.NotificationRepository;
 import com.example.demo.repository.ServiceBookingRepository;
+import com.example.demo.repository.ServiceRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import com.example.demo.repository.ServiceRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,27 +32,20 @@ public class NotificationService {
     }
 
     private NotificationResponse toResponse(Notification n) {
-
         ServiceBooking booking = null;
         List<GarageService> services = List.of();
 
         if (n.getBookingId() != null && !n.getBookingId().isBlank()) {
             booking = bookingRepo.findById(n.getBookingId()).orElse(null);
-
-            if (booking != null &&
-                booking.getServiceIds() != null &&
-                !booking.getServiceIds().isEmpty()) {
-
+            if (booking != null && booking.getServiceIds() != null && !booking.getServiceIds().isEmpty()) {
                 services = serviceRepo.findAllById(booking.getServiceIds());
             }
         }
-
         return new NotificationResponse(n, booking, services);
     }
 
-    // CLIENT gửi thông báo ADMIN
-    public NotificationResponse sendBookingToAdmin(String bookingId, String userId) {
-
+    // CLIENT gửi thông báo cho ADMIN
+    public NotificationResponse sendBookingToAdmin(String bookingId, String clientId) {
         ServiceBooking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
@@ -61,31 +54,29 @@ public class NotificationService {
                 "Khách hàng " + booking.getCustomerName()
                         + " vừa đặt lịch xe " + booking.getLicensePlate(),
                 bookingId,
-                userId,     // senderId = user đặt lịch
-                "ADMIN",    // receiver = admin
+                clientId, // senderId = client
+                "ADMIN",  // receiver = admin
                 "BOOKING"
         );
 
         Notification saved = repo.save(noti);
         NotificationResponse resp = toResponse(saved);
 
+        // Gửi broadcast cho admin
         ws.convertAndSend("/topic/admin", resp);
 
         return resp;
     }
 
-
-
-    // ADMIN gửi confirm thông báo sang CLIENT
+    // ADMIN confirm booking → gửi đúng client
     public NotificationResponse confirmByNotification(String notificationId) {
-
         Notification noti = repo.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
         ServiceBooking booking = bookingRepo.findById(noti.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        String userId = booking.getUserId();  // lấy đúng userId
+        String clientId = noti.getSenderId(); // lấy từ notification
 
         noti.setStatus("CONFIRMED");
         noti.setTitle("Lịch đã được xác nhận");
@@ -94,47 +85,37 @@ public class NotificationService {
         Notification saved = repo.save(noti);
         NotificationResponse resp = toResponse(saved);
 
-        //  gửi về đúng client theo userId
-        ws.convertAndSend("/topic/user/" + userId, resp);
+        // Gửi private message cho client
+        ws.convertAndSendToUser(clientId, "/queue/notifications", resp);
 
         return resp;
     }
 
-
-
-
-
-    // ADMIN gửi cancel thông báo sang CLIENT
+    // ADMIN cancel booking → gửi đúng client
     public NotificationResponse cancelByNotification(String notificationId) {
-
         Notification noti = repo.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
         ServiceBooking booking = bookingRepo.findById(noti.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        String userId = booking.getUserId();  //  đúng user đặt lịch
+        String clientId = noti.getSenderId(); // lấy từ notification
 
         noti.setStatus("CANCELLED");
         noti.setTitle("Lịch đã bị hủy");
-        noti.setMessage(
-            "Lịch hẹn xe " + booking.getLicensePlate()
-            + " đã bị hủy. Vui lòng liên hệ garage để biết thêm chi tiết"
-        );
+        noti.setMessage("Lịch hẹn xe " + booking.getLicensePlate() 
+                        + " đã bị hủy. Vui lòng liên hệ garage để biết thêm chi tiết");
 
         Notification saved = repo.save(noti);
         NotificationResponse resp = toResponse(saved);
 
-        // gửi trả về client đúng userId
-        ws.convertAndSend("/topic/user/" + userId, resp);
+        // Gửi private message cho client
+        ws.convertAndSendToUser(clientId, "/queue/notifications", resp);
 
         return resp;
     }
 
-
-
-
-    // trả NotificationResponse
+    // Lấy tất cả thông báo
     public List<NotificationResponse> getAll() {
         return repo.findAllByOrderByCreatedAtDesc()
                 .stream()
@@ -156,7 +137,6 @@ public class NotificationService {
                 .collect(Collectors.toList());
     }
 
-    // mark read -> trả DTO
     public NotificationResponse markAsRead(String id) {
         Notification n = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));

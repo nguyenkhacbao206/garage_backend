@@ -33,6 +33,7 @@ public class ServiceBookingController {
             @RequestBody ServiceBookingRequest req) {
 
         try {
+            // ServiceBookingService.create() sẽ tự lấy userId từ JWT
             ServiceBookingResponse data = bookingService.create(req);
             return ResponseEntity.ok(new ApiResponse<>("Đặt dịch vụ thành công!", data));
         } catch (Exception e) {
@@ -40,6 +41,7 @@ public class ServiceBookingController {
                     .body(new ApiResponse<>(e.getMessage(), null));
         }
     }
+
 
     
     @GetMapping
